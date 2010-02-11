@@ -1,3 +1,9 @@
+0.3.4b 2/10
+------
+
+Enhancement of the numpy operator overload: Original, maybe already
+overloaded operators are maintained.
+
 0.3.3b 2/10
 ------
 

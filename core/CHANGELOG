@@ -1,3 +1,15 @@
+0.2.5b 2/10
+------
+
+- general changes:
+	Enhancing the numpy operator overload.
+
+- changes in class ufuncWrap:
+	In __init__(), taking a name instead of a function.
+
+- changes in class NotEqual:
+	In __init__(), passing a name instead of a function.
+
 0.2.4b 2/10
 ------
 
