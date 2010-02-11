@@ -1,0 +1,9 @@
+0.1.1b 2/10
+------
+
+- transition in module name from "math" to "umath" (conflict with Pythn math).
+
+0.1.1b 2/10
+------
+
+- transition from package name "undarray" to "upy".

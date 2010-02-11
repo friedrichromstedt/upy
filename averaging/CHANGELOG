@@ -1,0 +1,17 @@
+0.1.1b 2/10
+------
+
+- general changes:
+	Pushing warnings on usage of representative() or mean().
+
+0.1.0b 2/10
+------
+
+- introducing functions:
+	representative(sequence, weights = None, dtype = None)
+	mean(sequence, weights = None, dtype = None)
+
+0.0.1b 1/10
+------
+
+- only documenentation has been written, no relevant amount of code.

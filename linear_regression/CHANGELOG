@@ -1,0 +1,5 @@
+0.1.0b 2/10
+------
+
+- introducing functions:
+	linear_regression(x, y, weigths = None, dtype = None)

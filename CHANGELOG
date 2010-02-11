@@ -1,0 +1,24 @@
+0.3.3b 2/10
+------
+
+BUGFIXES with the error source ID generation.
+Warnings in averaging.mean() and averaging.representative().
+Current tests passing ok.
+
+0.3.2b 2/10
+------
+
+Changing the error source name generation from id(dependency) to id(sigma).
+This should be error-prone now.  See the CHANGELOG of core.py for details.
+
+0.3.1b 2/10
+------
+
+Overloads for numpy's numeric operators are implemented.  I.e., statements
+with undarrays as second operand work.
+
+0.3.0b 2/10
+------
+
+A working undarray instance and the arithmetic, the averaging and the linear
+regression are implemented.

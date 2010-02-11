@@ -1,0 +1,13 @@
+0.1.1b 2/10
+------
+
+- general changes:
+	Cosmitic changes.  Nothing substantial, only for readability.
+	Transition in name from "decimal_toolbox" to "decimal".
+
+0.1.0b 8/08
+------
+
+- introducing functions:
+	get_exponent(number)
+	get_rounded(number, exponent, force_sign = False, ceil = False)

@@ -1,0 +1,175 @@
+0.2.4b 2/10
+------
+
+- general changes:
+	Eliminating BUGS in the error source name determination.  Introducing
+		a ID generator class and module-scope defined instance object.
+	Transition from module decimal_toolbox to upy.decimal.
+
+- introducing class IDGenerator:
+	__init__()
+	get_id()
+
+- introducing module-scope variables:
+	id_generator
+
+- changes in class undarray:
+	In __init__(), use "is_generator" to generate new source name IDs.
+
+0.2.3b 2/10
+------
+
+- general changes:
+	Making the source name generation error-prone.
+
+- changes in class undarray:
+	In __init__(), in case a new undarray is created from scratch, with a new
+		Dependency, id(sigma) is used instead of id(Dependency) as the error
+		source's name.  Before, id(dependency) was used, but when that 
+		Dependency gets accumulated by the Python memory freeing algorithm, 
+		but the sigma is still in use, two distinct source names may have the
+		same name in the end.  This may happen, e.g., after:
+			
+			a = upy.undarray(1, 0.1)
+			b = a + 0
+			del a
+
+		Nevertheless, the sigma array used is shared by all Dependencies, and 
+		is thus persistent and suitable as the error source's name.
+
+0.2.2b 2/10
+------
+
+- general changes:
+	Registering wrapper operator functions in numpy.
+
+- introducing classes:
+	ufuncWrapper
+	Add(ufuncWrapper)
+	Subtract(ufuncWrapper)
+	Multiply(ufuncWrapper)
+	Divide(ufuncWrapper)
+	Power(ufuncWrapper)
+	Less(ufuncWrappe)
+	LessEqual(ufuncWrapper)
+	Greater(ufuncWrapper)
+	GreaterEqual(ufuncWrapper)
+	Equal(ufuncWrapper)
+	NotEqual(ufuncWrapper)
+
+- ... and instances:
+	add
+	substract
+	multiply
+	true_divide
+	power
+	less
+	less_equal
+	greater
+	greater_equal
+	equal
+	not_equal
+
+0.2.1b 2/10
+------
+
+- package name transition from undarray to upy.
+
+- introducing in class undarray:
+	weight()
+
+0.2.0b 1/10
+------
+
+- changes in class Dependency:
+	broadcast(shape)
+
+- changes in class Characteristic:
+	__init__(shape), changes in parameters.
+	In __add__(), broadcasting both operands.
+	In all methods creating new Characteristics, supplying shape = ... .
+	__getitem__((shape, key)), KEY is wrapped.
+	broadcast(shape)
+
+0.1.0b 1/10
+------
+
+- introducing class Dependency:
+	__init__(derivative, dispersion)
+	get_dispersion()
+	__add__(other)
+	__sub__(other)
+	__mul__(other)
+	__div__(other)
+	__rmul__(other)
+	__pos__()
+	__neg__()
+	__getitem__(key)
+	__setitem__(key, value)
+	__len__()
+	flatten(*flatten_args, **flatten_kwargs)
+	repeat(*repeat_args, **repeat_kwargs)
+	reshape(*reshape_args, **reshape_kwargs)
+	transpose(*transpose_args, **transpose_kwargs)
+	__str__()
+
+- introducing class Characteristic:
+	__init__(*dict_args, **dict_kwargs)
+	get_dispersion()
+	get_sources()
+	set_dependency(source, dependency)
+	__add__(other)
+	__sub__(other)
+	__mul__(other)
+	__div__(other)
+	__rmul__(other)
+	__pos__()
+	__neg__()
+	__getitem__(key)
+	__setitem__(key, value)
+	__len__()
+	flatten(*flatten_args, **flatten_kwargs)
+	repeat(*repeat_args, **repeat_kwargs)
+	reshape(*reshape_args, **reshape_kwargs)
+	transpose(*transpose_args, **transpose_kwargs)
+
+- introducing class undarray:
+	__init__(
+			object,
+			error = None, sigma = None,
+			derivatives = None,
+			characteristic = None,
+			dtype = None)
+	dispersion()
+	sigma()
+	variance()
+	error()
+	__add__(other)
+	__sub__(other)
+	__mul__(other)
+	__div__(other)
+	__pow__(other)
+	__radd__(other)
+	__rsub__(other)
+	__rmul__(other)
+	__rdiv__(other)
+	__rpow__(other)
+	__pos__()
+	__neg__()
+	__abs__()
+	__lt__(other)
+	__le__(other)
+	__gt__(other)
+	__ge__(other)
+	__eq__(other)
+	__ne__(other)
+	__getitem__(key)
+	__setitem__(key, value)
+	__len__()
+	flatten(*flatten_args, **flatten_kwargs)
+	repeat(*repeat_args, **repeat_kwargs)
+	reshape(*reshape_args, **reshape_kwargs)
+	transpose(*transpose_args, **transpose_kwargs)
+	get_precision()
+	get_strings()
+	__str__()

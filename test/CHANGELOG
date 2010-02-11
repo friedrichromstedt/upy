@@ -1,0 +1,41 @@
+0.1.3b 2/10
+------
+
+- introducing in class Test:
+	test_operators_numpyarray()
+
+0.1.2b 2/10
+------
+
+- introducing in class Test:
+	test_averaging()
+	test_weight()
+	test_linear_regression()
+
+0.1.1b 1/10
+------
+
+- introducing in class Test:
+	test_array_same_shape()
+	test_array_same_shape_exact()
+	test_array_inequal_shape()
+	test_array_inequal_shape_exact()
+
+0.1.0b 1/10
+------
+
+- introducing class Test(unittest.TestCase):
+	test_instantiation_scalar()
+	test_multiplication_scalar()
+	test_addition_scalar()
+	test_substraction_identical_scalar()
+	test_multiplication_scalar()
+	test_pow_scalar()
+	test_scalar_neg()
+	test_scalar_comparison()
+	test_getitem()
+	test_setitem()
+	test_exceptions()
+	test_math()
+
+- when running the file, the test is run.
