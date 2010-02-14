@@ -1,3 +1,9 @@
+0.3.5b 2/10
+------
+
+Splitted core.py into several modules: dependency.py, characteristic.py,
+id_generator.py, operators.py.  core.py now only holds the undarray class.
+
 0.3.4b 2/10
 ------
 

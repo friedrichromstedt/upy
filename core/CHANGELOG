@@ -1,3 +1,14 @@
+0.3.0b 2/10
+------
+
+- general changes:
+	Putting class Dependency, class Characteristic, class IDGenerator and
+		the ufunc overloads in separate modules.
+
+- changes in class undarray:
+	In __init__(), using new package-scopy upy.id_generator.
+	In __abs__(), BUGFIX: naive code replaced by proper one.
+
 0.2.5b 2/10
 ------
 
