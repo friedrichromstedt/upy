@@ -1,3 +1,13 @@
+0.1.1b 2/10
+------
+
+- general changes:
+	Adding the workaround for the numpy calling convention also the the
+		equal() wrapping class.
+
+- in class Equal:
+	__call__(a, b, *args, **kwargs)
+
 0.1.0b 2/10
 ------
 
