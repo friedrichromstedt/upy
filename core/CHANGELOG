@@ -1,3 +1,16 @@
+0.3.1b 2/10
+------
+
+- general changes:
+	Adaption to upy.dependency 0.2.0b and upy.characteristic 0.2.0b.
+
+- changes in class undarray:
+	In __init__(), adaptions.
+	In flatten(), adaptions.
+	In repeat(), adaptions.
+	In reshape(), adaptions.
+	In transpose(), adaptions.
+
 0.3.0b 2/10
 ------
 

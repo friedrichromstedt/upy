@@ -1,3 +1,29 @@
+0.2.0b 2/10
+------
+
+- general changes:
+	Fully reworking the module towards a new storage scheme.
+
+- class Dependency:
+	__init__(names = None, derivatives = None, dispersions = None,
+		shape = None, dtype = None)
+	copy_names()
+	is_empty()
+	is_nonempty()
+	get_dispersion()
+	add(other)
+	__mul__(other)
+	__rmul__(other)
+	__getitem__(key)
+	clear(key)
+	__len__()
+	flatten(*, **)
+	repeat(*, **)
+	reshape(*)
+	transpose(*, **)
+	broadcast(shape)
+	__str__()
+
 0.1.0b 2/10
 ------
 

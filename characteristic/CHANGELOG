@@ -1,3 +1,25 @@
+0.2.0b 2/10
+------
+
+- general changes:
+	Fully reworking the module towards a new storage scheme.
+
+- class Characteristic:
+	__init__(shape)
+	append(dependency)
+	get_dispersion()
+	__iadd__(other)
+	__mul__(other)
+	__rmul__(other)
+	__getitem__((shape, key))
+	__setitem__(key, value)
+	__len__()
+	flatten(new_shape, *, **)
+	repeat(new_shape, *, **)
+	reshape(new_shape, *, **)
+	broadcast(shape)
+	broadcasted(shape)
+
 0.1.0b 2/10
 ------
 
