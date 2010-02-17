@@ -1,3 +1,15 @@
+0.2.1b 2/10
+------
+
+- general changes:
+	Allowing empty initialisation, but requireing a dtype then.
+	Allowing adding at a specifiy key.
+
+- changes in class Dependency:
+	In __init__(..., shape = None, dtype = None), new arguments for empty
+		initialisation.
+	In add(..., key = None), new argument for target key specification.
+
 0.2.0b 2/10
 ------
 

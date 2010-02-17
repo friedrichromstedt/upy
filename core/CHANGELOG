@@ -1,3 +1,18 @@
+0.3.2b 2/10
+------
+
+- general changes:
+	Allowing for mixed-mode intialisation from list-like structures.  The
+		lists not necessarily must form an array, but the contained elements 
+		(scalars and undarrays) must be compatible with the undarray's shape,
+		being determined from the first element of the "flattened" OBJECT.
+		All iterables can be used, not only lists.
+	Implementing __setitem__().
+
+- changes in class undarray:
+	In __init__(), list-mode OBJECT allowed.
+	In __setiitem__(), proper implementation.
+
 0.3.1b 2/10
 ------
 

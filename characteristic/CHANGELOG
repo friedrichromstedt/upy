@@ -1,3 +1,13 @@
+0.2.1b 2/10
+------
+
+- general changes:
+	Allowing for addition on a key.
+
+- changes in class Characteristic:
+	add(other, key), code taken from __iadd__() with additional argument.
+	__setitem__(), implementing the thing.
+	
 0.2.0b 2/10
 ------
 
