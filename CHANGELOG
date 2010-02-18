@@ -1,3 +1,14 @@
+0.3.7b 2/10
+------
+
+BUGFIX:  Misbehaving initialisation in mixed-mode.
+
+When no error and no sigma is given, the mixed-mode applies.
+Because numpy raises IndexErrors on indicing the various scalar
+types and not TypeError as assumed, this let many cases fail
+(which were not tested for so far).  The issue is fixed now
+with catching *all* Exceptions.
+
 0.3.6b 2/10
 ------
 

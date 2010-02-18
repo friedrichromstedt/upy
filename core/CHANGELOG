@@ -1,3 +1,13 @@
+0.3.3b 2/10
+------
+
+- general changes:
+	BUGFIX: made initialisation from numpy.ndarrays possible.
+
+- changes in class undarray:
+	In __init__(), BUGFIX: catching every exception in shape determination
+		(not only TypeError).
+
 0.3.2b 2/10
 ------
 
