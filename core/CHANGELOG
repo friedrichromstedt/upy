@@ -1,3 +1,15 @@
+0.3.4b 2/10
+------
+
+- general changes:
+	Introducing an additional initialisation scheme from new parameter SHAPE 
+		alone.
+	BIGFIX: __setitem__() with scalar index in mixed-mode failed.
+
+- changes in class undarray:
+	In __init__(), implementing new initialisation scheme.
+	In __setitem__(), BUGFIX: call with scalar index in mixed-mode failed.
+
 0.3.3b 2/10
 ------
 

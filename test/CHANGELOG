@@ -1,3 +1,10 @@
+0.1.6b 2/10
+------
+
+- introducing in class Test:
+	test_instantiation_empty()
+	In test_itemset(), testing with scalar index and mixed-mode.
+
 0.1.5b 2/10
 ------
 

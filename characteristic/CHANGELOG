@@ -1,3 +1,9 @@
+0.2.2b 2/10
+------
+
+- changes in class Characteristic:
+	In get_dispersion(), BUGFIX: always returning an array of shape .shape.
+
 0.2.1b 2/10
 ------
 
