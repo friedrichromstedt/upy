@@ -1,3 +1,16 @@
+0.3.5b 2/10
+------
+
+- general changes:
+	Supporting printing of undarrays with ndim > 0.
+
+- changes in class undarray:
+	printable(sigmas = None,
+			enforce_sign_value = None, enforce_sign_exponent = None,
+			format = None)
+	Deleting get_precision() and get_strings().
+	In __str__(), using .printable().
+
 0.3.4b 2/10
 ------
 

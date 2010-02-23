@@ -1,3 +1,14 @@
+0.1.2b 2/10
+------
+
+- general changes:
+	ufuncWraps support str() and repr().  Formerly, they were loaded from
+		the numpy ops via __getattr__().
+
+- changes in class ufuncWrap:
+	__str__()
+	__repr__()
+
 0.1.1b 2/10
 ------
 

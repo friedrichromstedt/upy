@@ -1,3 +1,22 @@
+0.1.7b 2/10
+------
+
+- general changes:
+	Switching to new notation syntax (1.23 +- 0.45) 10^-1.
+
+- introducing class TestDecimal2:
+	test_get_leftmost_digit()
+	test_str()
+
+- renamed class Test to class TestUndarray.
+
+- introducing class TestPrintableElement:
+	test_print()
+	test_sign_print()
+
+- introducing class TestPrintableUndarray:
+	test_print()
+
 0.1.6b 2/10
 ------
 
