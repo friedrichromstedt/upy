@@ -1,0 +1,42 @@
+0.1.1b 2/10
+------
+
+- changes in class PrintableElement:
+	In __init__(..., precision = None, infinite_precision = None), 
+		additional arguments, code adaption to additional arguments.
+
+- changes in class PrintableUndarray:
+	In __init__(...,
+			precision = precision, infinite_precision = None,
+			threshold = None, edgeitems = None, linewidth = None),
+		additional arguments.
+	In __setitem__(), using new arguments to PrintableElement.__init__().
+
+0.1.0b 2/10
+------
+
+- introducing class PrintableElement:
+	__init__(value, uncertainty,
+			enforce_sign_value = None, enforce_sign_exponent = None,
+			conversion_reporter = None,
+			format = None)
+	__str__()
+
+- introducing class Widths:
+	__init__()
+	report(strings)
+	apply_to(decimal_number)
+
+- introducing class PrintableUndarray:
+	__init__(undarray = None,
+			sigmas = None,
+			enforce_sign_value = None, enforce_sign_exponent = None,
+			format = None)
+	report_strings(self, 
+			strings_value, strings_uncertainty, strings_exponent)
+	__getitem__(key)
+	__setitem__(key, value)
+	__len__()
+	_apply_widths(key,
+			widths_value, widths_uncertainty, widths_exponent)
+	__str__()

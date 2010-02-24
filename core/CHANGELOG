@@ -1,3 +1,14 @@
+0.3.6b 2/10
+------
+
+- general changes:
+	Allowing arguments PRECISION and INFINITE_PRECISION to 
+		undarray.printable().
+
+- changes in class undarray:
+	In printablE(..., precision = None, infinite_precision = None), new
+		arguments, as supported now by upy.printable 0.1.1b.
+
 0.3.5b 2/10
 ------
 

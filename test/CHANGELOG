@@ -1,3 +1,13 @@
+0.1.8b 2/10
+------
+
+- general changes:
+	Testing arguments PRECISION and INFINITE_PRECISION to
+		undarray.printable().
+
+- changes in class TestPrintableUndarray:
+	In test_print(), testing PRECISION and INFINITE_PRECISION.
+
 0.1.7b 2/10
 ------
 
