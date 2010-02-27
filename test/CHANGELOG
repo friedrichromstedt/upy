@@ -1,3 +1,16 @@
+0.1.10b 2/10
+-------
+
+- general changes:
+	Testing autodetermination of format.
+
+- changes in class TestPrintableElement:
+	In test_print(), testing format autodetermination.
+
+- changes in class TestUndarray:
+	In test_instantiation_mixedmode(), adaption to new mixed-mode 
+		implementation.
+
 0.1.9b 2/10
 ------
 

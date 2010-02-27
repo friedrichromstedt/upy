@@ -1,3 +1,23 @@
+0.1.3b 2/10
+------
+
+- general changes:
+	Changed autodetermination of FORMAT.  In case UNCERTAINTY != 0, and if both 
+		UNCERTAINTY and VALUE are of integer kind, 'int' format is choosen,
+		else 'exp' format.  In case UNCERTAINTY == 0, and UNCERTAINTY of
+		integer kind, 'int' format is choosen, else 'exp' format.
+	Improving __doc__ strings.
+
+- changes in class PrintableElement:
+	In __init__(), changed autodetermination of FORMAT.
+
+- changes in class PrintableUndarray:
+	In __init__(), autodetermining FORMAT if None.  This is necessary, because
+		an int-valued undarray with float-valued .sigma() may contain zero and 
+		non-zero uncertainties mixed together.  The items with zero
+		uncertainty would print in int mode, the others in exp mode.  This
+		would spoil consistency and alignment.
+
 0.1.2b 2/10
 ------
 

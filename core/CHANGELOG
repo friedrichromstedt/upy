@@ -1,14 +1,31 @@
-0.3.8b 2/10
+0.3.9b 2/10
 ------
 
 - general changes:
-	In mixedmode initialisation, infering DTYPE from shapeobject.  This has
-		to be done to make the .values array created by numpy.zeros() not
-		be dtype = numpy.float if DTYPE is None.
+	Reworking initialisation partly.
+	Improving __doc__ strings.
+
+- introducing functions:
+	ravel(object)
 
 - changes in class undarray:
-	In __init__(), in mixed-mode, infering DTYPE from shapeobject; always
-		storing .dtype.
+	In __init__(
+			object = None,
+			uncertainty = None,
+			derivatives = None,
+			characteristic = None,
+			dtype = None,
+			shape = None,
+			sigmas = None), 
+		reworking implementation: Branch conditions, inference of DTYPE from
+		ravel()ed OBJECT; adaption to upy.characteristic 0.2.3b; rewriting
+		__doc__ string; using numpy.isscalar() to detect non-undarray scalar
+		level in mixed-mode.
+
+0.3.8b 2/10
+------
+
+undocumented.
 
 0.3.7b 2/10
 ------

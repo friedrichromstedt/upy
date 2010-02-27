@@ -1,3 +1,11 @@
+0.2.3b 2/10
+------
+
+- changes in class Characteristic:
+	In __init__(shape), removing parameter DTYPE.
+	In some functions using .dtype as initialisation parameter for target
+		Characteristics, no longer doing so.
+
 0.2.2b 2/10
 ------
 

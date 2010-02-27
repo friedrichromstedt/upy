@@ -1,3 +1,10 @@
+0.2.2b 2/10
+------
+
+- changes in class Dependency:
+	In __initi__(names = None, derivatives = None, dispersions = None),
+		removing parameter DTYPE.
+
 0.2.1b 2/10
 ------
 
