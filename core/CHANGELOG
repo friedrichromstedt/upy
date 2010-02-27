@@ -1,3 +1,24 @@
+0.3.8b 2/10
+------
+
+- general changes:
+	In mixedmode initialisation, infering DTYPE from shapeobject.  This has
+		to be done to make the .values array created by numpy.zeros() not
+		be dtype = numpy.float if DTYPE is None.
+
+- changes in class undarray:
+	In __init__(), in mixed-mode, infering DTYPE from shapeobject; always
+		storing .dtype.
+
+0.3.7b 2/10
+------
+
+- general changes:
+	Requiring SHAPE to be a tuple.
+
+- changes in class undarray:
+	In __init__(), in the SHAPE branch, checking type.
+
 0.3.6b 2/10
 ------
 

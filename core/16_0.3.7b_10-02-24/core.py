@@ -14,9 +14,9 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with upy.  If not, see <http://www.gnu.org/licenses/>.
-# $Last changed: 2010 Feb 27$
+# $Last changed: 2010 Feb 24$
 # Developed since: Jan 2010
-# File version: 0.3.8b
+# File version: 0.3.7b
 
 import numpy
 import upy
@@ -59,16 +59,7 @@ class undarray:
 		use numpy's default as the dtype of the uncertainty data, not the 
 		dtype derived from OBJECT.  If OBJECT is None, SHAPE will be used to
 		be passed to numpy.zeros(), and and empty error source dependency will 
-		be stored in the beginning.  In all other cases, SHAPE is ignored.
-		
-		The initialisation mode with OBJECT alone being not an undarray is
-		somewhat special and is called "mixed-mode".  In this case OBJECT
-		can be anything matching a certain shape, also with nested undarrays.
-		So, with ua1 having shape (2,), it is possible to pass [ua1, (1, 2)].
-		The dtype, if not specified via DTYPE, is in this case inferred from
-		the first object found in the "flattened" version of the OBJECT.  If
-		this happens to be an undarray, its .dtype will be used, else the 
-		dtype of the numpy.asarray() conversion of the respective object."""
+		be stored in the beginning.  In all other cases, SHAPE is ignored."""
 		
 		if isinstance(object, undarray):
 
@@ -159,16 +150,6 @@ class undarray:
 					shapeobject = indiced
 
 			# Initialise the attributes.
-
-			# If dtype is None, infer dtype from shapeobject:
-			if dtype is None:
-				if isinstance(shapeobject, undarray):
-					dtype = shapeobject.dtype
-					# (DTYPE may happen to be still None.)
-				else:
-					dtype = numpy.asarray(shapeobject).dtype
-
-			# Initialise .value and .characteristic:
 			self.value = numpy.zeros(shape, dtype = dtype)
 			self.characteristic = upy.characteristic.Characteristic(
 					shape = shape,
@@ -210,7 +191,6 @@ class undarray:
 		
 		self.shape = self.value.shape
 		self.ndim = self.value.ndim
-		self.dtype = dtype
 
 	#
 	# Methods to obtain net quantities ...

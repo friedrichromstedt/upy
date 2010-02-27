@@ -1,3 +1,23 @@
+0.1.9b 2/10
+------
+
+- general changes:
+	Testing printable.PrintableElement integer code pathes.
+
+- changes in class TestPrintableElement:
+	In test_print(), testing integer code pathes.
+
+- changes in class TestPrintableUndarray:
+	In test_print(), shallow testing integer printing.
+
+- changes in class TestUndarray:
+	In test_multiplication_scalar(), turning integer values into floats
+		because integers print differently.
+	In test_addition_scalar(), same issue.
+	In test_instantiation_scalar(), same issue.
+	In test_multiplication_scalar(), modified test result because of new
+		float undarrays.
+
 0.1.8b 2/10
 ------
 
