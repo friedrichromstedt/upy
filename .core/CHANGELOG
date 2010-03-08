@@ -1,3 +1,13 @@
+0.3.10b 3/10
+-------
+
+- general changes:
+	Adding convenience methods to class undarray.
+
+- changes in class undarray:
+	stddev()
+	uncertainty(sigmas)
+	
 0.3.9b 2/10
 ------
 

@@ -1,3 +1,9 @@
+0.1.4b 3/10
+------
+
+- changes in class PrintableUndarray:
+	In __init__(), BUGFIX: proper attribute access in onw statement.
+
 0.1.3b 2/10
 ------
 
