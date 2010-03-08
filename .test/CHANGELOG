@@ -1,3 +1,9 @@
+0.1.11b 3/10
+-------
+
+- changes in class TestUndarray:
+	test_bugfixes_reproduction(), for unsorted bugs.
+
 0.1.10b 2/10
 -------
 

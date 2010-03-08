@@ -1,3 +1,11 @@
+0.3.11b 3/10
+-------
+
+- changes in class undarray:
+	In __init__(), BUGFIX: In mixedmode, setting shape of Characteristic
+		to tuple, not to list; BUGFIX: In initialisation from shape, 
+		converting SHAPE to tuple.
+
 0.3.10b 3/10
 -------
 
