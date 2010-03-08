@@ -1,3 +1,9 @@
+0.1.12b 3/10
+-------
+
+- general changes:
+	BUGFIX: deriving all test cases from unittest.TestCase.
+
 0.1.11b 3/10
 -------
 

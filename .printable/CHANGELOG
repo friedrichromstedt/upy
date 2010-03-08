@@ -1,3 +1,9 @@
+0.1.6b 3/10
+------
+
+- changes in class PrintableElement:
+	In __init__(), BUGFIX: misspelled attribute.
+
 0.1.5b 3/10
 ------
 
