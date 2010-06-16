@@ -1,3 +1,9 @@
+0.3.8b 6/10
+------
+
+Transition from GPL to MIT license.
+Removed all the .* directory stuff.  This is handled by git at all now.
+
 0.3.7b 2/10
 ------
 
