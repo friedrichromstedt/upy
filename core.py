@@ -163,7 +163,7 @@ class undarray:
 					names = upy.id_generator.get_id(
 						shape = self.value.shape),
 					derivatives = numpy.ones(shape = self.value.shape),
-					dispersions = sigma ** 2)
+					variances = sigma ** 2)
 
 			self.characteristic = upy.characteristic.Characteristic(
 					shape = self.value.shape)
@@ -246,20 +246,20 @@ class undarray:
 	# Methods to obtain net quantities ...
 	#
 
-	def dispersion(self):
-		"""Returns the dispersion array, i.e., sigma ** 2."""
+	def variance(self):
+		"""Returns the variance array, i.e., sigma ** 2."""
 
-		return self.characteristic.get_dispersion()
+		return self.characteristic.get_variance()
 
 	def sigma(self):
 		"""Returns the sigma array, i.e., the variance."""
 
-		return numpy.sqrt(self.dispersion())
+		return numpy.sqrt(self.variance())
 
-	def variance(self):
+	def dispersion(self):
 		"""Returns the variance, i.e., the sigma."""
 
-		return numpy.sqrt(self.dispersion())
+		return numpy.sqrt(self.variance())
 	
 	def stddev(self):
 		"""Returns the standard deviation."""
@@ -278,15 +278,15 @@ class undarray:
 
 	def weight(self):
 		"""Returns an numpy.ndarray suitable for weighting this undarray.
-		The weights are 1.0 / .dispersion().  When a dispersion element is
-		zero, the used dispersion is 1.0."""
+		The weights are 1.0 / .variance().  When a variance element is
+		zero, the used variance is 1.0."""
 		
-		# Calculate the dispersion used.
-		used_dispersion = self.dispersion()
-		used_dispersion += 1.0 * (used_dispersion == 0.0)
+		# Calculate the variance used.
+		used_variance = self.variance()
+		used_variance += 1.0 * (used_variance == 0.0)
 
-		# Calculate the weight from the dispersion.
-		return 1.0 / used_dispersion
+		# Calculate the weight from the variance.
+		return 1.0 / used_variance
 
 	#
 	# Binary arithmetics ...

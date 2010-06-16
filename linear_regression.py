@@ -41,10 +41,10 @@ def linear_regression(x, y, weights = None, dtype = None):
 	converted into an array of type DTYPE.  Y can be either an iterable of 
 	undarrays, or also an iterable of ordinary arrays.  Y will be converted
 	into a sequence of upy.undarrays first.  When WEIGHTS is not given, the 
-	weights will be derived from the dispersion of the Y.  If the dispersion 
+	weights will be derived from the variances of the Y.  If the variance 
 	of an Y element is zero, the weight will be set to unity.  WEIGHTS, if 
-	given, override the weights derived from dispersions.  The weights are 
-	calculated from dispersion by 1.0 / ua.dispersion().  Also, DTYPE can be 
+	given, override the weights derived from variances.  The weights are 
+	calculated from variances by 1.0 / ua.variance().  Also, DTYPE can be 
 	given, specifying the dtype of X and Y after conversion."""
 	
 	# Convert x's elements to a single numpy.ndarrays, if necessary ...

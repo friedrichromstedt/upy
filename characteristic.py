@@ -66,15 +66,15 @@ class Characteristic:
 			dependency.clear(key)
 		
 	#
-	# Obtaining the dispersion ...
+	# Obtaining the variance ...
 	#
 	
-	def get_dispersion(self):
-		"""Return the dispersion induced by all the dependencies stored in
+	def get_variance(self):
+		"""Return the variance induced by all the dependencies stored in
 		the Characteristic."""
 
 		if len(self.dependencies) > 0:
-			return numpy.asarray([dependency.get_dispersion() for \
+			return numpy.asarray([dependency.get_variance() for \
 					dependency in self.dependencies]).sum(axis = 0)
 		else:
 			return numpy.zeros(self.shape)
@@ -175,7 +175,7 @@ class Characteristic:
 
 		# Determine the shape of the resulting Characteristic instance 
 		# and broadcast() self if necessary.  If other.ndim > self.ndim,
-		# then broadcasting of self is necessary to get the .dispersion 
+		# then broadcasting of self is necessary to get the .variance 
 		# attributes of the Dependencies set to the correct shape (the
 		# .derivative attributes would be broadcast by numpy in 
 		# multiplication also).

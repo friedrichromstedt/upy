@@ -40,7 +40,7 @@ numbers of numpy.ndarrays are given, they will result in precise undarrays.
 The default weight for precise undarrays in the SEQUENCE is 1.0.  Note that 
 this may result in unexpected behaviour if your SEQUENCE contains both 
 uncertain and exact undarrays.  The default weight for uncertain undarrays in 
-the SEQUENCE is 1.0 / ua.dispersion().
+the SEQUENCE is 1.0 / ua.variance().
 """
 
 # Reference:

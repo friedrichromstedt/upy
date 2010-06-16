@@ -25,14 +25,14 @@ import numpy
 
 __all__ = ['Dependency']
 
-"""Implements the abstract dependency of "something" on an error dispersion
+"""Implements the abstract dependency of "something" on an error variance
 with a derivative, identified by an error source name."""
 
 
 class Dependency:
 	"""A Dependency represents the dependence of something on error sources
 	identified by an integer.  It also stores the accompanying derivatives
-	and dispersions.  
+	and variances.  
 	
 	A Derivative can be added with another Derivative, 
 	by using .add().  This is with the spirit of the += operator, but 
@@ -42,17 +42,17 @@ class Dependency:
 	Also, Derivatives can be multiplied with ndarrays, in this case the
 	derivatives andarray will be multiplied with the operand.
 	
-	To find out what actual dispersion is induced by the Dependency, call
-	.get_dispersion().  It calculates derivtive ** 2 * dispersion."""
+	To find out what actual variance is induced by the Dependency, call
+	.get_variance().  It calculates derivative ** 2 * variance."""
 
 	#
 	# Initialisation methods ...
 	#
 
-	def __init__(self, names = None, derivatives = None, dispersions = None,
+	def __init__(self, names = None, derivatives = None, variances = None,
 			shape = None):
-		"""Initialise the dependency on error sources NAMES of dispersions
-		DISPERSIONS with derivatives DERIVATIVES.  All are supposed to be
+		"""Initialise the dependency on error sources NAMES of variances
+		VARIANCES with derivatives DERIVATIVES.  All are supposed to be
 		ndarrays of equal shape.  As an alternative, everything can be left 
 		out when specifying SHAPE.  In this case, an empty Dependency 
 		containing numpy.ndarrays of dtype = None [float] will be created."""
@@ -61,7 +61,7 @@ class Dependency:
 			
 			self.names = names
 			self.derivatives = derivatives
-			self.dispersions = dispersions
+			self.variances = variances
 
 			self.shape = self.names.shape
 			self.ndim = self.names.ndim
@@ -70,7 +70,7 @@ class Dependency:
 
 			self.names = numpy.zeros(shape, dtype = numpy.int)
 			self.derivatives = numpy.zeros(shape)
-			self.dispersions = numpy.zeros(shape)
+			self.variances = numpy.zeros(shape)
 
 			self.shape = shape
 			self.ndim = len(shape)
@@ -81,7 +81,7 @@ class Dependency:
 		return Dependency(
 				names = self.names.copy(),
 				derivatives = self.derivatives,
-				dispersions = self.dispersions)
+				variances = self.variances)
 	
 	def is_empty(self):
 		"""Return True if this Dependency can be discarded."""
@@ -94,13 +94,13 @@ class Dependency:
 		return self.names.any()
 
 	#
-	# Obtaining the dispersion ...
+	# Obtaining the variances ...
 	#
 
-	def get_dispersion(self):
-		"""Get the dispersion induced by this dependency."""
+	def get_variance(self):
+		"""Get the variance induced by this dependency."""
 
-		return (self.names != 0) * self.derivatives ** 2 * self.dispersions
+		return (self.names != 0) * self.derivatives ** 2 * self.variances
 
 	#
 	# Arithmetics:  Binary arithmetics ...
@@ -142,7 +142,7 @@ class Dependency:
 
 		self.names[key] += fillin_mask * copy.names
 		self.derivatives[key] += fillin_mask * copy.derivatives
-		self.dispersions[key] += fillin_mask * copy.dispersions
+		self.variances[key] += fillin_mask * copy.variances
 
 		# Mark the cells as used.
 		copy.names *= (1 - fillin_mask)
@@ -158,7 +158,7 @@ class Dependency:
 		return Dependency(
 				names = self.names,
 				derivatives = self.derivatives * other,
-				dispersions = self.dispersions)
+				variances = self.variances)
 
 	#
 	# Arithmethics:  Reversed arithmetics ...
@@ -171,7 +171,7 @@ class Dependency:
 		return Dependency(
 				names = self.names,
 				derivatives = other * self.derivatives,
-				dispersions = self.dispersions)
+				variances = self.variances)
 	
 	#
 	# Augmented arithmetics will be emulated by using standard
@@ -184,12 +184,12 @@ class Dependency:
 	
 	def __getitem__(self, key):
 		"""Returns the Dependency of the given subset applied to the
-		derivatives and dispersions."""
+		derivatives and variances."""
 		
 		return Dependency(
 				names = self.names[key],
 				derivatives = self.derivatives[key],
-				dispersions = self.dispersions[key])
+				variances = self.variances[key])
 
 	def clear(self, key):
 		"""Clear the portion given by KEY, by setting the values stored to
@@ -197,7 +197,7 @@ class Dependency:
 
 		self.names[key] = 0
 		self.derivatives[key] = 0
-		self.dispersions[key] = 0
+		self.variances[key] = 0
 
 	def __len__(self):
 		return self.shape[0]
@@ -215,7 +215,7 @@ class Dependency:
 					*flatten_args, **flatten_kwargs),
 				derivatives = self.derivatives.flatten(
 					*flatten_args, **flatten_kwargs),
-				dispersions = self.dispersions.flatten(
+				variances = self.variances.flatten(
 					*flatten_args, **flatten_kwargs))
 
 	def repeat(self, *repeat_args, **repeat_kwargs):
@@ -227,7 +227,7 @@ class Dependency:
 					*repeat_args, **repeat_kwargs),
 				derivatives = self.derivatives.repeat(
 					*repeat_args, **repeat_kwargs),
-				dispersions = self.dispersions.repeat(
+				variances = self.variances.repeat(
 					*repeat_args, **repeat_kwargs))
 
 	def reshape(self, *reshape_args):
@@ -238,7 +238,7 @@ class Dependency:
 		return Dependency(
 				names = self.names.reshape(*reshape_args),
 				derivatives = self.derivatives.reshape(*reshape_args),
-				dispersions = self.dispersions.reshape(*reshape_args))
+				variances = self.variances.reshape(*reshape_args))
 
 	def transpose(self, *transpose_args, **transpose_kwargs):
 		"""Returns a copy with transpose()'ed arrays.  The arguments are
@@ -249,7 +249,7 @@ class Dependency:
 					*transpose_args, **transpose_kwargs),
 				derivatives = self.derivatives.transpose(
 					*transpose_args, **transpose_kwargs),
-				dispersions = self.dispersions.transpose(
+				variances = self.variances.transpose(
 					*transpose_args, **transpose_kwargs))
 
 	#
@@ -318,13 +318,13 @@ class Dependency:
 			
 			# Return a scalar representation ...
 
-			return "(names = %d, derivatives = %e, dispersions = %e)" % \
-					(self.names, self.derivatives, self.dispersions)
+			return "(names = %d, derivatives = %e, variances = %e)" % \
+					(self.names, self.derivatives, self.variances)
 		else:
 
 			# Return an array representation ...
 
-			return "(names:\n%s\nderivatives:\n%s,\ndispersions:\n%s\n)" % \
-					(self.names, self.derivatives, self.dispersions)
+			return "(names:\n%s\nderivatives:\n%s,\nvariances:\n%s\n)" % \
+					(self.names, self.derivatives, self.variances)
 
 	# There seems to be no sensible __repr__().
