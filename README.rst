@@ -5,7 +5,7 @@ upy Tutorial
 Webcast
 -------
 
-There is a Webcast on the `sourceforge <http://upy.sourceforge.net/>`_ page,
+There is a webcast on the `sourceforge page <http://upy.sourceforge.net/>`_,
 presenting a talk on ``upy`` by me.  Its auditory should match you, although 
 I'm not sure how well I matched the auditory :-).
 
