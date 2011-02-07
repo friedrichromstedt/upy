@@ -1,9 +1,31 @@
 import distutils.core
 
 long_description = \
-"""upy is a package for calculating `error propagation <http://en.wikipedia.org/wiki/Propagation_of_uncertainty>`_ in the programming language `Python <http://www.python.org>`_.  For the needed derivative information, `automatic differentiation <http://en.wikipedia.org/wiki/Automatic_differentiation>`_ (AD) is used.  (AD is also known under the name *algorithmic differentiation*.)
+r'''`upy <http://friedrichromstedt.github.com/upy/>` is a Python package for 
+handling uncertainties.  It provides a class for storing uncertain arrays or 
+scalars.
 
-upy is based on `numpy <http://numpy.scipy.org>`_, and can be used to store multidimensional arrays with uncertainty."""
+Uncertain arrays can be constructed in three ways:
+
+1)  From nominal value and a specification of the symmetric error.
+2)  By calculating functions of one or more uncertain arrays.
+3)  From a number of other uncertain arrays, in an array_like format.
+
+There is no way to store asymmetric errors.
+
+In case (1), all array elements will be independent variables.  The dependence
+on this independent variables is tracked.  The error propagation is always 
+applied to this independent variables.
+
+The functions in case (2) must be known and well-behaved functions, in that
+sense, that their derivatives with respect to their arguments must be 
+accessible given the arguments' nominal values.  This criterion is fulfulled 
+by many real-world functions, and most common functions are implemented.
+
+Element access, slicing, element assignment is possible.  The uncertain array
+class resemples the interface of numpy ndarrays.
+'''
+
 
 distutils.core.setup(
     name='upy',
@@ -12,7 +34,7 @@ distutils.core.setup(
     long_description=long_description,
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
-    url='http://upy.sourceforge.net/',
+    url='http://friedrichromstedt.github.com/upy/',
     packages=['upy'],
     package_dir={'upy': '.'},
     classifiers=\
