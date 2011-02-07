@@ -26,8 +26,9 @@ import upy
 import upy.dependency
 import upy.characteristic
 import upy.printable
+import warnings
 
-__all__ = ['undarray']
+__all__ = ['undarray', 'uzeros']
 
 """The central module, implementing the uncertain ndarray: undarray."""
 
@@ -73,11 +74,20 @@ def _ravel(object):
 # Some convenience functions ...
 #
 
-def zeros(shape):
-    """Returns a zero-undarray of numpy compliant shape SHAPE.  All SHAPE
-    arguments accepted by numpy.zeros() will be working."""
+def uzeros(shape):
+    """Returns a zero-undarray of shape *shape*.  All *shape* arguments 
+    accepted by ``numpy.zeros()`` will be working."""
 
     return undarray(numpy.zeros(shape))
+
+def zeros(shape):
+    """Equivalent to :func:`uzeros`, but deprecated.  Will emit a 
+    ``DeprecationWarning``."""
+
+    warnings.warn(DeprecationWarning('zeros() is deprecated, use uzeros() '
+        'instead')
+
+    return uzeros(shape)
 
 #
 # The central undarray class ...
@@ -620,29 +630,29 @@ class undarray:
             # Calculate the resulting shape.  Cut out the index at position
             # AXIS from the .shape attribute.
             result_shape = numpy.\
-                    hstack((self.shape[:axis], self.shape[axis + 1:]))
+                    concatenate((self.shape[:axis], self.shape[axis + 1:]))
 
             # Prepare the result undarray.
-            result = zeros(result_shape)
+            result = uzeros(result_shape)
             
             # Perform the cumulative product calculation.
 
             # Calculate the index position prefix:
             index_position_prefix = numpy.zeros(axis)
 
-            cumprod = 1.0  # Placeholder which will immediately replaced
+            cumprod = 1.0  # Placeholder which will be immediately replaced
             for index in xrange(0, self.shape[axis]):
                 # Calculate the index where to take data from and where to
                 # put data:
                 #
                 # This indices are the same.  When AXIS == 0, 
-                # INDEX_POSITION_PREFIX == [].  I.e., put data in the first
+                # *index_position_prefix* == [].  I.e., put data in the first
                 # coordinate, and take data from the first coordinate.  When
-                # AXIS == 1, INDEX_POSITION_PREFIX == [0].  I.e., put data
+                # *axis* == 1, *index_position_prefix* == [0].  I.e., put data
                 # in the second coordinate, and take data from the second
                 # coordinate.
                 index_position = numpy.\
-                        hstack((index_position_prefix, [index]))
+                        concatenate((index_position_prefix, [index]))
 
                 # Retrieve the current element:
                 current_element = self[index_position]
