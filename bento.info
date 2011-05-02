@@ -4,6 +4,9 @@ Summary: Uncertainties for Python
 Author: Friedrich Romstedt
 AuthorEMail: friedrichromstedt@gmail.com
 License: MIT
+Description:
+    upy is based on `numpy <http://numpy.scipy.org>`_, and can be used to 
+    store multidimensional arrays with uncertainty.
 
 Library:
     Packages: upy
