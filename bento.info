@@ -1,0 +1,13 @@
+Name: upy
+Version: 0.4.11b
+Summary: Uncertainties for Python
+Author: Friedrich Romstedt
+AuthorEMail: friedrichromstedt@gmail.com
+License: MIT
+
+Library:
+    Packages: upy
+
+ExtraSourceFiles:
+    README.rst,
+    LICENSE
