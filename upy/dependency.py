@@ -9,47 +9,40 @@ with a derivative, identified by an error source name."""
 
 
 class Dependency:
-    """A Dependency represents the dependence of something on error sources
-    identified by an integer.  It also stores the accompanying derivatives
-    and variances.  
+    """A Dependency represents the dependence of something on normalised error 
+    sources identified by an integer.  It also stores the accompanying 
+    derivatives.  The variances are unity.
     
-    A Derivative can be added with another Derivative, 
-    by using .add().  This is with the spirit of the += operator, but 
-    returns what is left and could not be added because the error source names
-    did not match. 
+    Derivatives can be multiplied with ndarrays, in this case the derivatives 
+    ndarray will be multiplied with the operand.
     
-    Also, Derivatives can be multiplied with ndarrays, in this case the
-    derivatives andarray will be multiplied with the operand.
-    
-    To find out what actual variance is induced by the Dependency, call
-    .get_variance().  It calculates derivative ** 2 * variance."""
+    The variance is (derivative.real ** 2)"""
 
     #
     # Initialisation methods ...
     #
 
-    def __init__(self, names = None, derivatives = None, variances = None,
-            shape = None):
-        """Initialise the dependency on error sources NAMES of variances
-        VARIANCES with derivatives DERIVATIVES.  All are supposed to be
+    def __init__(self, names = None, derivatives = None, shape = None):
+        """Initialise the dependency on error sources *names* of unity 
+        variances with derivatives *derivatives*.  Both are supposed to be
         ndarrays of equal shape.  As an alternative, everything can be left 
-        out when specifying SHAPE.  In this case, an empty Dependency 
-        containing numpy.ndarrays of dtype = None [float] will be created."""
+        out when specifying *shape*.  In this case, an empty Dependency 
+        containing numpy.ndarrays of dtype=None [float] will be created."""
 
         if shape is None:
+
+            assert(names.shape == derivatives.shape)
             
-            self.names = names
-            self.derivatives = derivatives
-            self.variances = variances
+            self._names = names
+            self._derivatives = derivatives
 
             self.shape = self.names.shape
             self.ndim = self.names.ndim
 
         else:
 
-            self.names = numpy.zeros(shape, dtype = numpy.int)
-            self.derivatives = numpy.zeros(shape)
-            self.variances = numpy.zeros(shape)
+            self._names = numpy.zeros(shape, dtype=numpy.int)
+            self._derivatives = numpy.zeros(shape)
 
             self.shape = shape
             self.ndim = len(shape)
@@ -58,28 +51,49 @@ class Dependency:
         """Return a new Dependency with copied .names."""
 
         return Dependency(
-                names = self.names.copy(),
-                derivatives = self.derivatives,
-                variances = self.variances)
+                names = self._names.copy(),
+                derivatives = self._derivatives)
     
     def is_empty(self):
         """Return True if this Dependency can be discarded."""
 
-        return not self.names.any()
+        return not self._names.any()
     
     def is_nonempty(self):
         """Return True if this Dependency cannot be discarded."""
 
-        return self.names.any()
+        return self._names.any()
 
     #
     # Obtaining the variances ...
     #
 
-    def get_variance(self):
+    @property
+    def variance(self):
         """Get the variance induced by this dependency."""
 
-        return (self.names != 0) * self.derivatives ** 2 * self.variances
+        if numpy.iscomplexbj(self._derivatives):
+            raise ValueError("The variance of complex-valued "
+                "Dependencies is ambiguous.")
+        return (self._names != 0) * self._derivatives ** 2
+    
+    @property
+    def real(self):
+        """ Returns the real part of this Dependency. """
+
+        return Dependency(
+            names=self._names,
+            derivatives=self._derivatives.real,
+        )
+
+    @property
+    def imag(self):
+        """ Returns the imaginary part of this Dependency. """
+        
+        return Dependency(
+            names=self._names,
+            derivatives=self._derivatives.imag,
+        )
 
     #
     # Arithmetics:  Binary arithmetics ...
@@ -91,6 +105,22 @@ class Dependency:
         added is returned as new Dependency.  If KEY is given, it specifies
         the portion of self where the OTHER applies.  If KEY is given, it 
         must be a tuple or a scalar."""
+
+        # XXX Procedure XXX
+        # 1. Calculate the replacement value, not using +=.
+        #
+        # When the result's dtype differs from self's dtype:
+        #
+        # 2. Create an empty replacement for self.derivatives using
+        #    the dtype of the result of (1.).
+        # 3. Fill in the original by +=.
+        # 4. Add the additional values by +=.
+        #       - Finished -
+        #
+        # Otherwise:
+        #
+        # 2. Add the additional values directly using +=.
+        #       - Finished -
         
         if key is None:
             # Indice everything.
@@ -121,7 +151,6 @@ class Dependency:
 
         self.names[key] += fillin_mask * copy.names
         self.derivatives[key] += fillin_mask * copy.derivatives
-        self.variances[key] += fillin_mask * copy.variances
 
         # Mark the cells as used.
         copy.names *= (1 - fillin_mask)
@@ -135,9 +164,8 @@ class Dependency:
         derivative."""
 
         return Dependency(
-                names = self.names,
-                derivatives = self.derivatives * other,
-                variances = self.variances)
+                names=self.names,
+                derivatives=(self.derivatives * other))
 
     #
     # Arithmethics:  Reversed arithmetics ...
@@ -148,9 +176,8 @@ class Dependency:
 
     def __rmul__(self, other):
         return Dependency(
-                names = self.names,
-                derivatives = other * self.derivatives,
-                variances = self.variances)
+                names=self.names,
+                derivatives=(other * self.derivatives))
     
     #
     # Augmented arithmetics will be emulated by using standard
@@ -166,9 +193,8 @@ class Dependency:
         derivatives and variances."""
         
         return Dependency(
-                names = self.names[key],
-                derivatives = self.derivatives[key],
-                variances = self.variances[key])
+                names=self.names[key],
+                derivatives=self.derivatives[key])
 
     def clear(self, key):
         """Clear the portion given by KEY, by setting the values stored to
@@ -176,7 +202,6 @@ class Dependency:
 
         self.names[key] = 0
         self.derivatives[key] = 0
-        self.variances[key] = 0
 
     def __len__(self):
         return self.shape[0]
@@ -193,8 +218,6 @@ class Dependency:
                 names=self.names.compress(
                     *compress_args, **compress_kwargs),
                 derivatives=self.derivatives.compress(
-                    *compress_args, **compress_kwargs),
-                variances=self.variances.compress(
                     *compress_args, **compress_kwargs))
 
     def copy(self):
@@ -203,19 +226,16 @@ class Dependency:
 
         return Dependency(
                 names=self.names.copy(),
-                derivatives=self.derivatives.copy(),
-                variances=self.variances.copy())
+                derivatives=self.derivatives.copy())
 
     def flatten(self, *flatten_args, **flatten_kwargs):
         """Returns a copy with the Dependency's arrays flatten()'ed.  The
         arguments are handed over to the arrays' methods."""
 
         return Dependency(
-                names = self.names.flatter(
+                names=self.names.flatten(
                     *flatten_args, **flatten_kwargs),
-                derivatives = self.derivatives.flatten(
-                    *flatten_args, **flatten_kwargs),
-                variances = self.variances.flatten(
+                derivatives=self.derivatives.flatten(
                     *flatten_args, **flatten_kwargs))
 
     def repeat(self, *repeat_args, **repeat_kwargs):
@@ -223,11 +243,9 @@ class Dependency:
         over to the arrays' methods."""
 
         return Dependency(
-                names = self.names.repeat(
+                names=self.names.repeat(
                     *repeat_args, **repeat_kwargs),
-                derivatives = self.derivatives.repeat(
-                    *repeat_args, **repeat_kwargs),
-                variances = self.variances.repeat(
+                derivatives=self.derivatives.repeat(
                     *repeat_args, **repeat_kwargs))
 
     def reshape(self, *reshape_args):
@@ -236,20 +254,17 @@ class Dependency:
         keyword arguments."""
 
         return Dependency(
-                names = self.names.reshape(*reshape_args),
-                derivatives = self.derivatives.reshape(*reshape_args),
-                variances = self.variances.reshape(*reshape_args))
+                names=self.names.reshape(*reshape_args),
+                derivatives=self.derivatives.reshape(*reshape_args))
 
     def transpose(self, *transpose_args, **transpose_kwargs):
         """Returns a copy with transpose()'ed arrays.  The arguments are
         handed over to the arrays' methods."""
 
         return Dependency(
-                names = self.names.transpose(
+                names=self.names.transpose(
                     *transpose_args, **transpose_kwargs),
-                derivatives = self.derivatives.transpose(
-                    *transpose_args, **transpose_kwargs),
-                variances = self.variances.transpose(
+                derivatives=self.derivatives.transpose(
                     *transpose_args, **transpose_kwargs))
 
     #
@@ -279,12 +294,14 @@ class Dependency:
         # Check conditions ...
 
         if len(shape) < self.ndim:
-            raise ValueError('Dependency with shape %s cannot be broadcast to shape %s.' % (self.shape, shape))
+            raise ValueError('Dependency with shape %s cannot be broadcast '    
+                'to shape %s.' % (self.shape, shape))
 
         if self.ndim != 0:
             # If the object is scalar, the expression wouldn't work.
             if shape[-self.ndim:] != self.shape:
-                raise ValueError('Dependency with shape %s cannot be broadcast to shape %s.' % (self.shape, shape))
+                raise ValueError('Dependency with shape %s cannot be '
+                    'broadcast to shape %s.' % (self.shape, shape))
         # else: Scalar object can be broadcast to any shape.
 
         # Prepare intermediate shape ...
@@ -300,8 +317,7 @@ class Dependency:
         for dim in xrange(0, len(shape) - self.ndim):
 
             # Repeat in SHAPE's dimension dim.
-            result = result.repeat(
-                    shape[dim], axis = dim)
+            result = result.repeat(shape[dim], axis=dim)
         
         # result became final object ...
 
@@ -315,16 +331,12 @@ class Dependency:
         """Short representation."""
 
         if self.ndim == 0:
-            
             # Return a scalar representation ...
-
-            return "(names = %d, derivatives = %e, variances = %e)" % \
-                    (self.names, self.derivatives, self.variances)
+            return "(names = %d, derivatives = %e)" % \
+                    (self.names, self.derivatives)
         else:
-
             # Return an array representation ...
-
-            return "(names:\n%s\nderivatives:\n%s,\nvariances:\n%s\n)" % \
-                    (self.names, self.derivatives, self.variances)
+            return "(names:\n%s\nderivatives:\n%s\n)" % \
+                    (self.names, self.derivatives)
 
     # There seems to be no sensible __repr__().

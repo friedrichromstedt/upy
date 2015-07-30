@@ -29,14 +29,13 @@ class resemples the interface of numpy ndarrays.
 
 distutils.core.setup(
     name='upy',
-    version='0.4.11b',
+    version='0.4.11b-git',
     description='Python Uncertainties',
     long_description=long_description,
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
     url='http://friedrichromstedt.github.com/upy/',
     packages=['upy'],
-    package_dir={'upy': '.'},
     classifiers=\
         ['Development Status :: 4 - Beta',
          'Environment :: Console',

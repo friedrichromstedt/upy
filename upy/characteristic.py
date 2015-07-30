@@ -8,7 +8,7 @@ __all__ = ['Characteristic']
 """Dependence on multiple error sources."""
 
 
-class Characteristic:
+class Characteristic(object):
     """A Characteristic is a dictionary of error source names and 
     dependencies on that sources.  Read-only attributes:
         
@@ -29,32 +29,33 @@ class Characteristic:
         self.ndim = len(self.shape)
 
         # Used for finding out the target space in add().
-        self.key_testing_array = numpy.zeros(shape, dtype = numpy.bool)
+        self._key_testing_array = numpy.zeros(shape, dtype = numpy.bool)
 
-        self.dependencies = []
+        self._dependencies = []
 
     def append(self, dependency):
         """Append just another Dependency without further asking."""
 
-        self.dependencies.append(dependency)
+        self._dependencies.append(dependency)
 
     def clear(self, key):
         """Clear all uncertainty information in key-access key KEY."""
 
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             dependency.clear(key)
         
     #
     # Obtaining the variance ...
     #
     
-    def get_variance(self):
+    @property
+    def variance(self):
         """Return the variance induced by all the dependencies stored in
         the Characteristic."""
 
-        if len(self.dependencies) > 0:
-            return numpy.asarray([dependency.get_variance() for \
-                    dependency in self.dependencies]).sum(axis = 0)
+        if len(self._dependencies) > 0:
+            return numpy.asarray([dependency.variance for \
+                    dependency in self._dependencies]).sum(axis=0)
         else:
             return numpy.zeros(self.shape)
 
@@ -62,7 +63,7 @@ class Characteristic:
     # Binary arithmetic operators ...
     #
 
-    def add(self, other, key = None):
+    def add(self, other, key=None):
         """OTHER must be a Characteristic instance.  Add dependencies on
         the same error source together.  self and the OTHER Characteristic 
         instance will be .broadcast()'ed to the .shape with the largest .ndim 
@@ -88,7 +89,7 @@ class Characteristic:
         # Determine the shape of the resulting Characteristic instance ...
 
         # Determine the portion of self left by KEY.
-        key_testing_array = self.key_testing_array[key]
+        key_testing_array = self._key_testing_array[key]
         self_shape_used = key_testing_array.shape
         self_ndim_used = key_testing_array.ndim
         
@@ -100,7 +101,7 @@ class Characteristic:
             result_shape = self_shape_used
             
             # Broadcast OTHER.  (not in-place)
-            other_broadcasted = other.broadcasted(shape = result_shape)
+            other_broadcasted = other.broadcasted(shape=result_shape)
 
         elif self_ndim_used < other.ndim:
             raise NotImplementedError('This feature should not be needed.')
@@ -117,12 +118,12 @@ class Characteristic:
 
         # Add all source Dependencies to self ...
 
-        for source in other_broadcasted.dependencies:
+        for source in other_broadcasted._dependencies:
 
             # First, everything is left.
             source_remnant = source
 
-            for target in self.dependencies:
+            for target in self._dependencies:
                 # Attempt to add together or to fill empty space.
                 source_remnant = target.add(source_remnant, key)
 
@@ -141,7 +142,6 @@ class Characteristic:
         """See .add()."""
 
         self.add(other)
-
         return self
 
     def __mul__(self, other):
@@ -185,9 +185,9 @@ class Characteristic:
 
             # No object must be broadcast()'ed.
 
-        result = Characteristic(shape = result_shape)
+        result = Characteristic(shape=result_shape)
         
-        for dependency in self_broadcasted.dependencies:
+        for dependency in self_broadcasted._dependencies:
             result.append(dependency * other)
 
         return result
@@ -225,7 +225,7 @@ class Characteristic:
 
         result = Characteristic(shape)
 
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency[key])
 
         return result
@@ -252,7 +252,7 @@ class Characteristic:
         the new shape."""
 
         result = Characteristic(shape=new_shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.compress(
                 *compress_args, **compress_kwargs))
         return result
@@ -261,7 +261,7 @@ class Characteristic:
         """Returns a copy with copy()'ed Dependency instances."""
 
         result = Characteristic(shape=self.shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.copy())
         return result
 
@@ -271,7 +271,7 @@ class Characteristic:
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.flatten(
                 *flatten_args, **flatten_kwargs))
         return result
@@ -282,7 +282,7 @@ class Characteristic:
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.repeat(
                 *repeat_kwargs, **repeat_kwargs))
         return result
@@ -293,7 +293,7 @@ class Characteristic:
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.reshape(
                 *reshape_args, **reshape_kwargs))
         return result
@@ -304,7 +304,7 @@ class Characteristic:
         the new shape."""
 
         result = Characteristic(shape = shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.transose(
                 *transpose_args **transpose_kwargs))
         return result
@@ -321,7 +321,7 @@ class Characteristic:
         This method acts in-place."""
         
         # Emulate the in-place behaviour by replacing the dependencies.
-        dependencies = self.dependencies
+        dependencies = self._dependencies
         self.dependencies = []
 
         for dependency in dependencies:
@@ -335,7 +335,7 @@ class Characteristic:
         This method acts not in-place."""
 
         result = Characteristic(shape = shape)
-        for dependency in self.dependencies:
+        for dependency in self._dependencies:
             result.append(dependency.broadcasted(shape))
 
         return result

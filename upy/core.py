@@ -60,11 +60,12 @@ def uzeros(shape):
     return undarray(numpy.zeros(shape))
 
 def zeros(shape):
-    """Equivalent to :func:`uzeros`, but deprecated.  Will emit a 
-    ``DeprecationWarning``."""
+    """Equivalent to :func:`uzeros`.
+    
+    This method will be deprecated in v0.5.  Use :func:`uzeros` instead."""
 
-    warnings.warn(DeprecationWarning('zeros() is deprecated, use uzeros() '
-        'instead')
+    warnings.warn(DeprecationWarning('zeros() will be deprecated in v0.5, '
+        'use uzeros() instead')
 
     return uzeros(shape)
 
@@ -72,7 +73,7 @@ def zeros(shape):
 # The central undarray class ...
 #
 
-class undarray:
+class undarray(object):
     """Implements uncertain ndarrays.  The name is derived from
     numpy.ndarray.  Read-ony attributes:
         
@@ -80,12 +81,11 @@ class undarray:
 
     def __init__(self,
             object = None,
-            uncertainty = None,
+            stddev = None,
             derivatives = None,
             characteristic = None,
             dtype = None,
-            shape = None,
-            sigmas = None):
+            shape = None):
         """If OBJECT is an undarray, its content will not be copied.  (This 
         initialisation scheme is intendend to make shure that some object is 
         an undarray.)
@@ -125,15 +125,12 @@ class undarray:
         
         If none of these branches match, ValueError will be raised."""
         
-        if sigmas is None:
-            sigmas = 2.0
-
         if isinstance(object, undarray):
 
             # Take over attributes from existing undarray ...
         
             self.value = object.value
-            self.characteristic = object.characteristic
+            self._characteristic = object._characteristic
 
         elif derivatives is not None and object is not None:
 
@@ -143,44 +140,45 @@ class undarray:
 
             # Create a new, empty Characteristic where we can fill in
             # the dependencies introduced by the dictionary DERIVATIVES.
-            self.characteristic = upy.characteristic.Characteristic(
-                    shape = self.value.shape)
+            self._characteristic = upy.characteristic.Characteristic(
+                    shape=self.value.shape)
 
             # Fill in the dependencies.
             for (instance, derivative) in derivatives:
-                self.characteristic += \
+                self._characteristic += \
                         instance.characteristic * derivative
 
-        elif uncertainty is not None and object is not None:
+        elif stddev is not None and object is not None:
             
             # Constuct a new undarray ...
 
-            self.value = numpy.asarray(object)
-            
             # Calculate standard deviation.
-            sigma = numpy.asarray(uncertainty) / float(sigmas)
+            stddev = numpy.asarray(stddev)
 
             # Check shape.
-            if self.value.shape != sigma.shape:
-                raise ValueError("Shape mismatch between OBJECT and SIGMA or ERROR.  Shapes are: OBJECT %s, SIGMA/ERROR %s" % (self.value.shape, sigma.shape))
+            if object.shape != stddev.shape:
+                raise ValueError("Shape mismatch between *object* and '
+                    '*stddev*.  Shapes are: *object* - %s, *stddev* - %s" % \
+                    (object.shape, stddev.shape))
 
+            self.value = numpy.asarray(object)
+            
             # Create Dependency instance from scratch.
             dependency = upy.dependency.Dependency(
-                    names = upy.id_generator.get_id(
-                        shape = self.value.shape),
-                    derivatives = numpy.ones(shape = self.value.shape),
-                    variances = sigma ** 2)
+                    names=upy.id_generator.get_id(
+                        shape=self.value.shape),
+                    derivatives=stddev)
 
-            self.characteristic = upy.characteristic.Characteristic(
-                    shape = self.value.shape)
-            self.characteristic.append(dependency)
+            self._characteristic = upy.characteristic.Characteristic(
+                    shape=self.value.shape)
+            self._characteristic.append(dependency)
 
         elif characteristic is not None and object is not None:
             
             # Take over characteristic ...
 
             self.value = numpy.asarray(object)
-            self.characteristic = characteristic
+            self._characteristic = characteristic
 
         elif object is not None:
 
@@ -218,7 +216,7 @@ class undarray:
 
             # Initialise .value and .characteristic:
             self.value = numpy.zeros(shape, dtype = dtype)
-            self.characteristic = upy.characteristic.Characteristic(
+            self._characteristic = upy.characteristic.Characteristic(
                     shape = tuple(shape))
 
             # Provide .shape and .ndim, because __setitem__() need it.
@@ -237,9 +235,9 @@ class undarray:
             if not isinstance(shape, tuple):
                 raise ValueError("SHAPE must be tuple.")
 
-            self.value = numpy.zeros(shape, dtype = dtype)
-            self.characteristic = upy.characteristic.Characteristic(
-                    shape = tuple(shape))
+            self.value = numpy.zeros(shape, dtype=dtype)
+            self._characteristic = upy.characteristic.Characteristic(
+                    shape=tuple(shape))
 
         else:
             
@@ -252,40 +250,72 @@ class undarray:
     # Methods to obtain net quantities ...
     #
 
+    @property
     def variance(self):
         """Returns the variance array, i.e., sigma ** 2."""
 
-        return self.characteristic.get_variance()
+        warnings.warn(DeprecationWarning('undarray.variance is a property '
+            'since >v0.4.11b, if you call it your program will fail')
+        return self._characteristic.variance
 
     def sigma(self):
-        """Returns the sigma array, i.e., the square root of the variance."""
+        """Returns the sigma array, i.e., the square root of the variance.
+        
+        This method will be deprecated in v0.5, use :meth:`~undarray.stddev` 
+        instead."""
 
-        return numpy.sqrt(self.variance())
+        warnings.warn(DeprecationWarning('undarray.sigma() will be deprecated '
+            'in v0.5, use undarray.stddev instead')
+        return numpy.sqrt(self.variance)
 
     def dispersion(self):
-        """Returns the dispersion, i.e., the sigma."""
+        """Returns the dispersion, i.e., the sigma.
+        
+        This method will be deprecated in v0.5, use :meth:`~undarray.stddev`
+        instead."""
 
-        return numpy.sqrt(self.variance())
+        warnings.warn(DeprecationWarning('undarray.dispersion() will be '
+            'deprecated in v0.5, use undarray.stddev instead')
+        return numpy.sqrt(self.variance)
     
+    @property
     def stddev(self):
         """Returns the standard deviation."""
-
-        return self.sigma()
+        
+        return numpy.sqrt(self.variance)
 
     def error(self):
-        """Returns the error, i.e., 2 * sigma."""
+        """Returns the error, i.e., 2 * sigma.
+        
+        This method will be deprecated in v0.5, use ``2 * ua.stddev`` 
+        instead."""
 
-        return 2 * self.sigma()
+        warnings.warn(DeprecationWarning('undarray.error() will be '
+            'deprecated in v0.5, use 2 * undarray.stddev instead')
+
+        return 2 * self.stddev
     
     def uncertainty(self, sigmas):
-        """Returns SIGMAS * (standard deviation)."""
+        """Returns ``sigmas * self.stddev``.
+        
+        This method will be deprecated by v0.5, please use explicit
+        multiplication instead."""
 
-        return sigmas * self.sigma()
+        warnings.warn(DeprecationWarning('undarray.uncertainty() will be '
+            'deprecated by v0.5, please use explicit multiplication instead')
+
+        return sigmas * self.stddev
 
     def weight(self):
         """Returns a numpy.ndarray suitable for weighting this undarray.
         The weights are 1.0 / .variance().  When a variance element is
-        zero, the used variance is 1.0."""
+        zero, the used variance is 1.0.
+        
+        This method will be deprecated in v0.5, use ``1 / ua.variance()``
+        directly."""
+        
+        warnings.warn(DeprecationWarning('undarray.weight() will be '
+            'deprecated in v0.5, use 1 / ua.variance() instead')
         
         # Calculate the variance used.
         used_variance = self.variance()
@@ -472,7 +502,7 @@ class undarray:
         object = self.value[key]
         return undarray(
                 object = object,
-                characteristic = self.characteristic[object.shape, key])
+                characteristic = self._characteristic[object.shape, key])
 
     def __setitem__(self, key, value):
         """Updates the given subset of the undarray array, by replacing the
@@ -491,7 +521,7 @@ class undarray:
             # Update the respective subsets ...
 
             self.value[key] = value.value
-            self.characteristic[key] = value.characteristic
+            self._characteristic[key] = value._characteristic
         
         # Update in mixed-mode ...
 
@@ -504,7 +534,7 @@ class undarray:
                 # VALUE is definitely not an undarray.
 
                 self.value[key] = value
-                self.characteristic.clear(key)
+                self._characteristic.clear(key)
 
             else:
                     
@@ -566,7 +596,7 @@ class undarray:
         copy.value = clipped_value
 
         # Clear the error for all masked elemeents.
-        copy.characteristic.clear(changed_mask)
+        copy._characteristic.clear(changed_mask)
 
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
@@ -575,7 +605,7 @@ class undarray:
                 *comress_args, **compress_kwargs)
         return undarray(
                 object=object,
-                characteristic=self.characteristic.compress(
+                characteristic=self._characteristic.compress(
                     new_shape=object.shape,
                     *compress_args, **compress_kwargs))
 
@@ -593,7 +623,7 @@ class undarray:
 
         return undarray(
                 object=self.value.copy(),
-                characteristic=self.characteristic.copy())
+                characteristic=self._characteristic.copy())
 
     def cumprod(self, axis=None):
         """Calculate the cumulative product along axis AXIS.  If AXIS is not
@@ -652,7 +682,7 @@ class undarray:
                 *flatten_args, **flatten_kwargs)
         return undarray(
                 object = object,
-                characteristic = self.characteristic.flatten(
+                characteristic = self._characteristic.flatten(
                     new_shape = object.shape,
                     *flatten_args, **flatten_kwargs))
 
@@ -663,7 +693,7 @@ class undarray:
                 *repeat_args, **repeat_kwargs)
         return undarray(
                 object = object,
-                characteristic = self.characteristic.repeat(
+                characteristic = self._characteristic.repeat(
                     new_shape = object.shape,
                     *repeat_args, **repeat_kwargs))
 
@@ -674,7 +704,7 @@ class undarray:
                 *reshape_args, **reshape_kwargs)
         return undarray(
                 object = object,
-                characteristic = self.characteristic.reshape(
+                characteristic = self._characteristic.reshape(
                     new_shape = object.shape,
                     *reshape_args, **reshape_kwargs))
 
@@ -685,7 +715,7 @@ class undarray:
                 *transpose_args, **transpose_kwargs)
         return undarray(
                 object = object,
-                characteristic = self.characteristic.transpose(
+                characteristic = self._characteristic.transpose(
                     new_shape = object.shape,
                     *transpose_args, **transpose_kwargs))
 
