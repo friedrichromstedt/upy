@@ -350,7 +350,7 @@ class Dependency:
 
         if self.ndim == 0:
             # Return a scalar representation ...
-            return "(names = %d, derivatives = %e)" % \
+            return "(names = %d, derivatives = %s)" % \
                     (self.names, self.derivatives)
         else:
             # Return an array representation ...
