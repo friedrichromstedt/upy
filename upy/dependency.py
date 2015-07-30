@@ -16,7 +16,8 @@ class Dependency:
     Derivatives can be multiplied with ndarrays, in this case the derivatives 
     ndarray will be multiplied with the operand.
     
-    The variance is (derivative.real ** 2)"""
+    The variance is ``derivative ** 2`` if ``derivative`` is not
+    complex; otherwise the variance is undefined."""
 
     #
     # Initialisation methods ...
@@ -47,12 +48,12 @@ class Dependency:
             self.shape = shape
             self.ndim = len(shape)
 
-    def copy_names(self):
-        """Return a new Dependency with copied .names."""
-
-        return Dependency(
-                names = self._names.copy(),
-                derivatives = self._derivatives)
+#X    def copy_names(self):
+#X        """Return a new Dependency with copied .names."""
+#X
+#X        return Dependency(
+#X                names = self._names.copy(),
+#X                derivatives = self._derivatives)
     
     def is_empty(self):
         """Return True if this Dependency can be discarded."""
@@ -76,6 +77,10 @@ class Dependency:
             raise ValueError("The variance of complex-valued "
                 "Dependencies is ambiguous.")
         return (self._names != 0) * self._derivatives ** 2
+
+    #
+    # Selecting real or imaginary part ...
+    #
     
     @property
     def real(self):
