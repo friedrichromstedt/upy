@@ -104,41 +104,43 @@ class Dependency:
         OTHER to self as far as possible, what is left and could not be 
         added is returned as new Dependency.  If KEY is given, it specifies
         the portion of self where the OTHER applies.  If KEY is given, it 
-        must be a tuple or a scalar."""
-
-        # XXX Procedure XXX
-        # 1. Calculate the replacement value, not using +=.
-        #
-        # When the result's dtype differs from self's dtype:
-        #
-        # 2. Create an empty replacement for self.derivatives using
-        #    the dtype of the result of (1.).
-        # 3. Fill in the original by +=.
-        # 4. Add the additional values by +=.
-        #       - Finished -
-        #
-        # Otherwise:
-        #
-        # 2. Add the additional values directly using +=.
-        #       - Finished -
+        must be a tuple or a scalar.
         
+        ``self.derivatives`` might be replaced by a version with
+        another dtype if the dtypes of the derivatives of *self* and
+        *other* differ."""
+
         if key is None:
-            # Indice everything.
+            # Index everything.
             key = ()
 
-        # Zero, create a copy of the other ...
+        # Make sure the dtype of ``self.derivatives`` can
+        # hold the dtype of the sum with copy's derivatives.
+        #
+        # In fact, strictly speaking this is only a problem when the
+        # dtype of ``copy.derivatives`` is "larger" than the dtype of
+        # ``self.derivatives``.  However, we always replace the dtype
+        # of ``self.derivatives`` as soon as the two dtypes differ.
 
-        copy = other.copy_names()
-        # Now, we can play with copy.names.
+        if self.derivatives.dtype != other.derivatives.dtype:
+            # Possibly "upgrade" ``self.derivatives``.
+            self.derivatives = self.derivatives + numpy.zeros([],
+                dtype=other.derivatives.dtype)
+                # numpy.zeros([]) returns a scalar zero.  Adding this
+                # is a no-op on any numeric array except for dtype.
+        #
+        # From now on, we can use ``+=`` on ``self.derivatives`` with
+        # (parts of) ``copy.derivatives`` without danger of dtype
+        # downgrading.
 
         # First, add on same name ...
 
         matching_mask = (self.names[key] == copy.names)
 
-        self.derivatives[key] += matching_mask * copy.derivatives
+        self.derivatives[key] += matching_mask * other.derivatives
 
         # Mark the cells as used.
-        copy.names *= (1 - matching_mask)
+        other &= (1 - matching_mask)
         
         # Second, try to fill empty space ...
         #
@@ -146,18 +148,34 @@ class Dependency:
 
         empty_mask = (self.names[key] == 0)
 
-        other_filled_mask = (copy.names != 0)
+        other_filled_mask = (other.names != 0)
         fillin_mask = empty_mask * other_filled_mask
 
-        self.names[key] += fillin_mask * copy.names
-        self.derivatives[key] += fillin_mask * copy.derivatives
+        self.names[key] += fillin_mask * other.names
+        self.derivatives[key] += fillin_mask * other.derivatives
 
         # Mark the cells as used.
-        copy.names *= (1 - fillin_mask)
+        other &= (1 - fillin_mask)
 
         # Ok, we're done so far ...
 
-        return copy
+        return other
+
+    #
+    # Arithmetics
+    #
+
+    def __and__(self, mask):
+        """ Returns a copy of *self* where names are masked by *mask*.
+        Parts of self's names where *mask* is zero are returned zero.
+        The derivatives are shared between the returned Dependency and
+        *self*.
+        """
+
+        return Dependency(
+            names=(self._names * mask),
+            derivatives=self._derivatives,
+        )
     
     def __mul__(self, other):
         """Multiply the dependency by some ndarray factor, i.e., scale the 
@@ -168,7 +186,7 @@ class Dependency:
                 derivatives=(self.derivatives * other))
 
     #
-    # Arithmethics:  Reversed arithmetics ...
+    # Reflected arithmetics
     #
 
     # __radd__() and __rsub__() are not needed, because always both operands
