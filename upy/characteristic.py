@@ -31,17 +31,17 @@ class Characteristic(object):
         # Used for finding out the target space in add().
         self._key_testing_array = numpy.zeros(shape, dtype = numpy.bool)
 
-        self._dependencies = []
+        self.dependencies = []
 
     def append(self, dependency):
         """Append just another Dependency without further asking."""
 
-        self._dependencies.append(dependency)
+        self.dependencies.append(dependency)
 
     def clear(self, key):
         """Clear all uncertainty information in key-access key KEY."""
 
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             dependency.clear(key)
         
     #
@@ -53,9 +53,9 @@ class Characteristic(object):
         """Return the variance induced by all the dependencies stored in
         the Characteristic."""
 
-        if len(self._dependencies) > 0:
+        if len(self.dependencies) > 0:
             return numpy.asarray([dependency.variance for \
-                    dependency in self._dependencies]).sum(axis=0)
+                    dependency in self.dependencies]).sum(axis=0)
         else:
             return numpy.zeros(self.shape)
 
@@ -118,12 +118,12 @@ class Characteristic(object):
 
         # Add all source Dependencies to self ...
 
-        for source in other_broadcasted._dependencies:
+        for source in other_broadcasted.dependencies:
 
             # First, everything is left.
             source_remnant = source
 
-            for target in self._dependencies:
+            for target in self.dependencies:
                 # Attempt to add together or to fill empty space.
                 source_remnant = target.add(source_remnant, key)
 
@@ -187,7 +187,7 @@ class Characteristic(object):
 
         result = Characteristic(shape=result_shape)
         
-        for dependency in self_broadcasted._dependencies:
+        for dependency in self_broadcasted.dependencies:
             result.append(dependency * other)
 
         return result
@@ -225,7 +225,7 @@ class Characteristic(object):
 
         result = Characteristic(shape)
 
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency[key])
 
         return result
@@ -252,7 +252,7 @@ class Characteristic(object):
         the new shape."""
 
         result = Characteristic(shape=new_shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.compress(
                 *compress_args, **compress_kwargs))
         return result
@@ -261,7 +261,7 @@ class Characteristic(object):
         """Returns a copy with copy()'ed Dependency instances."""
 
         result = Characteristic(shape=self.shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.copy())
         return result
 
@@ -271,7 +271,7 @@ class Characteristic(object):
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.flatten(
                 *flatten_args, **flatten_kwargs))
         return result
@@ -282,7 +282,7 @@ class Characteristic(object):
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.repeat(
                 *repeat_kwargs, **repeat_kwargs))
         return result
@@ -293,7 +293,7 @@ class Characteristic(object):
         the new shape."""
 
         result = Characteristic(shape = new_shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.reshape(
                 *reshape_args, **reshape_kwargs))
         return result
@@ -304,7 +304,7 @@ class Characteristic(object):
         the new shape."""
 
         result = Characteristic(shape = shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.transose(
                 *transpose_args **transpose_kwargs))
         return result
@@ -321,7 +321,7 @@ class Characteristic(object):
         This method acts in-place."""
         
         # Emulate the in-place behaviour by replacing the dependencies.
-        dependencies = self._dependencies
+        dependencies = self.dependencies
         self.dependencies = []
 
         for dependency in dependencies:
@@ -335,7 +335,7 @@ class Characteristic(object):
         This method acts not in-place."""
 
         result = Characteristic(shape = shape)
-        for dependency in self._dependencies:
+        for dependency in self.dependencies:
             result.append(dependency.broadcasted(shape))
 
         return result
