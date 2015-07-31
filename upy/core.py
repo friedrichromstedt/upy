@@ -73,7 +73,7 @@ def zeros(shape):
 # The central undarray class ...
 #
 
-class undarray(object):
+class undarray:
     """Implements uncertain ndarrays.  The name is derived from
     numpy.ndarray.  Read-ony attributes:
         

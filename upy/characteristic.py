@@ -8,7 +8,7 @@ __all__ = ['Characteristic']
 """Dependence on multiple error sources."""
 
 
-class Characteristic(object):
+class Characteristic:
     """A Characteristic is a dictionary of error source names and 
     dependencies on that sources.  Read-only attributes:
         
