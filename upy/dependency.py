@@ -34,16 +34,16 @@ class Dependency:
 
             assert(names.shape == derivatives.shape)
             
-            self._names = names
-            self._derivatives = derivatives
+            self.names = names
+            self.derivatives = derivatives
 
             self.shape = self.names.shape
             self.ndim = self.names.ndim
 
         else:
 
-            self._names = numpy.zeros(shape, dtype=numpy.int)
-            self._derivatives = numpy.zeros(shape)
+            self.names = numpy.zeros(shape, dtype=numpy.int)
+            self.derivatives = numpy.zeros(shape)
 
             self.shape = shape
             self.ndim = len(shape)
@@ -52,18 +52,18 @@ class Dependency:
 #X        """Return a new Dependency with copied .names."""
 #X
 #X        return Dependency(
-#X                names = self._names.copy(),
-#X                derivatives = self._derivatives)
+#X                names = self.names.copy(),
+#X                derivatives = self.derivatives)
     
     def is_empty(self):
         """Return True if this Dependency can be discarded."""
 
-        return not self._names.any()
+        return not self.names.any()
     
     def is_nonempty(self):
         """Return True if this Dependency cannot be discarded."""
 
-        return self._names.any()
+        return self.names.any()
 
     #
     # Obtaining the variances ...
@@ -73,10 +73,10 @@ class Dependency:
     def variance(self):
         """Get the variance induced by this dependency."""
 
-        if numpy.iscomplexbj(self._derivatives):
+        if numpy.iscomplexbj(self.derivatives):
             raise ValueError("The variance of complex-valued "
                 "Dependencies is ambiguous.")
-        return (self._names != 0) * self._derivatives ** 2
+        return (self.names != 0) * self.derivatives ** 2
 
     #
     # Selecting real or imaginary part ...
@@ -87,8 +87,8 @@ class Dependency:
         """ Returns the real part of this Dependency. """
 
         return Dependency(
-            names=self._names,
-            derivatives=self._derivatives.real,
+            names=self.names,
+            derivatives=self.derivatives.real,
         )
 
     @property
@@ -96,8 +96,8 @@ class Dependency:
         """ Returns the imaginary part of this Dependency. """
         
         return Dependency(
-            names=self._names,
-            derivatives=self._derivatives.imag,
+            names=self.names,
+            derivatives=self.derivatives.imag,
         )
 
     #
@@ -119,6 +119,16 @@ class Dependency:
             # Index everything.
             key = ()
 
+        # Check if the part of *self* indexed by *key* has the same
+        # shape as *other* does:
+        indexed_shape = self.derivatives[key].shape
+        if indexed_shape != other.shape:
+            raise ValueError('In Dependency.add:  '
+                'Attempted to add other.shape=%s to indexed shape=%s '
+                'with key=%s (self.shape=%s).'
+                % (other.shape, indexed_shape, key, self.shape)
+            )
+
         # Make sure the dtype of ``self.derivatives`` can
         # hold the dtype of the sum with copy's derivatives.
         #
@@ -135,12 +145,12 @@ class Dependency:
                 # is a no-op on any numeric array except for dtype.
         #
         # From now on, we can use ``+=`` on ``self.derivatives`` with
-        # (parts of) ``copy.derivatives`` without danger of dtype
+        # (parts of) ``other.derivatives`` without danger of dtype
         # downgrading.
 
         # First, add on same name ...
 
-        matching_mask = (self.names[key] == copy.names)
+        matching_mask = (self.names[key] == other.names)
 
         self.derivatives[key] += matching_mask * other.derivatives
 
@@ -173,18 +183,17 @@ class Dependency:
     def __and__(self, mask):
         """ Returns a copy of *self* where names are masked by *mask*.
         Parts of self's names where *mask* is zero are returned zero.
-        The derivatives are shared between the returned Dependency and
-        *self*.
-        """
+        Same applies to the *derivatives* attribute of the returned
+        Dependency.  """
 
         return Dependency(
-            names=(self._names * mask),
-            derivatives=self._derivatives,
+            names=(self.names * mask),
+            derivatives=(self.derivatives * mask),
         )
     
     def __mul__(self, other):
         """Multiply the dependency by some ndarray factor, i.e., scale the 
-        derivative."""
+        derivatives."""
 
         return Dependency(
                 names=self.names,
