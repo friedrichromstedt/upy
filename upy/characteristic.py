@@ -29,7 +29,7 @@ class Characteristic:
         self.ndim = len(self.shape)
 
         # Used for finding out the target space in add().
-        self._key_testing_array = numpy.lib.stride_tricks.as_strided(
+        self._shape_effect_array = numpy.lib.stride_tricks.as_strided(
             numpy.zeros([], dtype=numpy.bool),
             shape=self.shape,
             strides=([0] * self.ndim),
@@ -39,8 +39,9 @@ class Characteristic:
         self.dependencies = []
 
     def append(self, dependency):
-        """Append just another Dependency without further asking."""
+        """Append another Dependency."""
 
+        assert(self.shape == dependency.shape)
         self.dependencies.append(dependency)
 
     def clear(self, key):
@@ -108,19 +109,19 @@ class Characteristic:
         
         This method acts in-place."""
         
-        if key is None:
-            # Indice everything.
-            key = ()
-        elif not isinstance(key, tuple):
-            # Make shure also scalar indices are interpreted as tupels (idx,).
-            key = (key,)
+#X        if key is None:
+#X            # Indice everything.
+#X            key = ()
+#X        elif not isinstance(key, tuple):
+#X            # Make shure also scalar indices are interpreted as tupels (idx,).
+#X            key = (key,)
 
         # Determine the shape of the resulting Characteristic instance ...
 
         # Determine the portion of self left by KEY.
-        key_testing_array = self._key_testing_array[key]
-        self_shape_used = key_testing_array.shape
-        self_ndim_used = key_testing_array.ndim
+        shape_effect_array = self._shape_effect_array[key]
+        self_shape_used = shape_effect_array.shape
+        self_ndim_used = shape_effect_array.ndim
         
         # Set default values.
         other_broadcasted = other
@@ -131,6 +132,7 @@ class Characteristic:
             
             # Broadcast OTHER.  (not in-place)
             other_broadcasted = other.broadcasted(shape=result_shape)
+                # Checks on broadcastability are performed there.
 
         elif self_ndim_used < other.ndim:
             raise NotImplementedError('This feature should not be needed.')
@@ -252,7 +254,7 @@ class Characteristic:
 #X        undarray's .value.  Return the given subset of all Dependencies 
 #X        contained.  Return value will be a Characteristic."""
     def __getitem__(self, key):
-        shape = self._key_testing_array[key].shape
+        shape = self._shape_effect_array[key].shape
 
         result = Characteristic(shape)
 
