@@ -121,13 +121,14 @@ class Dependency:
 
         # Check if the part of *self* indexed by *key* has the same
         # shape as *other* does:
-        indexed_shape = self.derivatives[key].shape
-        if indexed_shape != other.shape:
-            raise ValueError('In Dependency.add:  '
-                'Attempted to add other.shape=%s to indexed shape=%s '
-                'with key=%s (self.shape=%s).'
-                % (other.shape, indexed_shape, key, self.shape)
-            )
+# We leave this alone to allow broadcasting of *other*.
+#X1        indexed_shape = self.derivatives[key].shape
+#X1        if indexed_shape != other.shape:
+#X1            raise ValueError('In Dependency.add:  '
+#X1                'Attempted to add other.shape=%s to indexed shape=%s '
+#X1                'with key=%s (self.shape=%s).'
+#X1                % (other.shape, indexed_shape, key, self.shape)
+#X1            )
 
         # Make sure the dtype of ``self.derivatives`` can
         # hold the dtype of the sum with copy's derivatives.
@@ -151,11 +152,20 @@ class Dependency:
         # First, add on same name ...
 
         matching_mask = (self.names[key] == other.names)
+            # This might involve broadcasting of ``other.names``.
 
         self.derivatives[key] += matching_mask * other.derivatives
+            # If the shape of ``matching_mask * other.derivatives`` is
+            # too large, numpy will complain.  In all other cases, the
+            # result of ``matching_mask * other.derivatives`` will fit
+            # ``self.derivatives[key]``.
 
         # Mark the cells as used.
-        other &= (1 - matching_mask)
+        other = other & (1 - matching_mask)
+            # From now on, *other* has the shape of ``(1 -
+            # matching_mask)``, which is identical to the shape of
+            # ``self[key]``.  The ``&`` operation might involve
+            # broadcasting inside of ``__and__``.
         
         # Second, try to fill empty space ...
         #
@@ -170,7 +180,7 @@ class Dependency:
         self.derivatives[key] += fillin_mask * other.derivatives
 
         # Mark the cells as used.
-        other &= (1 - fillin_mask)
+        other = other & (1 - fillin_mask)
 
         # Ok, we're done so far ...
 
