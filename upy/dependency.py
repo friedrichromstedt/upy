@@ -185,6 +185,8 @@ class Dependency:
         # Ok, we're done so far ...
 
         return other
+            # The *other* is, now, of the same shape as ``self[key]``,
+            # since the ``&`` operations above have been carried out.
 
     #
     # Arithmetics

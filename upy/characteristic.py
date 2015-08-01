@@ -94,62 +94,14 @@ class Characteristic:
     #
 
     def add(self, other, key=None):
-        """OTHER must be a Characteristic instance.  Add dependencies on
-        the same error source together.  self and the OTHER Characteristic 
-        instance will be .broadcast()'ed to the .shape with the largest .ndim 
-        before being added together.  Broadcasting is necessary because not
-        both Characteristics must depend on all Dependencies, thus some 
-        Dependencies would be taken over, leaving their shape unchanged, and
-        thus compromising data integrity, because there will be no numpy
-        broadcasting mechanism bringing the operands to common shape.  KEY is 
-        the portion of self where OTHER applies.  KEY must be either a scalar,
-        or a tuple.
-        
-        For the functionality of .broadcast(), see Dependency.broadcast().
-        
-        This method acts in-place."""
-        
-#X        if key is None:
-#X            # Indice everything.
-#X            key = ()
-#X        elif not isinstance(key, tuple):
-#X            # Make shure also scalar indices are interpreted as tupels (idx,).
-#X            key = (key,)
+        """ *other* is a Characteristic instance.  *key* indexes
+        *self*.  *other* will add to ``self[key]``.
 
-        # Determine the shape of the resulting Characteristic instance ...
-
-        # Determine the portion of self left by KEY.
-        shape_effect_array = self._shape_effect_array[key]
-        self_shape_used = shape_effect_array.shape
-        self_ndim_used = shape_effect_array.ndim
-        
-        # Set default values.
-        other_broadcasted = other
-
-        if self_ndim_used > other.ndim:
-            # Use self's .shape.
-            result_shape = self_shape_used
-            
-            # Broadcast OTHER.  (not in-place)
-            other_broadcasted = other.broadcasted(shape=result_shape)
-                # Checks on broadcastability are performed there.
-
-        elif self_ndim_used < other.ndim:
-            raise NotImplementedError('This feature should not be needed.')
-
-        elif self_ndim_used == other.ndim:
-            # Check the shapes.
-            if tuple(self_shape_used) != tuple(other.shape):
-                raise ValueError('Shape mismatch: Objects cannot be broadcast to a single shape (shapes %s, %s).' % (self_shape_used, other.shape))
-        
-            # If the check doesn't fail, it doesn't matter whose shape to use.
-            result_shape = self_shape_used
-
-            # No object must be broadcast()'ed.
+        The operation is performed in-place. """
 
         # Add all source Dependencies to self ...
 
-        for source in other_broadcasted.dependencies:
+        for source in other.dependencies:
 
             # First, everything is left.
             source_remnant = source
