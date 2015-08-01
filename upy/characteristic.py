@@ -135,45 +135,52 @@ class Characteristic:
 
         other = numpy.asarray(other)
 
-        # Determine the shape of the resulting Characteristic instance 
-        # and broadcast() self if necessary.  If other.ndim > self.ndim,
-        # then broadcasting of self is necessary to get the .variance 
-        # attributes of the Dependencies set to the correct shape (the
-        # .derivative attributes would be broadcast by numpy in 
-        # multiplication also).
-
-        # Set default values.
-        self_broadcasted = self
-        
-        if self.ndim > other.ndim:
-            # Use self's .shape.
-            result_shape = self.shape
-            
-            # OTHER will be broadcast by numpy in multiplication.
-
-        elif self.ndim < other.ndim:
-            # Use other's .shape.
-            result_shape = other.shape
-
-            # Broadcast self.
-            self_broadcasted = self.broadcasted(shape = result_shape)
-
-        elif self.ndim == other.ndim:
-            # Check the shapes.
-            if self.shape != other.shape:
-                raise ValueError('Shape mismatch: Objects cannot be broadcast to a single shape.')
-        
-            # If the check doesn't fail, it doesn't matter whose shape to use.
-            result_shape = self.shape
-
-            # No object must be broadcast()'ed.
+        result_shape = (self._shape_effect_array * other).shape
 
         result = Characteristic(shape=result_shape)
-        
-        for dependency in self_broadcasted.dependencies:
+        for dependency in self.dependencies:
             result.append(dependency * other)
-
         return result
+
+#X1        # Determine the shape of the resulting Characteristic instance 
+#X1        # and broadcast() self if necessary.  If other.ndim > self.ndim,
+#X1        # then broadcasting of self is necessary to get the .variance 
+#X1        # attributes of the Dependencies set to the correct shape (the
+#X1        # .derivative attributes would be broadcast by numpy in 
+#X1        # multiplication also).
+#X1
+#X1        # Set default values.
+#X1        self_broadcasted = self
+#X1        
+#X1        if self.ndim > other.ndim:
+#X1            # Use self's .shape.
+#X1            result_shape = self.shape
+#X1            
+#X1            # OTHER will be broadcast by numpy in multiplication.
+#X1
+#X1        elif self.ndim < other.ndim:
+#X1            # Use other's .shape.
+#X1            result_shape = other.shape
+#X1
+#X1            # Broadcast self.
+#X1            self_broadcasted = self.broadcasted(shape = result_shape)
+#X1
+#X1        elif self.ndim == other.ndim:
+#X1            # Check the shapes.
+#X1            if self.shape != other.shape:
+#X1                raise ValueError('Shape mismatch: Objects cannot be broadcast to a single shape.')
+#X1        
+#X1            # If the check doesn't fail, it doesn't matter whose shape to use.
+#X1            result_shape = self.shape
+#X1
+#X1            # No object must be broadcast()'ed.
+#X1
+#X1        result = Characteristic(shape=result_shape)
+#X1        
+#X1        for dependency in self_broadcasted.dependencies:
+#X1            result.append(dependency * other)
+#X1
+#X1        return result
 
     #
     # Reverse binary operators ...
@@ -182,13 +189,14 @@ class Characteristic:
     # __radd__() and __rsub__() are not needed because only Characteristics 
     # are allowed as operands.
 
-    def __rmul__(self, other):
-        """Multiply all Dependencies contained with a coefficient, in a new
-        Characteristic instance.  .shape is maintained."""
-
-        # Well, use this ...
-
-        return Characteristic.__mul__(self, other)
+#    def __rmul__(self, other):
+#        """Multiply all Dependencies contained with a coefficient, in a new
+#        Characteristic instance.  .shape is maintained."""
+#
+#        # Well, use this ...
+#
+#        return Characteristic.__mul__(self, other)
+    __rmul__ = __mul__      # much quicker and identical to the old code.
 
     #
     # Augmented arithmetics will be emulated by using standard

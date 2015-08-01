@@ -207,8 +207,19 @@ class Dependency:
         """Multiply the dependency by some ndarray factor, i.e., scale the 
         derivatives."""
 
+        other = numpy.asarray(other)
+
+        zeros = numpy.lib.stride_tricks.as_strided(
+            numpy.zeros([], dtype=numpy.bool),
+            shape=other.shape,
+            strides=([0] * other.ndim),
+        )
+            # We're going to add this zero array to ``self.names`` in
+            # order to broadcast ``self.names`` and the shape of
+            # *other*.
+
         return Dependency(
-                names=self.names,
+                names=(self.names + zeros),
                 derivatives=(self.derivatives * other))
 
     #
@@ -218,10 +229,13 @@ class Dependency:
     # __radd__() and __rsub__() are not needed, because always both operands
     # will be Dependency instances.
 
-    def __rmul__(self, other):
-        return Dependency(
-                names=self.names,
-                derivatives=(other * self.derivatives))
+#X    def __rmul__(self, other):
+#X        return Dependency(
+#X                names=self.names,
+#X                derivatives=(other * self.derivatives))
+    __rmul__ = __mul__
+        # I do not expect use cases of Dependency with data arrays
+        # which do not commute on multiplication.
     
     #
     # Augmented arithmetics will be emulated by using standard
