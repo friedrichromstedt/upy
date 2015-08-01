@@ -315,57 +315,57 @@ class Dependency:
     # Special array methods ...
     #
 
-    def broadcasted(self, shape):
-        """Bring the instance in shape SHAPE, by repetition of the object.  No
-        reshape()'ing will be performed.  This function is used when coercing
-        lower-dimensional object with higher-dimensional ones.  It makes shure
-        that both operands can have the same shape before coercion takes 
-        place.  Broadcasting is necessary in the case that an Dependency is
-        taken over from the other operand into the final result, because there
-        is no dependency of both operands on the Dependency.  In this case,
-        no numpy broadcasting would occour, and the data integrity would be
-        compromised.
-
-        The call will fail if len(SHAPE) < .ndim.  Otherwise, the .ndim last
-        items of SHAPE must be equal to .shape.  The object will first be
-        brought to the shape [1, 1, 1, ...] + .shape, such that .ndim 
-        becomes len(SHAPE).  Then, it will be repeated in the added dimensions
-        to meet SHAPE's elements.  The first step is done via .reshape(), and
-        the second via .repeat(count, axis = axis).
-        
-        This method acts on a copy."""
-
-        # Check conditions ...
-
-        if len(shape) < self.ndim:
-            raise ValueError('Dependency with shape %s cannot be broadcast '    
-                'to shape %s.' % (self.shape, shape))
-
-        if self.ndim != 0:
-            # If the object is scalar, the expression wouldn't work.
-            if shape[-self.ndim:] != self.shape:
-                raise ValueError('Dependency with shape %s cannot be '
-                    'broadcast to shape %s.' % (self.shape, shape))
-        # else: Scalar object can be broadcast to any shape.
-
-        # Prepare intermediate shape ...
-
-        shape = list(shape)
-        intermediate_shape = [1] * (len(shape) - self.ndim) + list(self.shape)
-
-        # result will in the end hold the result.
-        result = self.reshape(tuple(intermediate_shape))
-
-        # Repeat self_intermediate to match SHAPE ...
-
-        for dim in xrange(0, len(shape) - self.ndim):
-
-            # Repeat in SHAPE's dimension dim.
-            result = result.repeat(shape[dim], axis=dim)
-        
-        # result became final object ...
-
-        return result
+#X2    def broadcasted(self, shape):
+#X2        """Bring the instance in shape SHAPE, by repetition of the object.  No
+#X2        reshape()'ing will be performed.  This function is used when coercing
+#X2        lower-dimensional object with higher-dimensional ones.  It makes shure
+#X2        that both operands can have the same shape before coercion takes 
+#X2        place.  Broadcasting is necessary in the case that an Dependency is
+#X2        taken over from the other operand into the final result, because there
+#X2        is no dependency of both operands on the Dependency.  In this case,
+#X2        no numpy broadcasting would occour, and the data integrity would be
+#X2        compromised.
+#X2
+#X2        The call will fail if len(SHAPE) < .ndim.  Otherwise, the .ndim last
+#X2        items of SHAPE must be equal to .shape.  The object will first be
+#X2        brought to the shape [1, 1, 1, ...] + .shape, such that .ndim 
+#X2        becomes len(SHAPE).  Then, it will be repeated in the added dimensions
+#X2        to meet SHAPE's elements.  The first step is done via .reshape(), and
+#X2        the second via .repeat(count, axis = axis).
+#X2        
+#X2        This method acts on a copy."""
+#X2
+#X2        # Check conditions ...
+#X2
+#X2        if len(shape) < self.ndim:
+#X2            raise ValueError('Dependency with shape %s cannot be broadcast '    
+#X2                'to shape %s.' % (self.shape, shape))
+#X2
+#X2        if self.ndim != 0:
+#X2            # If the object is scalar, the expression wouldn't work.
+#X2            if shape[-self.ndim:] != self.shape:
+#X2                raise ValueError('Dependency with shape %s cannot be '
+#X2                    'broadcast to shape %s.' % (self.shape, shape))
+#X2        # else: Scalar object can be broadcast to any shape.
+#X2
+#X2        # Prepare intermediate shape ...
+#X2
+#X2        shape = list(shape)
+#X2        intermediate_shape = [1] * (len(shape) - self.ndim) + list(self.shape)
+#X2
+#X2        # result will in the end hold the result.
+#X2        result = self.reshape(tuple(intermediate_shape))
+#X2
+#X2        # Repeat self_intermediate to match SHAPE ...
+#X2
+#X2        for dim in xrange(0, len(shape) - self.ndim):
+#X2
+#X2            # Repeat in SHAPE's dimension dim.
+#X2            result = result.repeat(shape[dim], axis=dim)
+#X2        
+#X2        # result became final object ...
+#X2
+#X2        return result
 
     #
     # String conversion function ...
