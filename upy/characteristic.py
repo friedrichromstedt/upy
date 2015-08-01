@@ -29,7 +29,12 @@ class Characteristic:
         self.ndim = len(self.shape)
 
         # Used for finding out the target space in add().
-        self._key_testing_array = numpy.zeros(shape, dtype = numpy.bool)
+        self._key_testing_array = numpy.lib.stride_tricks.as_strided(
+            numpy.zeros([], dtype=numpy.bool),
+            shape=self.shape,
+            strides=([0] * self.ndim),
+        )
+        #self._key_testing_array = numpy.zeros(shape, dtype = numpy.bool)
 
         self.dependencies = []
 
