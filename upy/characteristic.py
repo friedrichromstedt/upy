@@ -60,6 +60,30 @@ class Characteristic:
             return numpy.zeros(self.shape)
 
     #
+    # Selecting real or imaginary part ...
+    #
+
+    @property
+    def real(self):
+        """ Returns the real part of this Characteristic. """
+
+        result = Characteristic(self.shape)
+        for dependency in self.dependencies:
+            result.append(dependency.real)
+
+        return result
+
+    @property
+    def imag(self):
+        """ Returns the imaginary part of this Characteristic. """
+
+        result = Characteristic(self.shape)
+        for dependency in self.dependencies:
+            result.append(dependency.imag)
+
+        return result
+
+    #
     # Binary arithmetic operators ...
     #
 
@@ -216,12 +240,14 @@ class Characteristic:
     # Keying methods ...
     #
     
-    def __getitem__(self, (shape, key)):
-        """Argument is not directly the key, but the tuple (SHAPE, KEY).
-        I.e., call self[new_shape, key].  This is permissible, because
-        the undarray can determine the shape from the key when applied to the
-        undarray's .value.  Return the given subset of all Dependencies 
-        contained.  Return value will be a Characteristic."""
+#X    def __getitem__(self, (shape, key)):
+#X        """Argument is not directly the key, but the tuple (SHAPE, KEY).
+#X        I.e., call self[new_shape, key].  This is permissible, because
+#X        the undarray can determine the shape from the key when applied to the
+#X        undarray's .value.  Return the given subset of all Dependencies 
+#X        contained.  Return value will be a Characteristic."""
+    def __getitem__(self, key):
+        shape = self._key_testing_array[key].shape
 
         result = Characteristic(shape)
 
@@ -313,19 +339,21 @@ class Characteristic:
     # Special array methods ...
     #
 
-    def broadcast(self, shape):
-        """Broadcasts the Characteristic to shape SHAPE by broadcast()'ing
-        the contained Dependencies.  Thus, for documentation, see
-        Dependency.broadcast().
-        
-        This method acts in-place."""
-        
-        # Emulate the in-place behaviour by replacing the dependencies.
-        dependencies = self.dependencies
-        self.dependencies = []
-
-        for dependency in dependencies:
-            self.append(dependency.broadcasted(shape))
+#XX    def broadcast(self, shape):
+#XX        """Broadcasts the Characteristic to shape SHAPE by broadcast()'ing
+#XX        the contained Dependencies.  Thus, for documentation, see
+#XX        Dependency.broadcast().
+#XX        
+#XX        This method acts in-place."""
+#XX        
+#XX        # Emulate the in-place behaviour by replacing the dependencies.
+#XX        dependencies = self.dependencies
+#XX        self.dependencies = []
+#XX
+#XX        for dependency in dependencies:
+#XX            self.append(dependency.broadcasted(shape))
+# broadcasting in-place is not a good idea since the shape
+# *self.shape* changes as well ...
 
     def broadcasted(self, shape):
         """Broadcasts the Characteristic to shape SHAPE by broadcast()'ing
