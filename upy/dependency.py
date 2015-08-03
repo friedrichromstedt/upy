@@ -87,7 +87,7 @@ class Dependency:
         """ Returns the real part of this Dependency. """
 
         return Dependency(
-            names=self.names,
+            names=self.names.copy(),
             derivatives=self.derivatives.real,
         )
 
@@ -96,7 +96,7 @@ class Dependency:
         """ Returns the imaginary part of this Dependency. """
         
         return Dependency(
-            names=self.names,
+            names=self.names.copy(),
             derivatives=self.derivatives.imag,
         )
 
@@ -105,11 +105,10 @@ class Dependency:
     #
 
     def add(self, other, key = None):
-        """OTHER must be a Dependency instance of same shape.  Adds the 
-        OTHER to self as far as possible, what is left and could not be 
-        added is returned as new Dependency.  If KEY is given, it specifies
-        the portion of self where the OTHER applies.  If KEY is given, it 
-        must be a tuple or a scalar.
+        """ Adds the OTHER to self as far as possible, what is left
+        and could not be added is returned as new Dependency.  If KEY
+        is given, it specifies the portion of self where the OTHER
+        applies.  If KEY is given, it must be a tuple or a scalar.
         
         ``self.derivatives`` might be replaced by a version with
         another dtype if the dtypes of the derivatives of *self* and
