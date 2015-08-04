@@ -9,10 +9,9 @@ __all__ = ['Characteristic']
 
 
 class Characteristic:
-    """A Characteristic is a dictionary of error source names and 
-    dependencies on that sources.  Read-only attributes:
-        
-    .dependencies - {source's name: Dependency instance}"""
+    """ A Characteristic stores several :class:`Dependency` instances.
+    It stores all dependencies which are characteristic for an
+    uncertain value. """
 
     #
     # Initialisation ...
@@ -28,7 +27,9 @@ class Characteristic:
         self.shape = shape
         self.ndim = len(self.shape)
 
-        # Used for finding out the target space in add().
+        # Used to "simulate" several operations on the Characteristic
+        # where the result shape needs to be known prior to operating
+        # on the Characteristic.
         self._shape_effect_array = numpy.lib.stride_tricks.as_strided(
             numpy.zeros([], dtype=numpy.bool),
             shape=self.shape,
@@ -41,7 +42,11 @@ class Characteristic:
     def append(self, dependency):
         """Append another Dependency."""
 
-        assert(self.shape == dependency.shape)
+        if self.shape != dependency.shape:
+            raise ValueError("Shape mismatch in "
+                "Characteristic.append(): self.shape = %s, "
+                "dependency.shape = %s" % (self.shape,
+                    dependency.shape))
         self.dependencies.append(dependency)
 
     def clear(self, key):
@@ -136,7 +141,6 @@ class Characteristic:
         other = numpy.asarray(other)
 
         result_shape = (self._shape_effect_array * other).shape
-
         result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency * other)
@@ -214,13 +218,12 @@ class Characteristic:
 #X        undarray's .value.  Return the given subset of all Dependencies 
 #X        contained.  Return value will be a Characteristic."""
     def __getitem__(self, key):
-        shape = self._shape_effect_array[key].shape
+        """ Returns the portion of *self* indexed by *key*. """
 
-        result = Characteristic(shape)
-
+        result_shape = self._shape_effect_array[key].shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency[key])
-
         return result
 
     def __setitem__(self, key, value):
@@ -239,66 +242,71 @@ class Characteristic:
     # ndarray methods ...
     #
     
-    def compress(self, new_shape, *compress_args, **compress_kwargs):
-        """Returns a copy with compress()'ed Dependency instances.  The
-        arguments are handed over to the Dependencies' methods.  NEW_SHAPE is
-        the new shape."""
+    def compress(self, *compress_args, **compress_kwargs):
+        """ Returns a Characteristic with compress()'ed dependencies.
+        """
 
-        result = Characteristic(shape=new_shape)
+        result_shape = self._shape_effect_array.compress(
+            *compress_args, **compress_kwargs).shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency.compress(
                 *compress_args, **compress_kwargs))
         return result
 
     def copy(self):
-        """Returns a copy with copy()'ed Dependency instances."""
+        """Returns a Characteristic with copy()'ed Dependency instances."""
 
         result = Characteristic(shape=self.shape)
         for dependency in self.dependencies:
             result.append(dependency.copy())
         return result
 
-    def flatten(self, new_shape, *flatten_args, **flatten_kwargs):
+    def flatten(self, *flatten_args, **flatten_kwargs):
         """Returns a copy with flatten()'ed Dependency instances.  The 
-        arguments are handed over to the Dependencies' methods.  NEW_SHAPE is
-        the new shape."""
+        arguments are handed over to the Dependencies' methods. """
 
-        result = Characteristic(shape = new_shape)
+        result_shape = self._shape_effect_array.flatten(
+            *flatten_args, **flatten_kwargs).shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency.flatten(
                 *flatten_args, **flatten_kwargs))
         return result
 
-    def repeat(self, new_shape, *repeat_args, **repeat_kwargs):
+    def repeat(self, *repeat_args, **repeat_kwargs):
         """Returns a copy with repeat()'ed Dependency instances.  The
-        arguments are handed over to the Dependencies' methods.  NEW_SHAPE is
-        the new shape."""
+        arguments are handed over to the Dependencies' methods. """
 
-        result = Characteristic(shape = new_shape)
+        result_shape = self._shape_effect_array.repeat(
+            *repeat_args, **repeat_kwargs).shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency.repeat(
                 *repeat_kwargs, **repeat_kwargs))
         return result
 
-    def reshape(self, new_shape, *reshape_args, **reshape_kwargs):
+    def reshape(self, *reshape_args, **reshape_kwargs):
         """Returns a copy with reshape()'ed Dependency instances.  The
-        arguments are handed over to the Dependencies' methods.  NEW_SHAPE is
-        the new shape."""
+        arguments are handed over to the Dependencies' methods. """
 
-        result = Characteristic(shape = new_shape)
+        result_shape = self._shape_effect_array.reshape(
+            *reshape_args, **reshape_kwargs).shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
             result.append(dependency.reshape(
                 *reshape_args, **reshape_kwargs))
         return result
     
-    def transpose(self, shape, *transpose_args, **transpose_kwargs):
+    def transpose(self, *transpose_args, **transpose_kwargs):
         """Returns a copy with transpose()'ed Dependency instances.  The
-        arguments are handed over to the Dependencies' methods.  SHAPE is
-        the new shape."""
+        arguments are handed over to the Dependencies' methods. """
 
-        result = Characteristic(shape = shape)
+        result_shape = self._shape_effect_array.transpose(
+            *transpose_args, **transpose_kwargs).shape
+        result = Characteristic(shape=result_shape)
         for dependency in self.dependencies:
-            result.append(dependency.transose(
+            result.append(dependency.transpose(
                 *transpose_args **transpose_kwargs))
         return result
 
@@ -322,15 +330,18 @@ class Characteristic:
 # broadcasting in-place is not a good idea since the shape
 # *self.shape* changes as well ...
 
-    def broadcasted(self, shape):
-        """Broadcasts the Characteristic to shape SHAPE by broadcast()'ing
-        the contained Dependencies.  Thus, for documentation, see
-        Dependency.broadcast().
-        
-        This method acts not in-place."""
-
-        result = Characteristic(shape = shape)
-        for dependency in self.dependencies:
-            result.append(dependency.broadcasted(shape))
-
-        return result
+# ``self.broadcasted()`` was used before in ``__mul__()``, but it is
+# no longer in use there.  ``self.broadcasted()`` has been no-where
+# else in use.
+#X    def broadcasted(self, shape):
+#X        """Broadcasts the Characteristic to shape SHAPE by broadcast()'ing
+#X        the contained Dependencies.  Thus, for documentation, see
+#X        Dependency.broadcast().
+#X        
+#X        This method acts not in-place."""
+#X
+#X        result = Characteristic(shape = shape)
+#X        for dependency in self.dependencies:
+#X            result.append(dependency.broadcasted(shape))
+#X
+#X        return result

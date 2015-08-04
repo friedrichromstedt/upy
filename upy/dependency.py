@@ -32,7 +32,10 @@ class Dependency:
 
         if shape is None:
 
-            assert(names.shape == derivatives.shape)
+            if names.shape != derivatives.shape:
+                raise ValueError("Shape mismatch in initialising " "a
+                Dependency: names.shape = %s, derivatives.shape = %s"
+                % (names.shape, derivatives.shape))
             
             self.names = names
             self.derivatives = derivatives
