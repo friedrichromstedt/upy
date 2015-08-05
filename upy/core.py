@@ -48,6 +48,8 @@ def _ravel(object):
 
         return raveled
 
+def find_common_dtype(object):
+    pass
 
 #
 # Some convenience functions ...
@@ -128,6 +130,9 @@ class undarray:
             self.value = object.value
             self._characteristic = object._characteristic
 
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
+
         elif derivatives is not None and object is not None:
 
             # Derive the new undarray from known ones ...
@@ -143,6 +148,9 @@ class undarray:
             for (instance, derivative) in derivatives:
                 self._characteristic += \
                         instance.characteristic * derivative
+
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
 
         elif stddev is not None and object is not None:
             
@@ -170,12 +178,18 @@ class undarray:
                     shape=self.value.shape)
             self._characteristic.append(dependency)
 
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
+
         elif characteristic is not None and object is not None:
             
             # Take over characteristic ...
 
             self.value = numpy.asarray(object)
             self._characteristic = characteristic
+
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
 
         elif object is not None:
 
@@ -237,13 +251,13 @@ class undarray:
             self._characteristic = upy.characteristic.Characteristic(
                     shape=tuple(shape))
 
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
+
         else:
             
             raise ValueError("Don't know how to initialise an undarray from the arguments given.")
         
-        self.shape = self.value.shape
-        self.ndim = self.value.ndim
-
     #
     # Methods to obtain net quantities ...
     #
