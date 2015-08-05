@@ -75,9 +75,7 @@ def zeros(shape):
 
 class undarray:
     """Implements uncertain ndarrays.  The name is derived from
-    numpy.ndarray.  Read-ony attributes:
-        
-    .value - The plain nominal value of the undarray."""
+    numpy.ndarray. """
 
     def __init__(self,
             object = None,
@@ -87,7 +85,7 @@ class undarray:
             dtype = None,
             shape = None):
         """If OBJECT is an undarray, its content will not be copied.  (This 
-        initialisation scheme is intendend to make shure that some object is 
+        initialisation scheme is intendend to make sure that some object is 
         an undarray.)
         
         If DERIVATIVES and OBJECT are not None, DERIVATIVES must be a list 
@@ -95,10 +93,8 @@ class undarray:
         that the new undarray depends on the key undarrays.  OBJECT will be 
         converted to an numpy.ndarray.
 
-        If UNCERTAINTY and OBJECT aren't None, OBJECT and UNCERTAINTY will be 
-        converted to numpy.ndarrays.  SIGMAS tells how many sigmas the 
-        UNCERTAINTY covers.  The default for SIGMAS is 2.0.  SIGMAS will be 
-        converted by float().
+        If *stddev* and OBJECT aren't None, OBJECT and *stddev* will be 
+        converted to numpy.ndarrays.
 
         If CHARACTERISTIC and OBJECT are not None, OBJECT is converted to an 
         numpy.ndarray, and the CHARACTERISTIC is used directly without copying.
@@ -121,7 +117,7 @@ class undarray:
         expensive in memory and time both.
         
         If also OBJECT is None, SHAPE is taken into account, to create a new,
-        zero-valued undarray of dtype DTYPE (None means numyp.float).
+        zero-valued undarray of dtype DTYPE (None means numpy.float).
         
         If none of these branches match, ValueError will be raised."""
         
@@ -152,7 +148,8 @@ class undarray:
             
             # Constuct a new undarray ...
 
-            # Calculate standard deviation.
+            # Convert to ndarrays.
+            object = numpy.asarray(object)
             stddev = numpy.asarray(stddev)
 
             # Check shape.
@@ -161,7 +158,7 @@ class undarray:
                     '*stddev*.  Shapes are: *object* - %s, *stddev* - %s" % \
                     (object.shape, stddev.shape))
 
-            self.value = numpy.asarray(object)
+            self.value = object
             
             # Create Dependency instance from scratch.
             dependency = upy.dependency.Dependency(
@@ -187,7 +184,7 @@ class undarray:
             # Determine the shape.
             shapeobject = object
             shape = []
-            # Indice the shapeobject until a scalar or and undarray is
+            # Index the shapeobject until a scalar or an undarray is
             # reached:
             while True:
                 if isinstance(shapeobject, undarray):
@@ -204,7 +201,8 @@ class undarray:
                         # In fact, it's scalar:
                         break
                     else:
-                        # It's not a scalar array, indicing possible:
+                        # It's not a scalar array, indexing is
+                        # possible:
                         shape.append(len(shapeobject))
                         shapeobject = shapeobject[0]
 
@@ -219,7 +217,7 @@ class undarray:
             self._characteristic = upy.characteristic.Characteristic(
                     shape = tuple(shape))
 
-            # Provide .shape and .ndim, because __setitem__() need it.
+            # Provide .shape and .ndim, because __setitem__() needs it.
             self.shape = shape
             self.ndim = len(shape)
 
