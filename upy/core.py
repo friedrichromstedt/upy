@@ -588,18 +588,19 @@ class undarray:
                 characteristic = self.characteristic[key])
 
     def __setitem__(self, key, value):
-        """ Updates the given subset of the undarray array, by
-        replacing the value's subset and the Characteristic's subset
-        indexed by *key*. """
+        """ Updates the given subset of the undarray, by replacing the
+        subset of the nominal value and the Characteristic's subset
+        indexed by *key*.  *value* can be an ``undarray`` instance; if
+        it isn't it will be passed through ``numpy.asarray``. """
 
-        # Handle scalar indices ...
-        if key is None:
-            key = ()
-        elif not isinstance(key, tuple):
-                # If *key* is None, it shall stay None.  *None* is a
-                # special key to :meth:`Dependency.add` resulting in
-                # indexing the whole object (``key = ()``).
-            key = (key,)
+#XX        # Handle scalar indices ...
+#XX        if key is None:
+#XX            key = ()
+#XX        elif not isinstance(key, tuple):
+#XX                # If *key* is None, it shall stay None.  *None* is a
+#XX                # special key to :meth:`Dependency.add` resulting in
+#XX                # indexing the whole object (``key = ()``).
+#XX            key = (key,)
 
         if isinstance(value, undarray):
             # Update with a undarray subset ...
@@ -610,66 +611,68 @@ class undarray:
             # :meth:`Dependency.add`.
 
             # Possibly "upgrade" ``self.value``\ 's dtype  ...
-            if self.value.dtype != value.value.dtype:
-                self.value = self.value + numpy.zeros([],
-                    dtype=value.value.dtype)
+            if self.nominal.dtype != value.nominal.dtype:
+                self.nominal = self.nominal + numpy.zeros([],
+                    dtype=value.nominal.dtype)
                     # cf. dependency.py: Dependency.add().
-            # From now on, the dtype of ``self.value`` is large enough
+            # From now on, the dtype of ``self.nominal`` is large enough
             # to hold the *value*\ 's nominal value.
 
             # Update the respective subsets ...
 
-            self.value[key] = value.value
+            self.nominal[key] = value.nominal
             self.characteristic[key] = value.characteristic
 
-        elif isinstance(value, numpy.ndarray):
+#XX        elif isinstance(value, numpy.ndarray):
+        else:
+            value = numpy.asarray(value)
             # Set errorless values from the ndarray *value* ...
 
             # The ability to broadcast *value* is a feature; in that
             # case *value*\ 's shape differs from ``self.shape``.  We
             # do not apply any check as numpy will complain itself
             # when the shape of *value* is too large.  Since we use
-            # key assignment, the shape of ``self.value`` and of
+            # key assignment, the shape of ``self.nominal`` and of
             # ``self.characteristic`` cannot grow during the
             # operation.
 
-            if self.value.dtype != value.dtype:
-                self.value = self.value + numpy.zeros([],
+            if self.nominal.dtype != value.dtype:
+                self.nominal = self.nominal + numpy.zeros([],
                     dtype=value.dtype)
             self.characteristic.clear(key)
-            self.value[key] = value
-        
-        else:
-            # Update in mixed-mode ...
-
-            if len(key) == self.ndim:
-
-                # We have reached the innermost level, set the values ...
-                #
-                # VALUE is definitely not an undarray.
-                value = numpy.asarray(value)
-                self[key] = value
-                    # With *value* now being an instance of
-                    # ``numpy.ndarray``, the corresponding branch
-                    # above is used.
-
-            else:
-                    
-                # VALUE is definitely not an undarray.
-
-                # Iterate through VALUE ...
-
-                # Check length.
-                if len(value) != self.shape[len(key)]:
-                    raise ValueError('Shape mismatch.')
-
-                # Iterate.
-                for idx in xrange(0, len(value)):
-                    subkey = tuple(list(key) + [idx])
-                    self[subkey] = value[idx]
+            self.nominal[key] = value
+#XX        
+#XX        else:
+#XX            # Update in mixed-mode ...
+#XX
+#XX            if len(key) == self.ndim:
+#XX
+#XX                # We have reached the innermost level, set the values ...
+#XX                #
+#XX                # VALUE is definitely not an undarray.
+#XX                value = numpy.asarray(value)
+#XX                self[key] = value
+#XX                    # With *value* now being an instance of
+#XX                    # ``numpy.ndarray``, the corresponding branch
+#XX                    # above is used.
+#XX
+#XX            else:
+#XX                    
+#XX                # VALUE is definitely not an undarray.
+#XX
+#XX                # Iterate through VALUE ...
+#XX
+#XX                # Check length.
+#XX                if len(value) != self.shape[len(key)]:
+#XX                    raise ValueError('Shape mismatch.')
+#XX
+#XX                # Iterate.
+#XX                for idx in xrange(0, len(value)):
+#XX                    subkey = tuple(list(key) + [idx])
+#XX                    self[subkey] = value[idx]
         
     def __len__(self):
-        return len(self.value)
+        return len(self.nominal)
 
     #
     # ndarray methods, alphabetically sorted ...
