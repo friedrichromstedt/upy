@@ -533,16 +533,19 @@ class undarray:
                 characteristic = self._characteristic[key])
 
     def __setitem__(self, key, value):
-        """Updates the given subset of the undarray array, by replacing the
-        value's subset and the Characteristic's subset. """
+        """ Updates the given subset of the undarray array, by
+        replacing the value's subset and the Characteristic's subset
+        indexed by *key*. """
 
         # Handle scalar indices ...
-        if not isinstance(key, tuple) and key is not None:
+        if key is None:
+            key = ()
+        elif not isinstance(key, tuple):
                 # If *key* is None, it shall stay None.  *None* is a
                 # special key to :meth:`Dependency.add` resulting in
                 # indexing the whole object (``key = ()``).
             key = (key,)
-        
+
         if isinstance(value, undarray):
             # Update with a undarray subset ...
 
@@ -589,14 +592,17 @@ class undarray:
                 # We have reached the innermost level, set the values ...
                 #
                 # VALUE is definitely not an undarray.
-
-                self.value[key] = value
-                self._characteristic.clear(key)
+                value = numpy.asarray(value)
+                self[key] = value
+                    # With *value* now being an instance of
+                    # ``numpy.ndarray``, the corresponding branch
+                    # above is used.
 
             else:
                     
-                # VALUE is definitely not an undarray.  Iterate through
-                # VALUE ...
+                # VALUE is definitely not an undarray.
+
+                # Iterate through VALUE ...
 
                 # Check length.
                 if len(value) != self.shape[len(key)]:
