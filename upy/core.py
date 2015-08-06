@@ -723,13 +723,14 @@ class undarray:
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
 
-        object = self.value.compress(
-                *comress_args, **compress_kwargs)
         return undarray(
-                object=object,
-                characteristic=self.characteristic.compress(
-                    new_shape=object.shape,
-                    *compress_args, **compress_kwargs))
+            nominal=self.nominal.compress(
+                    *comress_args, **compress_kwargs,
+            ),
+            characteristic=self.characteristic.compress(
+                *compress_args, **compress_kwargs,
+            ),
+        )
 
     def copy(self):
         """Returns a copy of the undarray.  Note that only the data is
@@ -744,7 +745,7 @@ class undarray:
         to "copy", i.e., to replicate with new names."""
 
         return undarray(
-            object=self.value,
+            nominal=self.nominal,
             characteristic=self.characteristic,
         )   # The constructor performs the copying.
             
