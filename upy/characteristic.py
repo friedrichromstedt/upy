@@ -100,7 +100,8 @@ class Characteristic:
 
     def add(self, other, key=None):
         """ *other* is a Characteristic instance.  *key* indexes
-        *self*.  *other* will add to ``self[key]``.
+        *self*.  *other* will add to ``self[key]``.  Without *key*
+        (or, *key* = None), *other* will be added to all of *self*.
 
         The operation is performed in-place. """
 

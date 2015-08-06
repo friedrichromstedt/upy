@@ -15,41 +15,63 @@ __all__ = ['undarray', 'uzeros']
 # Internal helper function(s) ...
 #
 
-def _ravel(object):
-    """Ravel a mixed-mode initialisation argument.  undarray instances
-    contained will ravel to their raveled .values."""
+#   This method has been superseded by :func:`find_common_dtype`.
+#
+#X def _ravel(object):
+#X     """Ravel a mixed-mode initialisation argument.  undarray instances
+#X     contained will ravel to their raveled .values."""
+#X 
+#X     if isinstance(object, undarray):
+#X         
+#X         # Return the raveled version of object.value ...
+#X         #
+#X         # This is done beause *all* elements of object.value may contribute
+#X         # to the dtype.  E.g., when dtype = numpy.object, this may occur 
+#X         # because the first element is an non-numeric type, or the second, ...
+#X 
+#X         return object.value.flatten().tolist()
+#X 
+#X     elif numpy.isscalar(object) or \
+#X             (isinstance(object, numpy.ndarray) and \
+#X              object.shape == ()):
+#X 
+#X         # Scalars are already raveled ...
+#X 
+#X         return [object]
+#X 
+#X     else:
+#X 
+#X         # Sequence objects must be recursed ...
+#X 
+#X         raveled = []
+#X 
+#X         for element in object:
+#X             raveled.extend(_ravel(element))
+#X 
+#X         return raveled
 
-    if isinstance(object, undarray):
-        
-        # Return the raveled version of object.value ...
-        #
-        # This is done beause *all* elements of object.value may contribute
-        # to the dtype.  E.g., when dtype = numpy.object, this may occur 
-        # because the first element is an non-numeric type, or the second, ...
-
-        return object.value.flatten().tolist()
-
-    elif numpy.isscalar(object) or \
-            (isinstance(object, numpy.ndarray) and \
-             object.shape == ()):
-
-        # Scalars are already raveled ...
-
-        return [object]
-
-    else:
-
-        # Sequence objects must be recursed ...
-
-        raveled = []
-
-        for element in object:
-            raveled.extend(_ravel(element))
-
-        return raveled
-
-def find_common_dtype(object):
-    pass
+# This method has been deprectated before it came to use.  It is no
+# longer necessary since the implementation of __setitem__ is able to
+# upgrade the dtype of self.value.
+#
+#X def find_common_dtype(object):
+#X     """ Calculates the least dtype to store the nominal value taken
+#X     from the given *object*. """
+#X     
+#X     if isinstance(object, undarray):
+#X         return object.value.dtype
+#X 
+#X     elif numpy.isscalar(object) or (isinstance(object, numpy.ndarray)
+#X             and object.shape == ()):
+#X         return numpy.asarray(object).dtype
+#X 
+#X     else:
+#X         dtypes = [find_common_dtype(element) for element in object]
+#X         zeros = [numpy.zero(shape=[], dtype=dtype) for dtype in
+#X             dtypes]
+#X         return numpy.asarray(zeros).dtype
+#X             # When *zeros* == [], numpy.asarray([]) returns
+#X             # ``array([], dtype=float64)``.
 
 #
 # Some convenience functions ...
@@ -222,12 +244,8 @@ class undarray:
 
             # Initialise the attributes.
 
-            # If dtype is None, infer dtype from raveled OBJECT:
-            if dtype is None:
-                dtype = numpy.asarray(_ravel(object)).dtype
-
             # Initialise .value and .characteristic:
-            self.value = numpy.zeros(shape, dtype = dtype)
+            self.value = numpy.zeros(shape, dtype=dtype)
             self._characteristic = upy.characteristic.Characteristic(
                     shape = tuple(shape))
 
@@ -508,38 +526,65 @@ class undarray:
     
     def __getitem__(self, key):
         """Returns the given subset of the undarray array, by applying the
-        KEY both the the value and the Characteristic.  VALUE is assumed
-        to be an undarray."""
+        KEY both to the value and the Characteristic. """
 
-        object = self.value[key]
         return undarray(
-                object = object,
-                characteristic = self._characteristic[object.shape, key])
+                object=self.value[key],
+                characteristic = self._characteristic[key])
 
     def __setitem__(self, key, value):
         """Updates the given subset of the undarray array, by replacing the
-        value's subset and the Characteristic's subset.  VALUE is supposed
-        to be an undarray."""
+        value's subset and the Characteristic's subset. """
 
         # Handle scalar indices ...
-
-        if not isinstance(key, tuple):
+        if not isinstance(key, tuple) and key is not None:
+                # If *key* is None, it shall stay None.  *None* is a
+                # special key to :meth:`Dependency.add` resulting in
+                # indexing the whole object (``key = ()``).
             key = (key,)
         
-        # Update with a undarray subset ...
-
         if isinstance(value, undarray):
+            # Update with a undarray subset ...
+
+            # The possibility of broadcasting *value* is a feature.
+            # The code performing the broadcast for
+            # ``self._characteristic`` is in dependency.py,
+            # :meth:`Dependency.add`.
+
+            # Possibly "upgrade" ``self.value``\ 's dtype  ...
+            if self.value.dtype != value.value.dtype:
+                self.value = self.value + numpy.zeros([],
+                    dtype=value.value.dtype)
+                    # cf. dependency.py: Dependency.add().
+            # From now on, the dtype of ``self.value`` is large enough
+            # to hold the *value*\ 's nominal value.
 
             # Update the respective subsets ...
 
             self.value[key] = value.value
             self._characteristic[key] = value._characteristic
+
+        elif isinstance(value, numpy.ndarray):
+            # Set errorless values from the ndarray *value* ...
+
+            # The ability to broadcast *value* is a feature; in that
+            # case *value*\ 's shape differs from ``self.shape``.  We
+            # do not apply any check as numpy will complain itself
+            # when the shape of *value* is too large.  Since we use
+            # key assignment, the shape of ``self.value`` and of
+            # ``self._characteristic`` cannot grow during the
+            # operation.
+
+            if self.value.dtype != value.dtype:
+                self.value = self.value + numpy.zeros([],
+                    dtype=value.dtype)
+            self._characteristic.clear(key)
+            self.value[key] = value
         
-        # Update in mixed-mode ...
-
         else:
+            # Update in mixed-mode ...
 
-            if len(key) == len(self.shape):
+            if len(key) == self.ndim:
 
                 # We have reached the innermost level, set the values ...
                 #
