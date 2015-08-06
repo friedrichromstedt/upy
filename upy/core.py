@@ -681,17 +681,17 @@ class undarray:
     def argmax(self, *args, **kwargs):
         """Refer to numpy.argmax() for documentation of the functionality."""
 
-        return self.value.argmax(*args, **kwargs)
+        return self.nominal.argmax(*args, **kwargs)
 
     def argmin(self, *args, **kwargs):
         """Refer to numpy.argmin() for documentation of the functionality."""
 
-        return self.value.argmin(*args, **kwargs)
+        return self.nominal.argmin(*args, **kwargs)
 
     def argsort(self, *args, **kwargs):
         """Refer to numpy.argsort() for documentation of the functionality."""
 
-        return self.value.argsort(*args, **kwargs)
+        return self.nominal.argsort(*args, **kwargs)
 
     def clip(self, a, a_min, a_max):
         """Refer to numpy.clip() for documentation of the functionality.
@@ -702,19 +702,20 @@ class undarray:
         
         Returned is a copy."""
 
-        # Retrieve the clipped value.
-        clipped_value = self.value.clip(a_min, a_max)
+        # Retrieve the clipped nominal value.
+        clipped_nominal = self.nominal.clip(a_min, a_max)
 
-        # Retrieve the mask of values where to set the error to 0.0.
-        changed_mask = (self.value != clipped_value)
+        # Retrieve the mask where to set the error to 0.0.
+        changed_mask = (self.nominal != clipped_nominal)
         
         # Retrieve the clipped undarray ...
 
         # Work on a copy.
         copy = self.copy()
 
-        # Set the value of the undarray to the clipped values.
-        copy.value = clipped_value
+        # Set the nominal values of the undarray to the clipped
+        # nominal values.
+        copy.nominal = clipped_nominal
 
         # Clear the error for all masked elemeents.
         copy.characteristic.clear(changed_mask)
