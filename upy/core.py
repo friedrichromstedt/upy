@@ -7,7 +7,7 @@ import upy.characteristic
 import upy.printable
 import warnings
 
-__all__ = ['undarray', 'uzeros']
+__all__ = ['undarray', 'uzeros', 'asundarray']
 
 """The central module, implementing the uncertain ndarray: undarray."""
 
@@ -93,6 +93,16 @@ def zeros(shape):
 
     return uzeros(shape)
 
+def asundarray(undarray_like):
+    """ If *undarray_like* is *not* an :class:`undarray`, it will be
+    fed to the constructor of :class:`undarray` in order to produce an
+    undarray.  If, on the contrary, *undarray_like* is already an
+    undarray instance, it will be returned without change. """
+
+    if isinstance(undarray_like, undarray):
+        return undarray_like
+    return undarray(undarray_like)
+
 #
 # The central undarray class ...
 #
@@ -102,161 +112,172 @@ class undarray:
     numpy.ndarray. """
 
     def __init__(self,
-            object = None,
+            master = None,
             stddev = None,
             derivatives = None,
             characteristic = None,
             dtype = None,
             shape = None):
-        """If OBJECT is an undarray, its content will not be copied.  (This 
-        initialisation scheme is intendend to make sure that some object is 
-        an undarray.)
+        """If *master* is an undarray, its content will be copied.
         
-        If DERIVATIVES and OBJECT are not None, DERIVATIVES must be a list 
-        [(undarray instance: derivative), ...], giving the derivatives with 
-        that the new undarray depends on the key undarrays.  OBJECT will be 
-        converted to an numpy.ndarray.
+        If *derivatives* and *master* are not None, *derivatives* must
+        be a list [(undarray instance: derivative), ...], giving the
+        derivatives with that the new undarray depends on the
+        undarrays.  *master* will be converted to an numpy.ndarray.
 
-        If *stddev* and OBJECT aren't None, OBJECT and *stddev* will be 
-        converted to numpy.ndarrays.
+        If *stddev* and *master* aren't None, *master* and *stddev*
+        will be converted to numpy.ndarrays.
 
-        If CHARACTERISTIC and OBJECT are not None, OBJECT is converted to an 
-        numpy.ndarray, and the CHARACTERISTIC is used directly without copying.
+        If *characteristic* and *master* are not None, *master* is
+        converted to an numpy.ndarray, and the *characteristic* is
+        copied.
 
-        If OBJECT isn't None, but all other branches mentioned so far are not
-        fulfilled, Mixed-Mode applies.  In this mode, OBJECT will not be 
+        If *master* isn't None, but all other branches mentioned so far are not
+        fulfilled, Mixed-Mode applies.  In this mode, *master* will not be 
         converted to an numpy.ndarray, but will be recursed into.  
-        Nevertheless the objects comprising OBJECT must match the effective
-        shape of the OBJECT.  OBJECT may be contain upy.undarrays.  The shape 
+        Nevertheless the objects comprising *master* must match the effective
+        shape of the *master*.  *master* may be contain upy.undarrays.  The shape 
         of the new undarray is obtained from the first scalar element in the 
-        upy.ravel()ed version of the OBJECT and from the lengthes of the 
+        upy.ravel()ed version of the *master* and from the lengthes of the 
         sequences containing that first element.  Scalars are objects for 
         which numpy.isscalar() returns True.  When there are shape 
         inconsistencies, an exception will occur.  If the first element is an 
         undarray, its shape will be taken into account.  In Mixed-Mode, the 
-        DTYPE of the initially zero .value ndarray is either determined 
-        automatically from all values contained in OBJECT and undarrays 
-        therein, or can be given explicitly via DTYPE.  It is strongly 
-        recommended to use DTYPE, because raveling large datasets can be very 
+        *dtype* of the initially zero .value ndarray is either determined 
+        automatically from all values contained in *master* and undarrays 
+        therein, or can be given explicitly via *dtype*.  It is strongly 
+        recommended to use *dtype*, because raveling large datasets can be very 
         expensive in memory and time both.
         
-        If also OBJECT is None, SHAPE is taken into account, to create a new,
-        zero-valued undarray of dtype DTYPE (None means numpy.float).
+        If also *master* is None, *shape* is taken into account, to create a new,
+        zero-valued undarray of dtype *dtype* (None means numpy.float).
         
         If none of these branches match, ValueError will be raised."""
         
-        if isinstance(object, undarray):
+        if isinstance(master, undarray):
 
             # Take over attributes from existing undarray ...
         
-            self.value = object.value
-            self._characteristic = object._characteristic
+            self.value = master.value.copy()
+            self.characteristic = master.characteristic.copy()
 
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+            self.shape = master.shape
+            self.ndim = master.ndim
 
-        elif derivatives is not None and object is not None:
+        elif derivatives is not None and master is not None:
 
             # Derive the new undarray from known ones ...
 
-            self.value = numpy.asarray(object)
-
-            # Create a new, empty Characteristic where we can fill in
-            # the dependencies introduced by the dictionary DERIVATIVES.
-            self._characteristic = upy.characteristic.Characteristic(
-                    shape=self.value.shape)
-
-            # Fill in the dependencies.
-            for (instance, derivative) in derivatives:
-                self._characteristic += \
-                        instance.characteristic * derivative
-
+            self.value = numpy.asarray(master)
             self.shape = self.value.shape
             self.ndim = self.value.ndim
 
-        elif stddev is not None and object is not None:
+            # Create a new, empty Characteristic where we can fill in
+            # the dependencies introduced by *derivatives*.
+            self.characteristic = upy.characteristic.Characteristic(
+                    shape=self.shape)
+
+            # Fill in the dependencies.
+            for (instance, derivative) in derivatives:
+                self.characteristic += \
+                        instance.characteristic * derivative
+
+        elif stddev is not None and master is not None:
             
             # Constuct a new undarray ...
 
             # Convert to ndarrays.
-            object = numpy.asarray(object)
-            stddev = numpy.asarray(stddev)
+            master = numpy.copy(master)
+            stddev = numpy.copy(stddev)
 
             # Check shape.
-            if object.shape != stddev.shape:
-                raise ValueError("Shape mismatch between *object* and '
-                    '*stddev*.  Shapes are: *object* - %s, *stddev* - %s" % \
-                    (object.shape, stddev.shape))
+            if master.shape != stddev.shape:
+                raise ValueError("Shape mismatch between *master* and '
+                    '*stddev*.  Shapes are: *master* - %s, *stddev* - %s" % \
+                    (master.shape, stddev.shape))
 
-            self.value = object
+            self.value = master
+
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
             
             # Create Dependency instance from scratch.
             dependency = upy.dependency.Dependency(
                     names=upy.id_generator.get_id(
-                        shape=self.value.shape),
+                        shape=self.shape),
                     derivatives=stddev)
 
-            self._characteristic = upy.characteristic.Characteristic(
-                    shape=self.value.shape)
-            self._characteristic.append(dependency)
+            self.characteristic = upy.characteristic.Characteristic(
+                shape=self.shape,
+            )
+            self.characteristic.append(dependency)
 
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
-
-        elif characteristic is not None and object is not None:
+        elif characteristic is not None and master is not None:
             
             # Take over characteristic ...
 
-            self.value = numpy.asarray(object)
-            self._characteristic = characteristic
+            self.value = numpy.asarray(master)
+            self.characteristic = characteristic.copy()
 
             self.shape = self.value.shape
             self.ndim = self.value.ndim
 
-        elif object is not None:
+        elif master is not None:
 
-            # Initialise from list-like structure or scalar number ...
+            # Construct a new undarray with an empty Characteristic.
 
-            # Determine the shape.
-            shapeobject = object
-            shape = []
-            # Index the shapeobject until a scalar or an undarray is
-            # reached:
-            while True:
-                if isinstance(shapeobject, undarray):
-                    # Finish shape:
-                    shape += list(shapeobject.shape)
-                    break
-                elif numpy.isscalar(shapeobject):
-                    # We reached the scalar level.  Shape finished.
-                    break
-                else:
-                    # Test for scalar array.
-                    if isinstance(shapeobject, numpy.ndarray) and \
-                            shapeobject.shape == ():
-                        # In fact, it's scalar:
-                        break
-                    else:
-                        # It's not a scalar array, indexing is
-                        # possible:
-                        shape.append(len(shapeobject))
-                        shapeobject = shapeobject[0]
+            master = numpy.asarray(master)
+            self.value = master
 
-            # Initialise the attributes.
+            self.shape = self.value.shape
+            self.ndim = self.value.ndim
 
-            # Initialise .value and .characteristic:
-            self.value = numpy.zeros(shape, dtype=dtype)
-            self._characteristic = upy.characteristic.Characteristic(
-                    shape = tuple(shape))
-
-            # Provide .shape and .ndim, because __setitem__() needs it.
-            self.shape = shape
-            self.ndim = len(shape)
-
-            # Fill in the given values.
-            # 
-            # This will recurse into the OBJECT.
-            self[()] = object
+            self.characteristic = upy.characteristic.Characteristic(
+                shape=self.shape,
+            )
+#X
+#X            # Initialise from list-like structure or scalar number ...
+#X
+#X            # Determine the shape.
+#X            shapeobject = object
+#X            shape = []
+#X            # Index the shapeobject until a scalar or an undarray is
+#X            # reached:
+#X            while True:
+#X                if isinstance(shapeobject, undarray):
+#X                    # Finish shape:
+#X                    shape += list(shapeobject.shape)
+#X                    break
+#X                elif numpy.isscalar(shapeobject):
+#X                    # We reached the scalar level.  Shape finished.
+#X                    break
+#X                else:
+#X                    # Test for scalar array.
+#X                    if isinstance(shapeobject, numpy.ndarray) and \
+#X                            shapeobject.shape == ():
+#X                        # In fact, it's scalar:
+#X                        break
+#X                    else:
+#X                        # It's not a scalar array, indexing is
+#X                        # possible:
+#X                        shape.append(len(shapeobject))
+#X                        shapeobject = shapeobject[0]
+#X
+#X            # Initialise the attributes.
+#X
+#X            # Initialise .value and .characteristic:
+#X            self.value = numpy.zeros(shape, dtype=dtype)
+#X            self.characteristic = upy.characteristic.Characteristic(
+#X                    shape = tuple(shape))
+#X
+#X            # Provide .shape and .ndim, because __setitem__() needs it.
+#X            self.shape = shape
+#X            self.ndim = len(shape)
+#X
+#X            # Fill in the given values.
+#X            # 
+#X            # This will recurse into the OBJECT.
+#X            self[()] = object
 
         elif shape is not None:
 
@@ -266,7 +287,7 @@ class undarray:
                 raise ValueError("SHAPE must be tuple.")
 
             self.value = numpy.zeros(shape, dtype=dtype)
-            self._characteristic = upy.characteristic.Characteristic(
+            self.characteristic = upy.characteristic.Characteristic(
                     shape=tuple(shape))
 
             self.shape = self.value.shape
@@ -286,7 +307,7 @@ class undarray:
 
         warnings.warn(DeprecationWarning('undarray.variance is a property '
             'since >v0.4.11b, if you call it your program will fail')
-        return self._characteristic.variance
+        return self.characteristic.variance
 
     def sigma(self):
         """Returns the sigma array, i.e., the square root of the variance.
@@ -530,7 +551,7 @@ class undarray:
 
         return undarray(
                 object=self.value[key],
-                characteristic = self._characteristic[key])
+                characteristic = self.characteristic[key])
 
     def __setitem__(self, key, value):
         """ Updates the given subset of the undarray array, by
@@ -551,7 +572,7 @@ class undarray:
 
             # The possibility of broadcasting *value* is a feature.
             # The code performing the broadcast for
-            # ``self._characteristic`` is in dependency.py,
+            # ``self.characteristic`` is in dependency.py,
             # :meth:`Dependency.add`.
 
             # Possibly "upgrade" ``self.value``\ 's dtype  ...
@@ -565,7 +586,7 @@ class undarray:
             # Update the respective subsets ...
 
             self.value[key] = value.value
-            self._characteristic[key] = value._characteristic
+            self.characteristic[key] = value.characteristic
 
         elif isinstance(value, numpy.ndarray):
             # Set errorless values from the ndarray *value* ...
@@ -575,13 +596,13 @@ class undarray:
             # do not apply any check as numpy will complain itself
             # when the shape of *value* is too large.  Since we use
             # key assignment, the shape of ``self.value`` and of
-            # ``self._characteristic`` cannot grow during the
+            # ``self.characteristic`` cannot grow during the
             # operation.
 
             if self.value.dtype != value.dtype:
                 self.value = self.value + numpy.zeros([],
                     dtype=value.dtype)
-            self._characteristic.clear(key)
+            self.characteristic.clear(key)
             self.value[key] = value
         
         else:
@@ -659,7 +680,7 @@ class undarray:
         copy.value = clipped_value
 
         # Clear the error for all masked elemeents.
-        copy._characteristic.clear(changed_mask)
+        copy.characteristic.clear(changed_mask)
 
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
@@ -668,7 +689,7 @@ class undarray:
                 *comress_args, **compress_kwargs)
         return undarray(
                 object=object,
-                characteristic=self._characteristic.compress(
+                characteristic=self.characteristic.compress(
                     new_shape=object.shape,
                     *compress_args, **compress_kwargs))
 
@@ -686,7 +707,7 @@ class undarray:
 
         return undarray(
                 object=self.value.copy(),
-                characteristic=self._characteristic.copy())
+                characteristic=self.characteristic.copy())
 
     def cumprod(self, axis=None):
         """Calculate the cumulative product along axis AXIS.  If AXIS is not
@@ -745,7 +766,7 @@ class undarray:
                 *flatten_args, **flatten_kwargs)
         return undarray(
                 object = object,
-                characteristic = self._characteristic.flatten(
+                characteristic = self.characteristic.flatten(
                     new_shape = object.shape,
                     *flatten_args, **flatten_kwargs))
 
@@ -756,7 +777,7 @@ class undarray:
                 *repeat_args, **repeat_kwargs)
         return undarray(
                 object = object,
-                characteristic = self._characteristic.repeat(
+                characteristic = self.characteristic.repeat(
                     new_shape = object.shape,
                     *repeat_args, **repeat_kwargs))
 
@@ -767,7 +788,7 @@ class undarray:
                 *reshape_args, **reshape_kwargs)
         return undarray(
                 object = object,
-                characteristic = self._characteristic.reshape(
+                characteristic = self.characteristic.reshape(
                     new_shape = object.shape,
                     *reshape_args, **reshape_kwargs))
 
@@ -778,7 +799,7 @@ class undarray:
                 *transpose_args, **transpose_kwargs)
         return undarray(
                 object = object,
-                characteristic = self._characteristic.transpose(
+                characteristic = self.characteristic.transpose(
                     new_shape = object.shape,
                     *transpose_args, **transpose_kwargs))
 
