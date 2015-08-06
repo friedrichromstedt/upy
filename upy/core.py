@@ -77,31 +77,42 @@ __all__ = ['undarray', 'uzeros', 'asundarray']
 # Some convenience functions ...
 #
 
-def uzeros(shape):
-    """Returns a zero-undarray of shape *shape*.  All *shape* arguments 
-    accepted by ``numpy.zeros()`` will be working."""
+def uzeros(shape, dtype=None):
+    """ Returns a zero-undarray of shape *shape* and optionally using
+    dtype *dtype*.  All *shape* arguments accepted by
+    ``numpy.zeros()`` will work. """
 
-    return undarray(numpy.zeros(shape))
+    return undarray(nominal=numpy.zeros(shape, dtype=dtype))
 
-def zeros(shape):
-    """Equivalent to :func:`uzeros`.
-    
-    This method will be deprecated in v0.5.  Use :func:`uzeros` instead."""
+#? def zeros(shape):
+#?     """Equivalent to :func:`uzeros`.
+#?     
+#?     This method will be deprecated in v0.5.  Use :func:`uzeros` instead."""
+#? 
+#?     warnings.warn(DeprecationWarning('zeros() will be deprecated in v0.5, '
+#?         'use uzeros() instead')
+#? 
+#?     return uzeros(shape)
 
-    warnings.warn(DeprecationWarning('zeros() will be deprecated in v0.5, '
-        'use uzeros() instead')
-
-    return uzeros(shape)
-
-def asundarray(undarray_like):
-    """ If *undarray_like* is *not* an :class:`undarray`, it will be
-    fed to the constructor of :class:`undarray` in order to produce an
+def asuarray(uarray_like):
+    """ If *uarray_like* is *not* an :class:`undarray`, it will be fed
+    to the constructor of :class:`undarray` in order to produce an
     undarray.  If, on the contrary, *undarray_like* is already an
     undarray instance, it will be returned without change. """
 
-    if isinstance(undarray_like, undarray):
-        return undarray_like
-    return undarray(undarray_like)
+    if isinstance(uarray_like, undarray):
+        return uarray_like
+    return undarray(uarray_like)
+
+def copy(uarray_like):
+    """ If *undarray_like* is an instance of :class:`undarray`, its
+    contents will be copied.  Otherwise, a new :class:`undarray` is
+    constructed; in that case the ``undarray_like`` data structure
+    will be copied. """
+
+    if isinstance(uarray_like, undarray):
+        return uarray_like.copy()
+    return undarray(nominal=uarray_like)
 
 #
 # The central undarray class ...
@@ -112,65 +123,79 @@ class undarray:
     numpy.ndarray. """
 
     def __init__(self,
-            master = None,
+            nominal = None,
             stddev = None,
             derivatives = None,
             characteristic = None,
             dtype = None,
             shape = None):
-        """If *master* is an undarray, its content will be copied.
+        """If *nominal* is an undarray, its content will be copied.
         
-        If *derivatives* and *master* are not None, *derivatives* must
-        be a list [(undarray instance: derivative), ...], giving the
-        derivatives with that the new undarray depends on the
-        undarrays.  *master* will be converted to an numpy.ndarray.
+        If *derivatives* and *nominal* are not None, *derivatives*
+        must be a list [(undarray instance: derivative), ...], giving
+        the derivatives with that the new undarray depends on the
+        given undarrays.  *nominal* will be converted to an
+        numpy.ndarray.
 
-        If *stddev* and *master* aren't None, *master* and *stddev*
-        will be converted to numpy.ndarrays.
+        If *stddev* and *nominal* aren't None, *nominal* and *stddev*
+        will be copied to numpy.ndarrays.  The initial Characteristic
+        will reflect the single dependency expressed by *stddev*.
+        Both *nominal* as well as *stddev* will be copied prior to
+        use.
 
-        If *characteristic* and *master* are not None, *master* is
-        converted to an numpy.ndarray, and the *characteristic* is
-        copied.
+        If *characteristic* and *nominal* are not None, *nominal* is
+        copied in order to produce an numpy.ndarray, and the
+        *characteristic* is copied.
 
-        If *master* isn't None, but all other branches mentioned so far are not
-        fulfilled, Mixed-Mode applies.  In this mode, *master* will not be 
-        converted to an numpy.ndarray, but will be recursed into.  
-        Nevertheless the objects comprising *master* must match the effective
-        shape of the *master*.  *master* may be contain upy.undarrays.  The shape 
-        of the new undarray is obtained from the first scalar element in the 
-        upy.ravel()ed version of the *master* and from the lengthes of the 
-        sequences containing that first element.  Scalars are objects for 
-        which numpy.isscalar() returns True.  When there are shape 
-        inconsistencies, an exception will occur.  If the first element is an 
-        undarray, its shape will be taken into account.  In Mixed-Mode, the 
-        *dtype* of the initially zero .value ndarray is either determined 
-        automatically from all values contained in *master* and undarrays 
-        therein, or can be given explicitly via *dtype*.  It is strongly 
-        recommended to use *dtype*, because raveling large datasets can be very 
-        expensive in memory and time both.
+        .. to be phased out:
+
+            If *nominal* isn't None, but all other branches mentioned
+            so far are not fulfilled, Mixed-Mode applies.  In this
+            mode, *master* will not be converted to an numpy.ndarray,
+            but will be recursed into.  Nevertheless the objects
+            comprising *master* must match the effective shape of the
+            *master*.  *master* may be contain upy.undarrays.  The
+            shape of the new undarray is obtained from the first
+            scalar element in the upy.ravel()ed version of the
+            *master* and from the lengthes of the sequences containing
+            that first element.  Scalars are objects for which
+            numpy.isscalar() returns True.  When there are shape
+            inconsistencies, an exception will occur.  If the first
+            element is an undarray, its shape will be taken into
+            account.  In Mixed-Mode, the *dtype* of the initially zero
+            .value ndarray is either determined automatically from all
+            values contained in *master* and undarrays therein, or can
+            be given explicitly via *dtype*.  It is strongly
+            recommended to use *dtype*, because raveling large
+            datasets can be very expensive in memory and time both.
         
-        If also *master* is None, *shape* is taken into account, to create a new,
-        zero-valued undarray of dtype *dtype* (None means numpy.float).
+        If *nominal* is None, *shape* is taken into account, to create
+        a new, zero-valued undarray of dtype *dtype* (Giving ``None``
+        as *dtype* results in numpy.float used as dtype).  As the
+        Characteristic is empty in this case, and only the Dependecies
+        carry a dtype, the *dtype* given pertains the ``nominal``
+        attribute alone.
         
         If none of these branches match, ValueError will be raised."""
         
-        if isinstance(master, undarray):
-
-            # Take over attributes from existing undarray ...
-        
-            self.value = master.value.copy()
-            self.characteristic = master.characteristic.copy()
-
-            self.shape = master.shape
-            self.ndim = master.ndim
-
-        elif derivatives is not None and master is not None:
+#X        if isinstance(master, undarray):
+#X
+#X            # Take over attributes from existing undarray ...
+#X        
+#X            self.value = master.value.copy()
+#X            self.characteristic = master.characteristic.copy()
+#X
+#X            self.shape = master.shape
+#X            self.ndim = master.ndim
+#X
+#X        elif derivatives is not None and master is not None:
+        if derivatives is not None and nominal is not None:
 
             # Derive the new undarray from known ones ...
 
-            self.value = numpy.asarray(master)
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+            self.nominal = numpy.copy(nominal)
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
 
             # Create a new, empty Characteristic where we can fill in
             # the dependencies introduced by *derivatives*.
@@ -182,55 +207,59 @@ class undarray:
                 self.characteristic += \
                         instance.characteristic * derivative
 
-        elif stddev is not None and master is not None:
+        elif stddev is not None and nominal is not None:
             
             # Constuct a new undarray ...
 
             # Convert to ndarrays.
-            master = numpy.copy(master)
+            nominal = numpy.copy(nominal)
             stddev = numpy.copy(stddev)
 
             # Check shape.
-            if master.shape != stddev.shape:
-                raise ValueError("Shape mismatch between *master* and '
-                    '*stddev*.  Shapes are: *master* - %s, *stddev* - %s" % \
-                    (master.shape, stddev.shape))
+            if nominal.shape != stddev.shape:
+                raise ValueError("Shape mismatch between *nominal* (shape %s) and *stddev* (shape %s)" % (nominal.shape, stddev.shape))
 
-            self.value = master
+            self.nominal = nominal
 
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
             
             # Create Dependency instance from scratch.
             dependency = upy.dependency.Dependency(
-                    names=upy.id_generator.get_id(
-                        shape=self.shape),
-                    derivatives=stddev)
+                names=upy.id_generator.get_id(
+                    shape=self.shape),
+                derivatives=stddev,
+            )   # The Dependency constructor doesn't copy the data
+                # given.
 
             self.characteristic = upy.characteristic.Characteristic(
                 shape=self.shape,
             )
             self.characteristic.append(dependency)
 
-        elif characteristic is not None and master is not None:
-            
+        elif characteristic is not None and nominal is not None:
+
+            nominal = numpy.copy(nominal)
+            if characteristic.shape != nominal.shape:
+                raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
+
             # Take over characteristic ...
 
-            self.value = numpy.asarray(master)
+            self.nominal = nominal
             self.characteristic = characteristic.copy()
 
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
 
-        elif master is not None:
+        elif nominal is not None:
 
             # Construct a new undarray with an empty Characteristic.
 
-            master = numpy.asarray(master)
-            self.value = master
+            nominal = numpy.asarray(nominal)
+            self.nominal = nominal
 
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
 
             self.characteristic = upy.characteristic.Characteristic(
                 shape=self.shape,
@@ -284,18 +313,19 @@ class undarray:
             # Construct an empty undarray ...
 
             if not isinstance(shape, tuple):
-                raise ValueError("SHAPE must be tuple.")
+                raise ValueError("Cannot contrcut undarray: *shape* must be a tuple")
 
-            self.value = numpy.zeros(shape, dtype=dtype)
+            self.shape = shape
+            self.ndim = len(shape)
+
+            self.nominal = numpy.zeros(self.shape, dtype=dtype)
             self.characteristic = upy.characteristic.Characteristic(
-                    shape=tuple(shape))
-
-            self.shape = self.value.shape
-            self.ndim = self.value.ndim
+                shape=self.shape,
+            )
 
         else:
             
-            raise ValueError("Don't know how to initialise an undarray from the arguments given.")
+            raise ValueError("Cannot initialise an undarray from the arguments given.")
         
     #
     # Methods to obtain net quantities ...
@@ -305,75 +335,79 @@ class undarray:
     def variance(self):
         """Returns the variance array, i.e., sigma ** 2."""
 
-        warnings.warn(DeprecationWarning('undarray.variance is a property '
-            'since >v0.4.11b, if you call it your program will fail')
+#?        warnings.warn(DeprecationWarning('undarray.variance is a property '
+#?            'since >v0.4.11b, if you call it your program will fail')
         return self.characteristic.variance
 
-    def sigma(self):
-        """Returns the sigma array, i.e., the square root of the variance.
-        
-        This method will be deprecated in v0.5, use :meth:`~undarray.stddev` 
-        instead."""
-
-        warnings.warn(DeprecationWarning('undarray.sigma() will be deprecated '
-            'in v0.5, use undarray.stddev instead')
-        return numpy.sqrt(self.variance)
-
-    def dispersion(self):
-        """Returns the dispersion, i.e., the sigma.
-        
-        This method will be deprecated in v0.5, use :meth:`~undarray.stddev`
-        instead."""
-
-        warnings.warn(DeprecationWarning('undarray.dispersion() will be '
-            'deprecated in v0.5, use undarray.stddev instead')
-        return numpy.sqrt(self.variance)
+#?    def sigma(self):
+#?        """Returns the sigma array, i.e., the square root of the variance.
+#?        
+#?        This method will be deprecated in v0.5, use :meth:`~undarray.stddev` 
+#?        instead."""
+#?
+#?        warnings.warn(DeprecationWarning('undarray.sigma() will be deprecated '
+#?            'in v0.5, use undarray.stddev instead')
+#?        return numpy.sqrt(self.variance)
+#?
+#?    def dispersion(self):
+#?        """Returns the dispersion, i.e., the sigma.
+#?        
+#?        This method will be deprecated in v0.5, use :meth:`~undarray.stddev`
+#?        instead."""
+#?
+#?        warnings.warn(DeprecationWarning('undarray.dispersion() will be '
+#?            'deprecated in v0.5, use undarray.stddev instead')
+#?        return numpy.sqrt(self.variance)
     
     @property
     def stddev(self):
         """Returns the standard deviation."""
         
         return numpy.sqrt(self.variance)
+            # In case of complex dependencies, retrieving
+            # self.variance will fail when in the code path of
+            # the :class:`Dependency` instance exhibiting complex
+            # derivatives.
 
-    def error(self):
-        """Returns the error, i.e., 2 * sigma.
-        
-        This method will be deprecated in v0.5, use ``2 * ua.stddev`` 
-        instead."""
-
-        warnings.warn(DeprecationWarning('undarray.error() will be '
-            'deprecated in v0.5, use 2 * undarray.stddev instead')
-
-        return 2 * self.stddev
-    
-    def uncertainty(self, sigmas):
-        """Returns ``sigmas * self.stddev``.
-        
-        This method will be deprecated by v0.5, please use explicit
-        multiplication instead."""
-
-        warnings.warn(DeprecationWarning('undarray.uncertainty() will be '
-            'deprecated by v0.5, please use explicit multiplication instead')
-
-        return sigmas * self.stddev
-
-    def weight(self):
-        """Returns a numpy.ndarray suitable for weighting this undarray.
-        The weights are 1.0 / .variance().  When a variance element is
-        zero, the used variance is 1.0.
-        
-        This method will be deprecated in v0.5, use ``1 / ua.variance()``
-        directly."""
-        
-        warnings.warn(DeprecationWarning('undarray.weight() will be '
-            'deprecated in v0.5, use 1 / ua.variance() instead')
-        
-        # Calculate the variance used.
-        used_variance = self.variance()
-        used_variance += 1.0 * (used_variance == 0.0)
-
-        # Calculate the weight from the variance.
-        return 1.0 / used_variance
+#?    def error(self):
+#?        """Returns the error, i.e., 2 * sigma.
+#?        
+#?        This method will be deprecated in v0.5, use ``2 * ua.stddev`` 
+#?        instead."""
+#?
+#?        warnings.warn(DeprecationWarning('undarray.error() will be '
+#?            'deprecated in v0.5, use 2 * undarray.stddev instead')
+#?
+#?        return 2 * self.stddev
+#?    
+#?    def uncertainty(self, sigmas):
+#?        """Returns ``sigmas * self.stddev``.
+#?        
+#?        This method will be deprecated by v0.5, please use explicit
+#?        multiplication instead."""
+#?
+#?        warnings.warn(DeprecationWarning('undarray.uncertainty() will be '
+#?            'deprecated by v0.5, please use explicit multiplication instead')
+#?
+#?        return sigmas * self.stddev
+#?
+#?    def weight(self):
+#?        """Returns a numpy.ndarray suitable for weighting this undarray.
+#?        The weights are 1.0 / .variance().  When a variance element is
+#?        zero, the used variance is 1.0.
+#?        
+#?        This method will be deprecated in v0.5, use ``1 / ua.variance()``
+#?        directly."""
+#?        
+#?        warnings.warn(DeprecationWarning('undarray.weight() will be '
+#?            'deprecated in v0.5, use 1 / ua.variance() instead')
+#?        
+#?        # Calculate the variance used.
+#?        used_variance = self.variance()
+#?        used_variance += 1.0 * (used_variance == 0.0)
+#?
+#?        # Calculate the weight from the variance.
+#?        return 1.0 / used_variance
 
     #
     # Binary arithmetics ...
@@ -382,31 +416,31 @@ class undarray:
     def __add__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    object = self.value + other.value,
-                    derivatives = [(self, 1.0), (other, 1.0)])
+                    nominal = self.nominal + other.nominal,
+                    derivatives=[(self, 1.0), (other, 1.0)])
         else:
             return undarray(
-                    object = self.value + other,
+                    object = self.nominal + other,
                     derivatives = [(self, 1.0)])
 
     def __sub__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    object = self.value - other.value,
+                    object = self.nominal - other.nominal,
                     derivatives = [(self, 1.0), (other, -1.0)])
         else:
             return undarray(
-                    object = self.value - other,
+                    object = self.nominal - other,
                     derivatives = [(self, 1.0)])
 
     def __mul__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    object = self.value * other.value,
-                    derivatives = [(self, other.value), (other, self.value)])
+                    object = self.nominal * other.nominal,
+                    derivatives = [(self, other.nominal), (other, self.nominal)])
         else:
             return undarray(
-                    object = self.value * other,
+                    object = self.nominal * other,
                     derivatives = [(self, other)])
 
     def __div__(self, other):
@@ -417,19 +451,19 @@ class undarray:
 
     def __pow__(self, other):
         if isinstance(other, undarray):
-            self_pow_other = self.value ** other.value
+            self_pow_other = self.nominal ** other.nominal
             return undarray(
                     object = self_pow_other,
                     derivatives = \
-                        [(self, self.value ** (other.value - 1) * other.value),
-                         (other, self_pow_other * numpy.log(self.value))])
+                        [(self, self.nominal ** (other.nominal - 1) * other.nominal),
+                         (other, self_pow_other * numpy.log(self.nominal))])
 
         else:
             other = numpy.asarray(other)
             return undarray(
-                    object = self.value ** other,
+                    object = self.nominal ** other,
                     derivatives = \
-                        [(self, self.value ** (other - 1) * other)])
+                        [(self, self.nominal ** (other - 1) * other)])
 
     #
     # Reverse binary arithmetics ...
@@ -438,31 +472,31 @@ class undarray:
     def __radd__(self, other):
         # OTHER is not an undarray.
         return undarray(
-                object = other + self.value,
+                object = other + self.nominal,
                 derivatives = [(self, 1.0)])
 
     def __rsub__(self, other):
         # OTHER is not an undarray.
         return undarray(
-                object = other - self.value,
+                object = other - self.nominal,
                 derivatives = [(self, -1.0)])
 
     def __rmul__(self, other):
         # OTHER is not an undarray.
         return undarray(
-                object = other * self.value,
+                object = other * self.nominal,
                 derivatives = [(self, other)])
 
     def __rdiv__(self, other):
         # OTHER is not an undarray.
         other = numpy.asarray(other)
         return undarray(
-                object = other / self.value,
-                derivatives = [(self, -other / self.value ** 2)])
+                object = other / self.nominal,
+                derivatives = [(self, -other / self.nominal ** 2)])
 
     def __rpow__(self, other):
         # OTHER is not an undarray.
-        other_pow_self = other ** self.value
+        other_pow_self = other ** self.nominal
         return undarray(
                 object = other_pow_self,
                 derivatives = \
@@ -481,7 +515,7 @@ class undarray:
 
     def __neg__(self):
         return undarray(
-                object = -self.value,
+                object = -self.nominal,
                 derivatives = [(self, -1)])
 
     def __abs__(self):
@@ -489,8 +523,8 @@ class undarray:
         
         # Calculate an inversion mask ...
 
-        inversion_mask = numpy.ones(shape = self.value.shape)
-        inversion_mask -= 2 * (self.value < 0)
+        inversion_mask = numpy.ones(shape = self.nominal.shape)
+        inversion_mask -= 2 * (self.nominal < 0)
 
         # Invert values which must be inverted, and invert also the dependency
         # of this values on the error source ...
@@ -507,39 +541,39 @@ class undarray:
 
     def __lt__(self, other):
         if isinstance(other, undarray):
-            return self.value < other.value
+            return self.nominal < other.nominal
         else:
-            return self.value < other
+            return self.nominal < other
 
     def __le__(self, other):
         if isinstance(other, undarray):
-            return self.value <= other.value
+            return self.nominal <= other.nominal
         else:
-            return self.value <= other
+            return self.nominal <= other
 
     def __gt__(self, other):
         if isinstance(other, undarray):
-            return self.value > other.value
+            return self.nominal > other.nominal
         else:
-            return self.value > other
+            return self.nominal > other
 
     def __ge__(self, other):
         if isinstance(other, undarray):
-            return self.value >= other.value
+            return self.nominal >= other.nominal
         else:
-            return self.value >= other
+            return self.nominal >= other
 
     def __eq__(self, other):
         if isinstance(other, undarray):
-            return self.value == other.value
+            return self.nominal == other.nominal
         else:
-            return self.value == other
+            return self.nominal == other
 
     def __ne__(self, other):
         if isinstance(other, undarray):
-            return self.value != other.value
+            return self.nominal != other.nominal
         else:
-            return self.value != other
+            return self.nominal != other
     
     #
     # Keying methods ...
@@ -706,8 +740,10 @@ class undarray:
         to "copy", i.e., to replicate with new names."""
 
         return undarray(
-                object=self.value.copy(),
-                characteristic=self.characteristic.copy())
+            object=self.value,
+            characteristic=self.characteristic,
+        )   # The constructor performs the copying.
+            
 
     def cumprod(self, axis=None):
         """Calculate the cumulative product along axis AXIS.  If AXIS is not
