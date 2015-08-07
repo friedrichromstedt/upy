@@ -9,27 +9,42 @@ __all__ = ['IDGenerator']
 
 
 class IDGenerator:
-    """Implement unique IDs.  Thread-safe."""
+    """ Generates unique IDs in a threadsafe manner. """
     
     def __init__(self):
-        self.lock = threading.Lock()
-        self.id = 1
+        self._lock = threading.Lock()
+        self._current_id = 1
 
-    def get_id(self, shape):
-        """Return unique IDs in shape SHAPE."""
+    def get_idarray(self, shape):
+        """ Returns unique IDs in shape *shape*. """
         
-        shape = numpy.asarray(shape)
-        # Because shape may be (), then ().prod() is float by default.
-        N = shape.prod(dtype = numpy.int)
+#X        shape = numpy.asarray(shape)
+#X        # Because shape may be (), then ().prod() is float by default.
+#X        N = shape.prod(dtype = numpy.int)
+        # For an empty iterable *shape* like [] and (), ``numpy.prod``
+        # returns 1.0 with dtype numpy.float by default; thus we need
+        # to override the result dtype.  This does not affect the
+        # standard case of non-empty iterables as *shape* like [1, 2]
+        # or (42, 100).
+        N = numpy.prod(shape, dtype=numpy.int)
 
-        # Make shure, that never two same IDs are returned, by locking the 
+        # Make sure that never two same IDs are returned by locking the 
         # .lock until the procedure is complete ...
 
-        self.lock.acquire()
-        id_return = numpy.arange(self.id, self.id + N).\
-                reshape(shape)
-        self.id += N
-        # Now, as the id has been stepped, others can access.
-        self.lock.release()
+        with self._lock:
+            idarray = numpy.arange(
+                self._current_id,
+                self._current_id + N
+            ).reshape(shape)
+            self._current_id += N
 
-        return id_return
+        return idarray
+#X
+#X        self.lock.acquire()
+#X        id_return = numpy.arange(self.id, self.id + N).\
+#X                reshape(shape)
+#X        self.id += N
+#X        # Now, as the id has been stepped, others can access.
+#X        self.lock.release()
+#X
+#X        return id_return

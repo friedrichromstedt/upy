@@ -189,25 +189,7 @@ class undarray:
 #X            self.ndim = master.ndim
 #X
 #X        elif derivatives is not None and master is not None:
-        if derivatives is not None and nominal is not None:
-
-            # Derive the new undarray from known ones ...
-
-            self.nominal = numpy.copy(nominal)
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
-
-            # Create a new, empty Characteristic where we can fill in
-            # the dependencies introduced by *derivatives*.
-            self.characteristic = upy.characteristic.Characteristic(
-                    shape=self.shape)
-
-            # Fill in the dependencies.
-            for (instance, derivative) in derivatives:
-                self.characteristic += \
-                        instance.characteristic * derivative
-
-        elif stddev is not None and nominal is not None:
+        if stddev is not None and nominal is not None:
             
             # Constuct a new undarray ...
 
@@ -226,7 +208,7 @@ class undarray:
             
             # Create Dependency instance from scratch.
             dependency = upy.dependency.Dependency(
-                names=upy.id_generator.get_id(
+                names=upy.id_generator.get_idarray(
                     shape=self.shape),
                 derivatives=stddev,
             )   # The Dependency constructor doesn't copy the data
@@ -236,6 +218,24 @@ class undarray:
                 shape=self.shape,
             )
             self.characteristic.append(dependency)
+
+        elif derivatives is not None and nominal is not None:
+
+            # Derive the new undarray from known ones ...
+
+            self.nominal = numpy.copy(nominal)
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
+
+            # Create a new, empty Characteristic where we can fill in
+            # the dependencies introduced by *derivatives*.
+            self.characteristic = upy.characteristic.Characteristic(
+                    shape=self.shape)
+
+            # Fill in the dependencies.
+            for (instance, derivative) in derivatives:
+                self.characteristic += \
+                        instance.characteristic * derivative
 
         elif characteristic is not None and nominal is not None:
 
