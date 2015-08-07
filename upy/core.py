@@ -189,6 +189,14 @@ class undarray:
 #X            self.ndim = master.ndim
 #X
 #X        elif derivatives is not None and master is not None:
+
+        # Attributes to initialise:
+        #
+        # - self.nominal
+        # - self.shape
+        # - self.ndim
+        # - self.characteristic
+
         if stddev is not None and nominal is not None:
             
             # Constuct a new undarray ...
@@ -243,7 +251,7 @@ class undarray:
             if characteristic.shape != nominal.shape:
                 raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
 
-            # Take over characteristic ...
+            # Take over the characteristic ...
 
             self.nominal = nominal
             self.characteristic = characteristic.copy()
@@ -312,13 +320,20 @@ class undarray:
 
             # Construct an empty undarray ...
 
-            if not isinstance(shape, tuple):
-                raise ValueError("Cannot contrcut undarray: *shape* must be a tuple")
+#X            if not isinstance(shape, tuple):
+#X                raise ValueError("Cannot construct undarray: *shape* must be a tuple")
+#X
+#X            self.shape = shape
+#X            self.ndim = len(shape)
 
-            self.shape = shape
-            self.ndim = len(shape)
+            self.nominal = numpy.zeros(shape, dtype=dtype)
+                # This accepts a scalar *shape* argument as well as
+                # tuples and lists.  We delegate the job of
+                # interpreting *shape* to ``numpy.zeros``.
 
-            self.nominal = numpy.zeros(self.shape, dtype=dtype)
+            self.shape = self.nominal.shape
+            self.ndim = self.nominal.ndim
+
             self.characteristic = upy.characteristic.Characteristic(
                 shape=self.shape,
             )
