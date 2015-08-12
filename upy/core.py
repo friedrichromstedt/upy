@@ -343,12 +343,32 @@ class undarray:
             raise ValueError("Cannot initialise an undarray from the arguments given.")
         
     #
-    # Methods to obtain net quantities ...
+    # Properties ...
     #
 
     @property
+    def real(self):
+        """ Returns the real component of *self*.  This pertains to
+        the nominal value as well as the Characteristic. """
+
+        return undarray(
+            nominal=self.nominal.real,
+            characteristic=self.characteristic.real,
+        )
+
+    @property
+    def imag(self):
+        """ Returns the imaginary component of *self*.  This pertains to
+        the nominal value as well as the Characteristic. """
+
+        return undarray(
+            nominal=self.nominal.imag,
+            characteristci=self.characteristic.imag,
+        )
+
+    @property
     def variance(self):
-        """Returns the variance array, i.e., sigma ** 2."""
+        """Returns the variance array, i.e., stddev ** 2."""
 
 #?        warnings.warn(DeprecationWarning('undarray.variance is a property '
 #?            'since >v0.4.11b, if you call it your program will fail')
@@ -431,90 +451,120 @@ class undarray:
     def __add__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    nominal = self.nominal + other.nominal,
-                    derivatives=[(self, 1.0), (other, 1.0)])
+                nominal=self.nominal + other.nominal,
+                derivatives=[(self, 1.0), (other, 1.0)])
         else:
             return undarray(
-                    object = self.nominal + other,
-                    derivatives = [(self, 1.0)])
+                nominal=self.nominal + other,
+                derivatives=[(self, 1.0)])
 
     def __sub__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    object = self.nominal - other.nominal,
-                    derivatives = [(self, 1.0), (other, -1.0)])
+                nominal=self.nominal - other.nominal,
+                derivatives=[(self, 1.0), (other, -1.0)])
         else:
             return undarray(
-                    object = self.nominal - other,
-                    derivatives = [(self, 1.0)])
+                nominal=self.nominal - other,
+                derivatives=[(self, 1.0)])
 
     def __mul__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                    object = self.nominal * other.nominal,
-                    derivatives = [(self, other.nominal), (other, self.nominal)])
+                nominal=self.nominal * other.nominal,
+                derivatives=[(self, other.nominal), (other, self.nominal)])
         else:
             return undarray(
-                    object = self.nominal * other,
-                    derivatives = [(self, other)])
+                nominal=self.nominal * other,
+                derivatives=[(self, other)])
 
     def __div__(self, other):
         if isinstance(other, undarray):
             return self * (1.0 / other)
+                          # calls other.__rdiv__()
         else:
             return self * (1.0 / numpy.asarray(other))
 
     def __pow__(self, other):
+        # f = b ^ x         b = self    x = other
+        #
+        #
+        # df
+        # -- = d_b (b ^ x)
+        # db
+        #    = d_b (e ^ (ln b . x))
+        #
+        #    =      e ^ (x ln b) . d_b (x ln b)
+        #
+        #    =      b ^ x . (x / b)
+        #
+        #    =      b ^ (x - 1) . x
+        #
+        #
+        # df
+        # -- = d_x (b ^ x)
+        # dx
+        #    = d_x (e ^ (x ln b))
+        #
+        #    =      e ^ (x ln b) . d_x(x ln b)
+        #
+        #    =      b ^ x . (ln b)
         if isinstance(other, undarray):
-            self_pow_other = self.nominal ** other.nominal
+            self_pow_other=self.nominal ** other.nominal
             return undarray(
-                    object = self_pow_other,
-                    derivatives = \
-                        [(self, self.nominal ** (other.nominal - 1) * other.nominal),
-                         (other, self_pow_other * numpy.log(self.nominal))])
+                nominal=self_pow_other,
+                derivatives=\
+                    [(self, self.nominal ** (other.nominal - 1) * \
+                        other.nominal),
+                     (other, self_pow_other * numpy.log(self.nominal))])
 
         else:
-            other = numpy.asarray(other)
+            other=numpy.asarray(other)
             return undarray(
-                    object = self.nominal ** other,
-                    derivatives = \
-                        [(self, self.nominal ** (other - 1) * other)])
+                nominal=self.nominal ** other,
+                derivatives=[(self, self.nominal ** (other - 1) * other)])
 
     #
     # Reverse binary arithmetics ...
     #
 
     def __radd__(self, other):
-        # OTHER is not an undarray.
+        # *other* is not an undarray.
         return undarray(
-                object = other + self.nominal,
-                derivatives = [(self, 1.0)])
+                nominal=(other + self.nominal),
+                derivatives=[(self, 1.0)])
 
     def __rsub__(self, other):
-        # OTHER is not an undarray.
+        # *other* is not an undarray.
         return undarray(
-                object = other - self.nominal,
-                derivatives = [(self, -1.0)])
+                nominal=(other - self.nominal),
+                derivatives=[(self, -1.0)])
 
     def __rmul__(self, other):
-        # OTHER is not an undarray.
+        # *other* is not an undarray.
         return undarray(
-                object = other * self.nominal,
-                derivatives = [(self, other)])
+                nominal=(other * self.nominal),
+                derivatives=[(self, other)])
 
     def __rdiv__(self, other):
-        # OTHER is not an undarray.
-        other = numpy.asarray(other)
+        # *other* is not an undarray.
+#X?        other=numpy.asarray(other)
+        #
+        # f = other / self = other . self ^ (-1)
+        #
+        # d_self f = other . (-1) . self ^ (-2) 
+        #
         return undarray(
-                object = other / self.nominal,
-                derivatives = [(self, -other / self.nominal ** 2)])
+                nominal=(other / self.nominal),
+                derivatives=[(self, -other / self.nominal ** 2)])
 
     def __rpow__(self, other):
-        # OTHER is not an undarray.
-        other_pow_self = other ** self.nominal
+        # *other* is not an undarray.
+        other_pow_self=other ** self.nominal
+        # See :meth:`__pow__`.
         return undarray(
-                object = other_pow_self,
-                derivatives = \
+                nominal=other_pow_self,
+                derivatives=\
                         [(self, other_pow_self * numpy.log(other))])
 
     #
@@ -530,21 +580,42 @@ class undarray:
 
     def __neg__(self):
         return undarray(
-                object = -self.nominal,
-                derivatives = [(self, -1)])
+            nominal=(-self.nominal),
+            derivatives=[(self, -1)])
 
     def __abs__(self):
-        """This works for real-valued undarrays."""
-        
-        # Calculate an inversion mask ...
+        absolute_value = numpy.abs(self.nominal)
+        nominal_prepared = self.nominal + (self.nominal == 0)
+        normalisation_factor = absolute_value / nominal_prepared
+            # When an element of self.nominal is zero, its absolute
+            # value is zero as well, and the 1.0 introduced in
+            # ``nominal_prepared`` is effectless: the normalisation
+            # factor turns out as zero.
+        return undarray(
+            nominal=absolute_value,
+            derivatives=[(self, normalisation_factor)],
+        )
+        # For complex undarrays, the ``absolute_value`` is guaranteed
+        # to be real-valued.  However, the dependencies might turn out
+        # complex, when their phase differs from the phase of
+        # ``self.nominal``.
+        #
+        #    Even in case the phases match, the resulting Dependency
+        # derivatives turn out complex, although with very small
+        # imaginary component.  In such a case, the user might
+        # request the ``.real`` property of ``self``.
 
-        inversion_mask = numpy.ones(shape = self.nominal.shape)
-        inversion_mask -= 2 * (self.nominal < 0)
-
-        # Invert values which must be inverted, and invert also the dependency
-        # of this values on the error source ...
-
-        return self * inversion_mask
+#X?        """This works for real-valued undarrays."""
+#X?        
+#X?        # Calculate an inversion mask ...
+#X?
+#X?        inversion_mask = numpy.ones(shape = self.nominal.shape)
+#X?        inversion_mask -= 2 * (self.nominal < 0)
+#X?
+#X?        # Invert values which must be inverted, and invert also the dependency
+#X?        # of this values on the error source ...
+#X?
+#X?        return self * inversion_mask
     
     #
     # Casts to int, float, ... are impossible, because we have ndarray values.
