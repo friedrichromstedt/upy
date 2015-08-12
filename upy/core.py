@@ -132,20 +132,18 @@ class undarray:
         """If *nominal* is an undarray, its content will be copied.
         
         If *derivatives* and *nominal* are not None, *derivatives*
-        must be a list [(undarray instance: derivative), ...], giving
-        the derivatives with that the new undarray depends on the
-        given undarrays.  *nominal* will be converted to an
+        must be a list ``[(undarray instance, derivative), ...]``,
+        giving the derivatives with that the new undarray depends on
+        the given undarrays.  *nominal* will be converted to a
         numpy.ndarray.
 
         If *stddev* and *nominal* aren't None, *nominal* and *stddev*
         will be copied to numpy.ndarrays.  The initial Characteristic
         will reflect the single dependency expressed by *stddev*.
-        Both *nominal* as well as *stddev* will be copied prior to
-        use.
 
         If *characteristic* and *nominal* are not None, *nominal* is
         copied in order to produce an numpy.ndarray, and the
-        *characteristic* is copied.
+        *characteristic* is copied also.
 
         .. to be phased out:
 
@@ -451,32 +449,38 @@ class undarray:
     def __add__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                nominal=self.nominal + other.nominal,
-                derivatives=[(self, 1.0), (other, 1.0)])
+                nominal=(self.nominal + other.nominal),
+                derivatives=[(self, 1.0), (other, 1.0)],
+            )
         else:
             return undarray(
-                nominal=self.nominal + other,
-                derivatives=[(self, 1.0)])
+                nominal=(self.nominal + other),
+                derivatives=[(self, 1.0)],
+            )
 
     def __sub__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                nominal=self.nominal - other.nominal,
-                derivatives=[(self, 1.0), (other, -1.0)])
+                nominal=(self.nominal - other.nominal),
+                derivatives=[(self, 1.0), (other, -1.0)],
+            )
         else:
             return undarray(
-                nominal=self.nominal - other,
-                derivatives=[(self, 1.0)])
+                nominal=(self.nominal - other),
+                derivatives=[(self, 1.0)],
+            )
 
     def __mul__(self, other):
         if isinstance(other, undarray):
             return undarray(
-                nominal=self.nominal * other.nominal,
-                derivatives=[(self, other.nominal), (other, self.nominal)])
+                nominal=(self.nominal * other.nominal),
+                derivatives=[(self, other.nominal), (other, self.nominal)],
+            )
         else:
             return undarray(
-                nominal=self.nominal * other,
-                derivatives=[(self, other)])
+                nominal=(self.nominal * other),
+                derivatives=[(self, other)],
+            )
 
     def __div__(self, other):
         if isinstance(other, undarray):
@@ -510,19 +514,21 @@ class undarray:
         #
         #    =      b ^ x . (ln b)
         if isinstance(other, undarray):
-            self_pow_other=self.nominal ** other.nominal
+            self_pow_other = self.nominal ** other.nominal
             return undarray(
                 nominal=self_pow_other,
                 derivatives=\
                     [(self, self.nominal ** (other.nominal - 1) * \
                         other.nominal),
-                     (other, self_pow_other * numpy.log(self.nominal))])
+                     (other, self_pow_other * numpy.log(self.nominal))],
+            )
 
         else:
-            other=numpy.asarray(other)
+            other = numpy.asarray(other)
             return undarray(
-                nominal=self.nominal ** other,
-                derivatives=[(self, self.nominal ** (other - 1) * other)])
+                nominal=(self.nominal ** other),
+                derivatives=[(self, self.nominal ** (other - 1) * other)],
+            )
 
     #
     # Reverse binary arithmetics ...
@@ -531,20 +537,23 @@ class undarray:
     def __radd__(self, other):
         # *other* is not an undarray.
         return undarray(
-                nominal=(other + self.nominal),
-                derivatives=[(self, 1.0)])
+            nominal=(other + self.nominal),
+            derivatives=[(self, 1.0)],
+        )
 
     def __rsub__(self, other):
         # *other* is not an undarray.
         return undarray(
-                nominal=(other - self.nominal),
-                derivatives=[(self, -1.0)])
+            nominal=(other - self.nominal),
+            derivatives=[(self, -1.0)],
+        )
 
     def __rmul__(self, other):
         # *other* is not an undarray.
         return undarray(
-                nominal=(other * self.nominal),
-                derivatives=[(self, other)])
+            nominal=(other * self.nominal),
+            derivatives=[(self, other)],
+        )
 
     def __rdiv__(self, other):
         # *other* is not an undarray.
@@ -555,17 +564,18 @@ class undarray:
         # d_self f = other . (-1) . self ^ (-2) 
         #
         return undarray(
-                nominal=(other / self.nominal),
-                derivatives=[(self, -other / self.nominal ** 2)])
+            nominal=(other / self.nominal),
+            derivatives=[(self, -other / self.nominal ** 2)],
+        )
 
     def __rpow__(self, other):
         # *other* is not an undarray.
-        other_pow_self=other ** self.nominal
+        other_pow_self = other ** self.nominal
         # See :meth:`__pow__`.
         return undarray(
-                nominal=other_pow_self,
-                derivatives=\
-                        [(self, other_pow_self * numpy.log(other))])
+            nominal=other_pow_self,
+            derivatives=[(self, other_pow_self * numpy.log(other))],
+        )
 
     #
     # Augmented arithmetics will be emulated ...
@@ -589,7 +599,7 @@ class undarray:
         normalisation_factor = absolute_value / nominal_prepared
             # When an element of self.nominal is zero, its absolute
             # value is zero as well, and the 1.0 introduced in
-            # ``nominal_prepared`` is effectless: the normalisation
+            # ``nominal_prepared`` is effectless:  The normalisation
             # factor turns out as zero.
         return undarray(
             nominal=absolute_value,
@@ -670,8 +680,9 @@ class undarray:
         KEY both to the value and the Characteristic. """
 
         return undarray(
-                object=self.value[key],
-                characteristic = self.characteristic[key])
+            nominal=self.nominal[key],
+            characteristic = self.characteristic[key],
+        )
 
     def __setitem__(self, key, value):
         """ Updates the given subset of the undarray, by replacing the
@@ -793,18 +804,31 @@ class undarray:
 
         # Retrieve the mask where to set the error to 0.0.
         changed_mask = (self.nominal != clipped_nominal)
-        
-        # Retrieve the clipped undarray ...
 
-        # Work on a copy.
-        copy = self.copy()
-
-        # Set the nominal values of the undarray to the clipped
-        # nominal values.
-        copy.nominal = clipped_nominal
-
-        # Clear the error for all masked elemeents.
-        copy.characteristic.clear(changed_mask)
+        copied_characteristic = self.characteristic.copy()
+        copied_characteristic.clear(changed_mask)
+            # This statement finally boils down in :class:`Dependency`
+            # to:
+            #
+            #   >>> import numpy
+            #   >>> a = numpy.arange(10).reshape(2, 5)
+            #   >>> a
+            #   array([[0, 1, 2, 3, 4],
+            #          [5, 6, 7, 8, 9]])
+            #   >>> idx = (a % 2) == 0
+            #   >>> idx
+            #   array([[ True, False,  True, False,  True],
+            #          [False,  True, False,  True, False]], dtype=bool)
+            #   >>> a[idx]
+            #   array([0, 2, 4, 6, 8])
+            #   >>> a[idx] = -1
+            #   >>> a
+            #   array([[-1,  1, -1,  3, -1],
+            #          [ 5, -1,  7, -1,  9]])
+        return undarray(
+            nominal=clipped_nominal,
+            characteristic=copied_characteristic,
+        )
 
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
@@ -836,99 +860,107 @@ class undarray:
         )   # The constructor performs the copying.
             
 
-    def cumprod(self, axis=None):
-        """Calculate the cumulative product along axis AXIS.  If AXIS is not
-        given, perform the operation on the flattened array."""
-
-        if axis is None:
-            # Promote the call to the flattened array.
-            return self.flatten().cumprod(axis=0)
-        
-        else:
-            # Perform an axis-wise operation ...
-
-            # Calculate the resulting shape.  Cut out the index at position
-            # AXIS from the .shape attribute.
-            result_shape = numpy.\
-                    concatenate((self.shape[:axis], self.shape[axis + 1:]))
-
-            # Prepare the result undarray.
-            result = uzeros(result_shape)
-            
-            # Perform the cumulative product calculation.
-
-            # Calculate the index position prefix:
-            index_position_prefix = numpy.zeros(axis)
-
-            cumprod = 1.0  # Placeholder which will be immediately replaced
-            for index in xrange(0, self.shape[axis]):
-                # Calculate the index where to take data from and where to
-                # put data:
-                #
-                # This indices are the same.  When AXIS == 0, 
-                # *index_position_prefix* == [].  I.e., put data in the first
-                # coordinate, and take data from the first coordinate.  When
-                # *axis* == 1, *index_position_prefix* == [0].  I.e., put data
-                # in the second coordinate, and take data from the second
-                # coordinate.
-                index_position = numpy.\
-                        concatenate((index_position_prefix, [index]))
-
-                # Retrieve the current element:
-                current_element = self[index_position]
-
-                # Multiply the CUMPROD variable by the current element.
-                cumprod *= current_element
-
-                # Put the newly calculated element:
-                result[index_position] = cumprod
-
-            # We're done!
-            return result
+# This method is deprecated, because its implementation is too rough.
+# I feel it is better to _not_ provide an implementation when it
+# cannot be done elegantly.
+#
+#X    def cumprod(self, axis=None):
+#X        """Calculate the cumulative product along axis AXIS.  If AXIS is not
+#X        given, perform the operation on the flattened array."""
+#X
+#X        if axis is None:
+#X            # Promote the call to the flattened array.
+#X            return self.flatten().cumprod(axis=0)
+#X        
+#X        else:
+#X            # Perform an axis-wise operation ...
+#X
+#X            # Calculate the resulting shape.  Cut out the index at position
+#X            # AXIS from the .shape attribute.
+#X            result_shape = numpy.\
+#X                    concatenate((self.shape[:axis], self.shape[axis + 1:]))
+#X
+#X            # Prepare the result undarray.
+#X            result = uzeros(result_shape)
+#X            
+#X            # Perform the cumulative product calculation.
+#X
+#X            # Calculate the index position prefix:
+#X            index_position_prefix = numpy.zeros(axis)
+#X
+#X            cumprod = 1.0  # Placeholder which will be immediately replaced
+#X            for index in xrange(0, self.shape[axis]):
+#X                # Calculate the index where to take data from and where to
+#X                # put data:
+#X                #
+#X                # This indices are the same.  When AXIS == 0, 
+#X                # *index_position_prefix* == [].  I.e., put data in the first
+#X                # coordinate, and take data from the first coordinate.  When
+#X                # *axis* == 1, *index_position_prefix* == [0].  I.e., put data
+#X                # in the second coordinate, and take data from the second
+#X                # coordinate.
+#X                index_position = numpy.\
+#X                        concatenate((index_position_prefix, [index]))
+#X
+#X                # Retrieve the current element:
+#X                current_element = self[index_position]
+#X
+#X                # Multiply the CUMPROD variable by the current element.
+#X                cumprod *= current_element
+#X
+#X                # Put the newly calculated element:
+#X                result[index_position] = cumprod
+#X
+#X            # We're done!
+#X            return result
 
     def flatten(self, *flatten_args, **flatten_kwargs):
         """Returns a copy with flatten()'ed arrays."""
 
-        object = self.value.flatten(
-                *flatten_args, **flatten_kwargs)
         return undarray(
-                object = object,
-                characteristic = self.characteristic.flatten(
-                    new_shape = object.shape,
-                    *flatten_args, **flatten_kwargs))
+            nominal=self.nominal.flatten(
+                *flatten_args, **flatten_kwargs,
+            ),
+            characteristic=self.characteristic.flatten(
+                *flatten_args, **flatten_kwargs,
+            ),
+        )
 
     def repeat(self, *repeat_args, **repeat_kwargs):
         """Returns a copy with repeat()'ed arrays."""
 
-        object = self.value.repeat(
-                *repeat_args, **repeat_kwargs)
         return undarray(
-                object = object,
-                characteristic = self.characteristic.repeat(
-                    new_shape = object.shape,
-                    *repeat_args, **repeat_kwargs))
+            nominal=self.nominal.repeat(
+                *repeat_args, **repeat_kwargs,
+            ),
+            characteristic=self.characteristic(
+                *repeat_args, **repeat_kwargs,
+            ),
+        )
 
     def reshape(self, *reshape_args, **reshape_kwargs):
         """Returns a copy with reshape()'ed arrays."""
 
-        object = self.value.reshape(
-                *reshape_args, **reshape_kwargs)
         return undarray(
-                object = object,
-                characteristic = self.characteristic.reshape(
-                    new_shape = object.shape,
-                    *reshape_args, **reshape_kwargs))
+            nominal=self.nominal.reshape(
+                *reshape_args, **reshape_kwargs,
+            ),
+            characteristic=self.characteristic(
+                *reshape_args, **reshape_kwargs,
+            ),
+        )
 
     def transpose(self, *transpose_args, **transpose_kwargs):
         """Returns a copy with transpos()'ed arrays."""
 
-        object = self.value.transpose(
-                *transpose_args, **transpose_kwargs)
         return undarray(
-                object = object,
-                characteristic = self.characteristic.transpose(
-                    new_shape = object.shape,
-                    *transpose_args, **transpose_kwargs))
+            nominal=self.nominal.transpose(
+                *transpose_args, **transpose_kwargs,
+            ),
+            characteristic=self.characteristic(
+                *transpose_args, **transpose_kwargs,
+            ),
+        )
 
     #
     # String conversion ...
