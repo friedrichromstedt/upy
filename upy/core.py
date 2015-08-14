@@ -261,7 +261,7 @@ class undarray:
 
             # Construct a new undarray with an empty Characteristic.
 
-            nominal = numpy.asarray(nominal)
+            nominal = numpy.copy(nominal)
             self.nominal = nominal
 
             self.shape = self.nominal.shape
@@ -723,6 +723,9 @@ class undarray:
 #XX        elif isinstance(value, numpy.ndarray):
         else:
             value = numpy.asarray(value)
+                # We do not copy because the *value* isn't stored
+                # anywhere inside this ``undarray`` instance; it is
+                # used in a key assignment below.
             # Set errorless values from the ndarray *value* ...
 
             # The ability to broadcast *value* is a feature; in that
@@ -790,7 +793,7 @@ class undarray:
 
         return self.nominal.argsort(*args, **kwargs)
 
-    def clip(self, a, a_min, a_max):
+    def clip(self, a_min, a_max):
         """Refer to numpy.clip() for documentation of the functionality.
         
         The errors of the clipped values will be set to zero and any
@@ -835,7 +838,7 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.compress(
-                    *comress_args, **compress_kwargs,
+                *comress_args, **compress_kwargs,
             ),
             characteristic=self.characteristic.compress(
                 *compress_args, **compress_kwargs,
@@ -933,7 +936,7 @@ class undarray:
             nominal=self.nominal.repeat(
                 *repeat_args, **repeat_kwargs,
             ),
-            characteristic=self.characteristic(
+            characteristic=self.characteristic.repeat(
                 *repeat_args, **repeat_kwargs,
             ),
         )
@@ -945,7 +948,7 @@ class undarray:
             nominal=self.nominal.reshape(
                 *reshape_args, **reshape_kwargs,
             ),
-            characteristic=self.characteristic(
+            characteristic=self.characteristic.reshape(
                 *reshape_args, **reshape_kwargs,
             ),
         )
@@ -957,7 +960,7 @@ class undarray:
             nominal=self.nominal.transpose(
                 *transpose_args, **transpose_kwargs,
             ),
-            characteristic=self.characteristic(
+            characteristic=self.characteristic.transpose(
                 *transpose_args, **transpose_kwargs,
             ),
         )
@@ -965,14 +968,15 @@ class undarray:
     #
     # String conversion ...
     #
-    
-    def printable(self, sigmas = None,
-            enforce_sign_value = None, enforce_sign_exponent = None,
-            format = None,
-            precision = None, infinite_precision = None):
+
+    def printable(self,
+        stddevs=None, format=None, precision=None,
+        infinite_precision=None,
+        enforce_sign_value=None, enforce_sign_exponent=None,
+    ):
         """Return a printable object created from this undarray instance.
         
-        SIGMA sigmas will be displayed as uncertainty (default 2).  
+        *stddevs* sigmas will be displayed as uncertainty (default 2).
         
         To enforce the printing of optional '+' signs in the value and the
         exponent, use ENFORCE_SIGN_VALUE and ENFORCE_SIGN_EXPONENT.  
@@ -998,16 +1002,17 @@ class undarray:
         numpy.set_printoptions()."""
 
         return upy.printable.PrintableUndarray(self,
-                sigmas = sigmas,
-                enforce_sign_value = enforce_sign_value,
-                enforce_sign_exponent = enforce_sign_exponent,
-                format = format,
-                precision = precision,
-                infinite_precision = infinite_precision)
+            stddevs=stddevs,
+            enforce_sign_value=enforce_sign_value,
+            enforce_sign_exponent=enforce_sign_exponent,
+            format=format,
+            precision=precision,
+            infinite_precision=infinite_precision,
+        )
 
     def __str__(self):
-        """For scalar undarrays, return a useful print value of the value
-        and the error.  For everything else, return some symbolic string."""
+#X        """For scalar undarrays, return a useful print value of the value
+#X        and the error.  For everything else, return some symbolic string."""
 
         return str(self.printable())
 
