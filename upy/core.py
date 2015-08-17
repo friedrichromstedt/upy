@@ -261,8 +261,7 @@ class undarray:
 
             # Construct a new undarray with an empty Characteristic.
 
-            nominal = numpy.copy(nominal)
-            self.nominal = nominal
+            self.nominal = numpy.copy(nominal)
 
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
@@ -970,7 +969,7 @@ class undarray:
     #
 
     def printable(self,
-        stddevs=None, format=None, precision=None,
+        stddevs, format=None, precision=None,
         infinite_precision=None,
         enforce_sign_value=None, enforce_sign_exponent=None,
     ):
@@ -1014,6 +1013,7 @@ class undarray:
 #X        """For scalar undarrays, return a useful print value of the value
 #X        and the error.  For everything else, return some symbolic string."""
 
-        return str(self.printable())
+#        return str(self.printable())
+        return "<undarray of shape %s>" % (self.shape)
 
     # No sensible repr(), because the object's interior is complex.
