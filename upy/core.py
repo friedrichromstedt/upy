@@ -82,7 +82,7 @@ def uzeros(shape, dtype=None):
     dtype *dtype*.  All *shape* arguments accepted by
     ``numpy.zeros()`` will work. """
 
-    return undarray(nominal=numpy.zeros(shape, dtype=dtype))
+    return undarray(shape=shape, dtype=dtype)
 
 #? def zeros(shape):
 #?     """Equivalent to :func:`uzeros`.
@@ -142,8 +142,8 @@ class undarray:
         will reflect the single dependency expressed by *stddev*.
 
         If *characteristic* and *nominal* are not None, *nominal* is
-        copied in order to produce an numpy.ndarray, and the
-        *characteristic* is copied also.
+        copied in order to produce a numpy.ndarray, and the
+        *characteristic* is copied as well.
 
         .. to be phased out:
 
