@@ -1,0 +1,63 @@
+=====  Somewhen in August 2015  =====
+
+
+At the moment, the array is printed "twice":
+
+1.  In order to find the maximum widths;
+2.  In order to find the complete str.
+
+This is probably not the Right Thing (tm).
+
+Alternative:
+
+-   Using a subclass of str, which can adjust its width.
+-   Returning a concatenation of such str subtypes.
+-   Ordinary __str__ conversion of the str subclass returns the
+    subclass instance unchanged
+-   A special method can be called upon to finalise the string,
+    resulting in an ordinary 'str' instance.
+
+undarrays are typeset by "Typesetters".  They hold the typesetting
+parameters for their kind of typesetting.  There are:
+
+-   float typesetters;
+-   int typesetters;
+-   exp typesetters.
+
+To print an undarray, a method of the typesetter is called with the
+undarray in question as argument.
+
+There exists a default typesetter 'upy.typesetter' which is used in
+case of ordinary 'print ua' et al.  It can be set via a method
+'upy.set_typesetter', which prevents typos to go without notice.
+
+Typesetters are definitive in terms of typesetting type performed.
+Making the ouput dependent on the kind of undarray handed over (float,
+integer) is deprecated by this.  No magic please.
+
+Subclassing the return value from 'str' is necessary only because the
+return value need to be an instance of 'str'.
+
+
+=====  31 August 2015  =====
+
+
+Upon calling ``undarray.__str__``, the following mechanism is used:
+
+1.  The object ndarray is populated by iterating over the flattened
+    contents of the undarray, and reshaping the result.
+
+2.  The __str__ method of that object ndarray is invoked, returning an
+    instance of the ``str`` subclass.  While the elements of the
+    object ndarray are passed through ``str`` by numpy, the width
+    variables are updated to record the maxmimum width.
+
+3.  Inside of the ``undarray``\ 's ``__str__`` method, the returned
+    ``str`` subclass instance is "finalised", returning the string
+    bodies padded to the maximum width.
+
+4.  The such resulting ordinary ``str`` instance is returned by the
+    ``undarray.__str__`` method.
+
+Instances of the augmented ``str`` subclass never propagate to the
+user level.
