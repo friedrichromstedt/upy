@@ -837,10 +837,10 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.compress(
-                *comress_args, **compress_kwargs,
+                *comress_args, **compress_kwargs
             ),
             characteristic=self.characteristic.compress(
-                *compress_args, **compress_kwargs,
+                *compress_args, **compress_kwargs
             ),
         )
 
@@ -921,10 +921,10 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.flatten(
-                *flatten_args, **flatten_kwargs,
+                *flatten_args, **flatten_kwargs
             ),
             characteristic=self.characteristic.flatten(
-                *flatten_args, **flatten_kwargs,
+                *flatten_args, **flatten_kwargs
             ),
         )
 
@@ -933,10 +933,10 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.repeat(
-                *repeat_args, **repeat_kwargs,
+                *repeat_args, **repeat_kwargs
             ),
             characteristic=self.characteristic.repeat(
-                *repeat_args, **repeat_kwargs,
+                *repeat_args, **repeat_kwargs
             ),
         )
 
@@ -945,10 +945,10 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.reshape(
-                *reshape_args, **reshape_kwargs,
+                *reshape_args, **reshape_kwargs
             ),
             characteristic=self.characteristic.reshape(
-                *reshape_args, **reshape_kwargs,
+                *reshape_args, **reshape_kwargs
             ),
         )
 
@@ -957,10 +957,10 @@ class undarray:
 
         return undarray(
             nominal=self.nominal.transpose(
-                *transpose_args, **transpose_kwargs,
+                *transpose_args, **transpose_kwargs
             ),
             characteristic=self.characteristic.transpose(
-                *transpose_args, **transpose_kwargs,
+                *transpose_args, **transpose_kwargs
             ),
         )
 
