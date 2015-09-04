@@ -243,6 +243,8 @@ class PrintableElement:
             # Format 'float' or 'int'.
             return str(strings_value) + ' +- ' + str(strings_uncertainty) + ' '
 
+    __repr__ = __str__
+
 
 class Widths:
     def __init__(self):
