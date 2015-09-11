@@ -1,0 +1,130 @@
+=====  4 September 2015  =====
+
+
+Desired Functionality
+=====================
+
+This document describes the needed functionality in printing undarray
+instances.
+
+We consider a list of values with uncertainties::
+
+    10 +- 1
+    100 +- 1
+    100 +- 10
+    10 +- 100
+    10 +- 1000
+
+
+Scientific Typesetter
+---------------------
+
+When the nominal value is nonzero, the exponent is determined from the
+nominal value, otherwise the exponent is determined from the error in
+the same fashion as it is determined from the nominal value.
+
+Once the exponent is determined, both numbers can be formatted as
+floating-point decimal numbers.
+
+The precision of the output of both the nominal value as well as the
+error is determined from the error.  The rightmost digit displayed is
+determined from the left-most digit of the error (in decimal
+representation).
+
+Each item formatted independently::
+
+    (1.00 +- 0.10) 10^1
+    (1.000 +- 0.010) 10^2
+    (1.00 +- 0.10) 10^2
+    (1 +- 10) 10^1
+    (00 +- 100) 10^1
+
+For the "ordinary" cases::
+
+    Input       Exponent    Rightmost   Nominal     Error
+                            Digit
+
+    10 +- 1     10^1        10^-1       1.00 10^1   0.10 10^1
+    100 +- 1    10^2        10^-1       1.000 10^2  0.010 10^2
+    100 +- 10   10^2        10^0        1.00 10^2   0.10 10^1
+
+For the latter two (RMD = Rightmost Digit)::
+
+    Input           Exponent    RMD     Nominal     Error
+    
+    10 +- 100       10^1        10^1    1 10^1      10 10^1     
+    10 +- 1000      10^1        10^2    00 10^1 ?   100 10^1
+
+
+=====  11 September 2015  =====
+
+
+/  Trying again  /
+
+
+Input                       10 +- 1                 10 +- 10            10 +- 100           10 +- 1000
+
+Nominal w/o normalisation   10                      10                  10                  10
+Error w/o normalisation     1                       10                  100                 1000
+
+Normalisation factor        10^-1                   10^-1               10^-1               10^-1
+Inverse n/factor            10^1                    10^1                10^1                10^1
+
+Nominal w/ normalisation    1                       1                   1                   1
+Error w/ normalisation      0.1                     1                   10                  100
+
+Precision (from Error)      -2                      -1                  0                   1
+Digit stream Nominal        100                     10                  1                   0
+Digit stream Error          10                      10                  10                  10
+
+Needed stream length        3                       2                   0 pad-zeros         1 pad-zero
+Padded d/stream Nominal     100                     10                  1                   00
+Padded d/stream Error       010                     10                  10                  100
+
+Final string Nominal        1.00                    1.0                 1                   00
+Final string Error          0.10                    1.0                 10                  100
+
+Result                      (1.00 +- 0.10) 10^1     (1.0 +- 1.0) 10^1   (1 +- 10) 10^1      (00 +- 100) 10^1
+
+/ okay /
+
+
+Let there be a column array consisting of the items [:36-:40].  Which format shall be used in printing?
+
+1.  Mantissa and Exponent right or left justified, resp.::
+
+          (1.00 +- 0.10) 10^1
+        (1.000 +- 0.010) 10^2
+          (1.00 +- 0.10) 10^2
+               (1 +- 10) 10^1
+             (00 +- 100) 10^1
+
+2.  Multiple columns: a) for nominal mantissa, b) for error mantissa, c) for exponent.  Mantissas shall be aligned at the point.  Also a separate column for '+-'.  Closing paranthese in a sparate column as well.  Result::
+    
+        ( 1.00  +-   0.10 ) 10^1
+        ( 1.000 +-   0.010) 10^2
+        ( 1.00  +-   0.10 ) 10^2
+        ( 1     +-  10    ) 10^1
+        (00     +- 100    ) 10^1
+    
+    Hence columns:
+    
+    1)  nominal mantissa, before the point;     =>  right-justified
+    2)  ditto, the point;                       =>  centred (singular character, or empty)
+    3)  ditto, behind the point;                =>  left-justified
+    4)  error mantissa, before the point;       =>  right-justified
+    5)  ditto, the point;                       =>  centred (singular char)
+    6)  ditto, behind the point;                =>  left-justified
+    7)  the exponent.                           =>  right-justified
+
+    Before column [1], insertion of '('.  Between columns 3 and 4, insertion of ' +- '.  Between columns 6 and 7, insertion of ') 10^'.
+
+    An example showing the right-justification of the exponent::
+
+        ( 1.00  +-   0.10 ) 10^ 1
+        ( 1.000 +-   0.010) 10^ 2
+        ( 1.00  +-   0.10 ) 10^ 2
+        ( 1     +-  10    ) 10^ 1
+        (00     +- 100    ) 10^ 1
+        ( ...   +-  ....  ) 10^-1
+        ( ...   +-  ....  ) 10^12
