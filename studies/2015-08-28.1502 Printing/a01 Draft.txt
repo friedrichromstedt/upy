@@ -36,7 +36,7 @@ Making the ouput dependent on the kind of undarray handed over (float,
 integer) is deprecated by this.  No magic please.
 
 Subclassing the return value from 'str' is necessary only because the
-return value need to be an instance of 'str'.
+return values need to be an instance of 'str'.
 
 
 =====  31 August 2015  =====
@@ -61,3 +61,24 @@ Upon calling ``undarray.__str__``, the following mechanism is used:
 
 Instances of the augmented ``str`` subclass never propagate to the
 user level.
+
+
+=====  11 September 2015  =====
+
+
+There should be a mechanism to automatically insert pad spaces between
+uncertain elements, because numpy inserts one pad space, but the space
+between the mantissa and the exponent is one space wide already.  At
+the end of the line no space shall be added.
+
+Consider::
+
+    >>> ar = numpy.arange(12).reshape((3, 4))
+    >>> ar
+    array([[ 0,  1,  2,  3],
+           [ 4,  5,  6,  7],
+           [ 8,  9, 10, 11]])
+
+Hence we drop the complicated pain of registering end-of-line and
+"ordinary" concatenation, and just insert additional spaces before
+*and* after the actual string body.
