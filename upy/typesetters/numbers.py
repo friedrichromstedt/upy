@@ -89,23 +89,10 @@ class TypesetNumber:
         self.right = right
 
 
-class DecimalTypesetter:
-    def __init__(self, typeset_positive_sign):
+class NumberTypesetter:
+    def __init__(self, typeset_positive_sign, ceil=None):
         """ Plusses before positive signs will only be printed when
-        *typeset_positive_sign* is true. """
-
-        selg.typeset_positive_sign = typeset_positive_sign
-
-    def typeset_number(number, precision, ceil=None):
-        """ Returns a decimal representation of *number* as an instance of
-        :class:`TypesetNumber` with a certain precision.
-
-        The rightmost nonzero digit of the representation is at
-        position *precision* with decimal weigth 10 ** -(*precision*).
-        With *precision* = 2, two digits after the point will be
-        typeset.  With *precision* = -1, one digit before the point
-        will be zeroed.  With *precision* = 0, all digits before the
-        point will be typeset.
+        *typeset_positive_sign* is true.
         
         When *ceil* is true, discarded portions of the number (due to
         *precision*) will increase the absolute value of the number
@@ -114,6 +101,20 @@ class DecimalTypesetter:
 
         if ceil is None:
             ceil = False
+
+        self.typeset_positive_sign = typeset_positive_sign
+        self.ceil = ceil
+
+    def typeset(self, number, precision):
+        """ Returns a decimal representation of *number* as an instance of
+        :class:`TypesetNumber` with a certain precision.
+
+        The rightmost nonzero digit of the representation is at
+        position *precision* with decimal weigth 10 ** -(*precision*).
+        With *precision* = 2, two digits after the point will be
+        typeset.  With *precision* = -1, one digit before the point
+        will be zeroed.  With *precision* = 0, all digits before the
+        point will be typeset. """
 
         # Calculate the sign ...
 
@@ -136,7 +137,7 @@ class DecimalTypesetter:
         # When e.g. precision = -1, *absolute* needs to be multiplied
         # by 10 ** (-1) prior to int conversion.
 
-        if not ceil:
+        if not self.ceil:
             digitstream_number = int(round(
                 absolute * 10 ** (precision)))
         else:
