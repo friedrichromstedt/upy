@@ -70,7 +70,7 @@ class AdjustableString(str):
     def __radd__(self, other):
         return Sum(other, self)
     
-    def finalise(self):
+    def adjust(self):
         return self.rule.apply(self.body)
 
 
@@ -90,5 +90,5 @@ class Sum(AdjustableString):
         self.a = asadjstr(a)
         self.b = asadjstr(b)
 
-    def finalise(self):
-        return self.a.finalise() + self.b.finalise()
+    def adjust(self):
+        return self.a.adjust() + self.b.adjust()

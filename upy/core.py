@@ -7,7 +7,7 @@ import upy.characteristic
 import upy.printable
 import warnings
 
-__all__ = ['undarray', 'uzeros', 'asundarray']
+__all__ = ['undarray', 'uzeros', 'asuarray']
 
 """The central module, implementing the uncertain ndarray: undarray."""
 

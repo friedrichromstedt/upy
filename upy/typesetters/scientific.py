@@ -5,20 +5,21 @@
 
 from upy.typesetters.adjstr import RuleLeft, RuleRight, RuleCentre, \
     AdjustableString
-from upy.typesetters.typesetter import NumberTypesetter
-from upy.typesetters.analysis import \
-    get_position_of_leftmost_digit
+from upy.typesetters.numbers import \
+    get_position_of_leftmost_digit, \
+    NumberTypesetter, \
+    TypesetNumber
 
 
 class ScientificRule:
     def __init__(self):
-        self.nominal_before = RuleRight()
+        self.nominal_left = RuleRight()
         self.nominal_point = RuleCentre()
-        self.nominal_after = RuleLeft()
+        self.nominal_right = RuleLeft()
 
-        self.uncertainty_before = RuleRight()
+        self.uncertainty_left = RuleRight()
         self.uncertainty_point = RuleCentre()
-        self.uncertainty_after = RuleLeft()
+        self.uncertainty_right = RuleLeft()
 
         self.exponent = RuleRight()
 
@@ -28,13 +29,13 @@ class ScientificRule:
         a string *exponent*."""
 
         return '(' + \
-            AdjustableString(nominal.left, self.nominal_before) + \
+            AdjustableString(nominal.left, self.nominal_left) + \
             AdjustableString(nominal.point, self.nominal_point) + \
-            AdjustableString(nominal.right, self.nominal_after) + \
+            AdjustableString(nominal.right, self.nominal_right) + \
             ' +- ' + \
-            AdjustableString(uncertainty.left, self.uncertainty_before + \
+            AdjustableString(uncertainty.left, self.uncertainty_left + \
             AdjustableString(uncertainty.point, self.uncertainty_point + \
-            AdjustableString(uncertainty.right, self.uncertainty_after + \
+            AdjustableString(uncertainty.right, self.uncertainty_right + \
             ') 10^' + \
             AdjustableString(exponent, self.exponent)
 
@@ -69,9 +70,14 @@ class ScientificTypesetter:
         if typeset_possign_exponent is None:
             typeset_possign_exponent = False
         if inifinite_precision is None:
-            infinite_precision = 25
+            infinite_precision = 11
+            # >>> len(str(math.pi))
+            # 13
+            # >>> len(str(math.pi).split('.')[1])
+            # 11
+            # ( same holds for numpy.pi )
 
-        self.value_typesetter = NumberTypesetter(
+        self.nominal_typesetter = NumberTypesetter(
             typeset_positive_sign=typeset_possign_value)
         self.uncertainty_typesetter = NumberTypesetter(
             ceil=True)
@@ -94,12 +100,12 @@ class ScientificTypesetter:
         exponent is extracted from the nominal value, and the
         precision is extracted from the uncertainty.
 
-        When only the nominal value is != 0, and the uncertainty is
+        When the nominal value is != 0, and the uncertainty is
         zero, the exponent is extracted from *nominal*, but the
         uncertainty is printed as "0" plain, while the precision is
         the "infinite precision" handed over on initialisation time.
 
-        When the nominal value is zero, but the uncertainty is not,
+        When the nominal value is zero, and the uncertainty is not,
         the exponent is extracted from the uncertainty, the
         uncertainty is printed with the precision handed over on
         initialisation time, and the nominal value is printed as "0".
@@ -144,7 +150,7 @@ class ScientificTypesetter:
                 #
                 # The precision names the last digit printed.
             
-            typeset_nominal = self.value_typesetter.typeset(
+            typeset_nominal = self.nominal_typesetter.typeset(
                 mantissa_nominal, mantissa_precision)
             typeset_uncertainty = self.uncertainty_typesetter.typeset(
                 mantissa_uncertainty, mantissa_precision)
@@ -164,46 +170,70 @@ class ScientificTypesetter:
             # Print with "infinite precision".
 
             exponent = -pos_leftmost_digit_nominal
+            mantissa_nominal = nominal * \
+                10 ** pos_leftmost_digit_nominal
+            mantissa_uncertainty = uncertainty * \
+                10 ** pos_leftmost_digit_nominal
+
+            mantissa_precision = self.infinite_precision
+
+            typeset_nominal = self.nominal_typesetter.typeset(
+                mantissa_nominal, mantissa_precision)
+            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+                mantissa_uncertainty, mantissa_precision)
+            typset_exponent = str(exponent)
+
+            return rule.apply(
+                nominal=typeset_nominal,
+                uncertainty=typeset_uncertainty,
+                exponent=typeset_exponent,
+            )
 
         elif pos_leftmost_digit_nominal is None \
         and pos_leftmost_digit_uncertainty is not None:
-            pass
+            # Only the uncertainty features counting digits; the
+            # nominal value does not.
+            # 
+            # Obtain the exponent and the precision from the
+            # uncertainty.
+
+            exponent = -pos_leftmost_digit_uncertainty
+            # mantissa_nominal  is not needed.
+            mantissa_uncertainty = uncertainty * \
+                10 ** pos_leftmost_digit_uncertainty
+
+            mantissa_precision = (self.relative_precision - 1)
+            # The exponent is extracted from the uncertainty, s.t. the
+            # precision is fixed to (self.relative_precision - 1).
+            # E.g., for relative_precision == 2, two counting digits
+            # of the uncertainty shall be printed, which is
+            # accomplished by setting the printing precision to 1.
+            # The printing precision gives the position of the last
+            # printed digit.
+
+            typeset_nominal = TypesetNumber(
+                left='0', point='', right='',
+            )
+            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+                mantissa_uncertainty, mantissa_precision)
+            typset_exponent = str(exponent)
+
+            return rule.apply(
+                nominal=typset_nominal,
+                uncertainty=typset_uncertainty,
+                exponent=typeset_exponent,
+            )
 
         elif pos_leftmost_digit_nominal is None \
         and pos_leftmost_digit_uncertainty is None:
-            pass
+            # None of both numbers exhibits counting digits.
 
-        # Determine the exponent ...
-        #
-        # For pos = 1, the exponent = -1.
+            zero = TypesetNumber(
+                left='0', poin='', right='',
+            )
 
-        if pos_leftmost_digit_nominal is not None:
-            # Extract the exponent s.t. the nominal value features
-            # one digit before the point.
-            exponent = -pos_leftmost_digit_nominal
-        elif pos_leftmost_digit_uncertainty is not None:
-            # Leave the nominal value alone, and format s.t. the
-            # uncertainty i
-            exponent = -pos_leftmost_digit_uncertainty
-        else:
-            exponent = 0
-
-        # Apply the exponent.
-        #
-        # For pos = 1 (first digit behind the point), exponent = -1,
-        # and a value 0.123, the mantissa is 1.23 = 0.123 10^1
-
-        mantissa_nominal = nominal * 10 ** -exponent
-        mantissa_uncertainty = uncertainty * 10 ** -exponent
-
-        # Determine the exponent and relative precision to use ...
-
-        if pos_leftmost_digit_nominal is not None:
-            exponent = -pos_leftmost_digit_nominal
-            relative_precision = self.relative_precision
-        else:
-            # pos_leftmost_digit_nominal is None
-            if pos_leftmost_digit_uncertainty is not None:
-                exponent = -pos_leftmost_digit_uncertainty
-            else:
-                exponent = 0
+            return rule.apply(
+                nominal=zero,
+                uncertainty=zero,
+                exponent='0',
+            )

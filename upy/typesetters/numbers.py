@@ -76,7 +76,7 @@ def get_position_of_leftmost_digit(number):
         pos += 1
     while (number - number % (10 ** -pos)) != 0:
         pos -= 1
-    return pos
+    return (pos + 1)
 
 
 class TypesetNumber:
