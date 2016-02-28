@@ -3,7 +3,7 @@
 # Built using 'printable.py', part of upy v0.4.11b, developed since
 # Feburary 2010.
 
-from upy.typesetters.adjstr import RuleLeft, RuleRight, RuleCentre, \
+from upy.typesetters.adjstr import LeftRule, RightRule, CentreRule, \
     AdjustableString
 from upy.typesetters.numbers import \
     get_position_of_leftmost_digit, \
@@ -13,15 +13,15 @@ from upy.typesetters.numbers import \
 
 class ScientificRule:
     def __init__(self):
-        self.nominal_left = RuleRight()
-        self.nominal_point = RuleCentre()
-        self.nominal_right = RuleLeft()
+        self.nominal_left = RightRule()
+        self.nominal_point = CentreRule()
+        self.nominal_right = LeftRule()
 
-        self.uncertainty_left = RuleRight()
-        self.uncertainty_point = RuleCentre()
-        self.uncertainty_right = RuleLeft()
+        self.uncertainty_left = RightRule()
+        self.uncertainty_point = CentreRule()
+        self.uncertainty_right = LeftRule()
 
-        self.exponent = RuleRight()
+        self.exponent = RightRule()
 
     def apply(self, nominal, uncertainty, exponent): 
         """ Returns an ``AdjustableString`` instance from
@@ -33,9 +33,9 @@ class ScientificRule:
             AdjustableString(nominal.point, self.nominal_point) + \
             AdjustableString(nominal.right, self.nominal_right) + \
             ' +- ' + \
-            AdjustableString(uncertainty.left, self.uncertainty_left + \
-            AdjustableString(uncertainty.point, self.uncertainty_point + \
-            AdjustableString(uncertainty.right, self.uncertainty_right + \
+            AdjustableString(uncertainty.left, self.uncertainty_left) + \
+            AdjustableString(uncertainty.point, self.uncertainty_point) + \
+            AdjustableString(uncertainty.right, self.uncertainty_right) + \
             ') 10^' + \
             AdjustableString(exponent, self.exponent)
 
@@ -43,7 +43,7 @@ class ScientificRule:
 class ScientificElement:
     def __init__(self, 
             nominal, uncertainty,
-            typesetter, rule
+            typesetter, rule,
     ):
         self.nominal = nominal
         self.uncertainty = uncertainty
@@ -51,10 +51,12 @@ class ScientificElement:
         self.rule = rule
 
     def __repr__(self):
-        return self.typesetter.typeset_element(
+        result = self.typesetter.typeset_element(
             nominal=self.nominal, uncertainty=self.uncertainty,
             rule=self.rule,
         )
+        print "XXX result :", result.__class__
+        return result
 
 
 class ScientificTypesetter:
@@ -69,7 +71,7 @@ class ScientificTypesetter:
             typeset_possign_value = False
         if typeset_possign_exponent is None:
             typeset_possign_exponent = False
-        if inifinite_precision is None:
+        if infinite_precision is None:
             infinite_precision = 11
             # >>> len(str(math.pi))
             # 13
@@ -229,7 +231,7 @@ class ScientificTypesetter:
             # None of both numbers exhibits counting digits.
 
             zero = TypesetNumber(
-                left='0', poin='', right='',
+                left='0', point='', right='',
             )
 
             return rule.apply(

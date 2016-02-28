@@ -88,17 +88,23 @@ class TypesetNumber:
         self.point = point
         self.right = right
 
+    def __str__(self):
+        return self.left + self.point + self.right
+
 
 class NumberTypesetter:
-    def __init__(self, typeset_positive_sign, ceil=None):
+    def __init__(self, typeset_positive_sign=None, ceil=None):
         """ Plusses before positive signs will only be printed when
-        *typeset_positive_sign* is true.
+        *typeset_positive_sign* is true.  Per default such positive
+        signs won't be typeset.
         
         When *ceil* is true, discarded portions of the number (due to
-        *precision*) will increase the absolute value of the number
-        represented b the typesetting result.  The default for *ceil*
-        is ``False``. """
+        *precision*, handed over to :meth:`typeset`) will increase the
+        absolute value of the number represented by the typesetting
+        result.  The default for *ceil* is ``False``. """
 
+        if typeset_positive_sign is None:
+            typeset_positive_sign = False
         if ceil is None:
             ceil = False
 
@@ -158,9 +164,9 @@ class NumberTypesetter:
             # *digitstream* contains all digits of the result.  For
             # *precision* = -1, one zero needs to be appended to
             # obtain all digits of the typeset number.
-            full = digitstream + '0' * precision
+            full = digitstream + '0' * -precision
 
-            left = full
+            left = sign + full
             point = ''
             right = ''
         else:
@@ -187,8 +193,8 @@ class NumberTypesetter:
             # be separated.  When *precision* = 2, two digits at the
             # r.h.s. need to be separated.  *precision* is always > 0
             # in this ``else`` branch.
-            left = full[:-precision]     # *precision* is < 0.
+            left = sign + full[:-precision]     # *precision* is > 0.
             point = '.'
             right = full[-precision:]
 
-        return TypsetNumber(left=left, point=point, right=right)
+        return TypesetNumber(left=left, point=point, right=right)
