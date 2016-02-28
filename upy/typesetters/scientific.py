@@ -4,7 +4,7 @@
 # Feburary 2010.
 
 from upy.typesetters.adjstr import LeftRule, RightRule, CentreRule, \
-    AdjustableString
+    RuledString
 from upy.typesetters.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter, \
@@ -29,15 +29,15 @@ class ScientificRule:
         a string *exponent*."""
 
         return '(' + \
-            AdjustableString(nominal.left, self.nominal_left) + \
-            AdjustableString(nominal.point, self.nominal_point) + \
-            AdjustableString(nominal.right, self.nominal_right) + \
+            RuledString(nominal.left, self.nominal_left) + \
+            RuledString(nominal.point, self.nominal_point) + \
+            RuledString(nominal.right, self.nominal_right) + \
             ' +- ' + \
-            AdjustableString(uncertainty.left, self.uncertainty_left) + \
-            AdjustableString(uncertainty.point, self.uncertainty_point) + \
-            AdjustableString(uncertainty.right, self.uncertainty_right) + \
+            RuledString(uncertainty.left, self.uncertainty_left) + \
+            RuledString(uncertainty.point, self.uncertainty_point) + \
+            RuledString(uncertainty.right, self.uncertainty_right) + \
             ') 10^' + \
-            AdjustableString(exponent, self.exponent)
+            RuledString(exponent, self.exponent)
 
 
 class ScientificElement:
@@ -55,7 +55,6 @@ class ScientificElement:
             nominal=self.nominal, uncertainty=self.uncertainty,
             rule=self.rule,
         )
-        print "XXX result :", result.__class__
         return result
 
 
