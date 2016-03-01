@@ -7,8 +7,7 @@ from upy.typesetters.adjstr import LeftRule, RightRule, CentreRule, \
     RuledString
 from upy.typesetters.numbers import \
     get_position_of_leftmost_digit, \
-    NumberTypesetter, \
-    TypesetNumber
+    NumberTypesetter
 
 
 class ScientificRule:
@@ -26,7 +25,8 @@ class ScientificRule:
     def apply(self, nominal, uncertainty, exponent): 
         """ Returns an ``AdjustableString`` instance from
         ``TypesetNumber`` instances *nominal*, *uncertainty*, and
-        a string *exponent*."""
+        a *exponent*.  Only the integer part of *exponent* is used
+        (i.e., the ``.left`` attribute of the ``TypesetNumber``). """
 
         return '(' + \
             RuledString(nominal.left, self.nominal_left) + \
@@ -37,7 +37,7 @@ class ScientificRule:
             RuledString(uncertainty.point, self.uncertainty_point) + \
             RuledString(uncertainty.right, self.uncertainty_right) + \
             ') 10^' + \
-            RuledString(exponent, self.exponent)
+            RuledString(exponent.left, self.exponent)
 
 
 class ScientificElement:
