@@ -84,6 +84,8 @@ class ScientificTypesetter:
             ceil=True)
             # Uncertainties are always positive, hence the sign is
             # never to be printed.
+        self.exponent_typesetter = NumberTypesetter(
+            typeset_positive_sign=typeset_possign_exponent)
 
         self.relative_precision = relative_precision
         self.infinite_precision = infinite_precision
@@ -155,7 +157,8 @@ class ScientificTypesetter:
                 mantissa_nominal, mantissa_precision)
             typeset_uncertainty = self.uncertainty_typesetter.typeset(
                 mantissa_uncertainty, mantissa_precision)
-            typeset_exponent = str(exponent)
+            typeset_exponent = self.exponent_typesetter.typeset(
+                exponent, precision=0)
 
             return rule.apply(
                 nominal=typeset_nominal,
@@ -182,7 +185,8 @@ class ScientificTypesetter:
                 mantissa_nominal, mantissa_precision)
             typeset_uncertainty = self.uncertainty_typesetter.typeset(
                 mantissa_uncertainty, mantissa_precision)
-            typset_exponent = str(exponent)
+            typeset_exponent = self.exponent_typesetter.typeset(
+                exponent, precision=0)
 
             return rule.apply(
                 nominal=typeset_nominal,
@@ -212,12 +216,12 @@ class ScientificTypesetter:
             # The printing precision gives the position of the last
             # printed digit.
 
-            typeset_nominal = TypesetNumber(
-                left='0', point='', right='',
-            )
+            typeset_nominal = self.nominal_typesetter.typeset(
+                number=0, precision=0)
             typeset_uncertainty = self.uncertainty_typesetter.typeset(
                 mantissa_uncertainty, mantissa_precision)
-            typset_exponent = str(exponent)
+            typeset_exponent = self.exponent_typesetter.typeset(
+                exponent, precision=0)
 
             return rule.apply(
                 nominal=typset_nominal,
@@ -229,12 +233,19 @@ class ScientificTypesetter:
         and pos_leftmost_digit_uncertainty is None:
             # None of both numbers exhibits counting digits.
 
-            zero = TypesetNumber(
-                left='0', point='', right='',
-            )
+            # We pass "0" through the typesetters to allow for
+            # typesetting of e.g. a positive sign character '+'.
+            # Furthermore, it is more clean to use the regular
+            # typesetters.
+            typeset_nominal = self.nominal_typesetter.typeset(
+                number=0, precision=0)
+            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+                number=0, precision=0)
+            typeset_exponent = self.exponent_typsetter.typeset(
+                number=0, precision=0)
 
             return rule.apply(
-                nominal=zero,
-                uncertainty=zero,
-                exponent='0',
+                nominal=typeset_nominal,
+                uncertainty=typeset_uncertainty,
+                exponent=typeset_exponent,
             )
