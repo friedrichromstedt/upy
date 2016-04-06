@@ -80,7 +80,7 @@ def get_position_of_leftmost_digit(number):
 
 
 class TypesetNumber:
-    """ Holds the typeset ingredients for a decimal number
+    """ Holds the typeset ingredients for a decimal fp number
     representation. """
     
     def __init__(self, left, point, right):
@@ -90,6 +90,12 @@ class TypesetNumber:
 
     def __str__(self):
         return self.left + self.point + self.right
+
+# There is no need for a class storing typeset results of integer
+# numbers, because these can cleanly be represented by a plain string.
+# For the same reason, the class name 'TypesetNumber' does not need to
+# be augmented by 'fp' (floating-point), because there is no typeset
+# result class for integer numbers.
 
 
 class NumberTypesetter:
@@ -111,7 +117,7 @@ class NumberTypesetter:
         self.typeset_positive_sign = typeset_positive_sign
         self.ceil = ceil
 
-    def typeset(self, number, precision):
+    def typesetfp(self, number, precision):
         """ Returns a decimal representation of *number* as an instance of
         :class:`TypesetNumber` with a certain precision.
 
@@ -198,3 +204,68 @@ class NumberTypesetter:
             right = full[-precision:]
 
         return TypesetNumber(left=left, point=point, right=right)
+
+    def typesetint(self, number, precision):
+        """ Returns a integer decimal representation of *number* as a
+        plain string.
+
+        The interpretation of *precision* is as it is in
+        :meth:`typesetfp`, with the exception, that *precision* is
+        limited to nonpositive values (*precision* <= 0).
+        
+        Given *precision* <= 0, typesetting *number* as an integer
+        yields a result identical to the ``.left`` attribute of the
+        ``TypesetNumber`` instance returned when passing *number*
+        through :meth:`typesetfp`.  Most notably, rounding and the
+        ``ceil`` mode determined at initialisation will be respected.
+        This applies both to typesetting integer numbers when
+        *precision* < 0 as well as to round'ing or ceil'ing floating
+        point numbers w.r.t. their fractional part.
+        
+        Providing *precision* > 0 is a ``ValueError``. """
+
+        if precision > 0:
+            raise ValueError("Typesetting integers requires a "
+                "nonpositive precision")
+
+        # Calculate the sign ...
+
+        if number < 0:
+            absolute = -number
+            sign = '-'
+        else:
+            absolute = number
+            if self.typeset_positive_sign:
+                sign = '+'
+            else:
+                sign = ''
+
+        # Calculate the integer value containing the counting digits
+        # ...
+        #
+        # When e.g. precision = -1, *absolute* needs to be multiplied
+        # by 10 ** (-1) prior to int conversion.
+
+        if not self.ceil:
+            digitstream_number = int(round(
+                absolute * 10 ** (precision)))
+        else:
+            digitstream_number = int(math.ceil(
+                absolute * 10 ** (precision)))
+
+        # Calculate counting digits ...
+
+        digitstream = str(digitstream_number)
+
+        # Typeset the number ...
+
+        # Append zeros.
+        #
+        # *digitstream* contains all digits up to digits at
+        # position *precision*.  For *precision* = 0,
+        # *digitstream* contains all digits of the result.  For
+        # *precision* = -1, one zero needs to be appended to
+        # obtain all digits of the typeset number.
+        full = digitstream + '0' * -precision
+
+        return full
