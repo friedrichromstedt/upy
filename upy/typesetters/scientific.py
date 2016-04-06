@@ -24,9 +24,8 @@ class ScientificRule:
 
     def apply(self, nominal, uncertainty, exponent): 
         """ Returns an ``AdjustableString`` instance from
-        ``TypesetNumber`` instances *nominal*, *uncertainty*, and
-        a *exponent*.  Only the integer part of *exponent* is used
-        (i.e., the ``.left`` attribute of the ``TypesetNumber``). """
+        ``TypesetNumber`` instances *nominal* and *uncertainty*, and
+        a string *exponent*. """
 
         return '(' + \
             RuledString(nominal.left, self.nominal_left) + \
@@ -37,7 +36,7 @@ class ScientificRule:
             RuledString(uncertainty.point, self.uncertainty_point) + \
             RuledString(uncertainty.right, self.uncertainty_right) + \
             ') 10^' + \
-            RuledString(exponent.left, self.exponent)
+            RuledString(exponent, self.exponent)
 
 
 class ScientificElement:
@@ -153,11 +152,11 @@ class ScientificTypesetter:
                 #
                 # The precision names the last digit printed.
             
-            typeset_nominal = self.nominal_typesetter.typeset(
+            typeset_nominal = self.nominal_typesetter.typesetfp(
                 mantissa_nominal, mantissa_precision)
-            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                 mantissa_uncertainty, mantissa_precision)
-            typeset_exponent = self.exponent_typesetter.typeset(
+            typeset_exponent = self.exponent_typesetter.typesetint(
                 exponent, precision=0)
 
             return rule.apply(
@@ -181,11 +180,11 @@ class ScientificTypesetter:
 
             mantissa_precision = self.infinite_precision
 
-            typeset_nominal = self.nominal_typesetter.typeset(
+            typeset_nominal = self.nominal_typesetter.typesetfp(
                 mantissa_nominal, mantissa_precision)
-            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                 mantissa_uncertainty, mantissa_precision)
-            typeset_exponent = self.exponent_typesetter.typeset(
+            typeset_exponent = self.exponent_typesetter.typesetint(
                 exponent, precision=0)
 
             return rule.apply(
@@ -216,11 +215,11 @@ class ScientificTypesetter:
             # The printing precision gives the position of the last
             # printed digit.
 
-            typeset_nominal = self.nominal_typesetter.typeset(
+            typeset_nominal = self.nominal_typesetter.typesetfp(
                 number=0, precision=0)
-            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                 mantissa_uncertainty, mantissa_precision)
-            typeset_exponent = self.exponent_typesetter.typeset(
+            typeset_exponent = self.exponent_typesetter.typesetint(
                 exponent, precision=0)
 
             return rule.apply(
@@ -237,11 +236,11 @@ class ScientificTypesetter:
             # typesetting of e.g. a positive sign character '+'.
             # Furthermore, it is more clean to use the regular
             # typesetters.
-            typeset_nominal = self.nominal_typesetter.typeset(
+            typeset_nominal = self.nominal_typesetter.typesetfp(
                 number=0, precision=0)
-            typeset_uncertainty = self.uncertainty_typesetter.typeset(
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                 number=0, precision=0)
-            typeset_exponent = self.exponent_typsetter.typeset(
+            typeset_exponent = self.exponent_typsetter.typesetint(
                 number=0, precision=0)
 
             return rule.apply(
