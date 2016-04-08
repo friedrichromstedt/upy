@@ -123,12 +123,12 @@ class undarray:
     numpy.ndarray. """
 
     def __init__(self,
-            nominal = None,
-            stddev = None,
-            derivatives = None,
-            characteristic = None,
-            dtype = None,
-            shape = None):
+            nominal=None,
+            stddev=None,
+            derivatives=None,
+            characteristic=None,
+            dtype=None,
+            shape=None):
         """If *nominal* is an undarray, its content will be copied.
         
         If *derivatives* and *nominal* are not None, *derivatives*
@@ -170,9 +170,9 @@ class undarray:
         If *nominal* is None, *shape* is taken into account, to create
         a new, zero-valued undarray of dtype *dtype* (Giving ``None``
         as *dtype* results in numpy.float used as dtype).  As the
-        Characteristic is empty in this case, and only the Dependecies
-        carry a dtype, the *dtype* given pertains the ``nominal``
-        attribute alone.
+        Characteristic is empty in this case, and only the
+        Dependencies carry a dtype, the *dtype* given pertains the
+        ``nominal`` attribute alone.
         
         If none of these branches match, ValueError will be raised."""
         

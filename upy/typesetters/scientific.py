@@ -1,7 +1,7 @@
 # Developed since: Sep 2015
 #
 # Built using 'printable.py', part of upy v0.4.11b, developed since
-# Feburary 2010.
+# February 2010.
 
 from upy.typesetters.adjstr import LeftRule, RightRule, CentreRule, \
     RuledString
