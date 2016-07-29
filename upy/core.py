@@ -171,7 +171,7 @@ class undarray:
         a new, zero-valued undarray of dtype *dtype* (Giving ``None``
         as *dtype* results in numpy.float used as dtype).  As the
         Characteristic is empty in this case, and only the
-        Dependencies carry a dtype, the *dtype* given pertains the
+        Dependencies carry a dtype, the *dtype* given pertains to the
         ``nominal`` attribute alone.
         
         If none of these branches match, ValueError will be raised."""
