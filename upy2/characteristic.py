@@ -1,7 +1,7 @@
 # Developed since: Feb 2010
 
 import numpy
-import upy.dependency
+import upy2.dependency
 
 __all__ = ['Characteristic']
 
@@ -122,7 +122,7 @@ class Characteristic:
 
             if source_remnant.is_nonempty():
                 # Well, then.  Broadcast the source_remnant to self's shape.
-                broadcasted_source_remnant = upy.dependency.Dependency(
+                broadcasted_source_remnant = upy2.dependency.Dependency(
                         shape = self.shape)
                 broadcasted_source_remnant.add(source_remnant, key)
                 self.append(broadcasted_source_remnant)

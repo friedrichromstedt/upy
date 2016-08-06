@@ -6,13 +6,13 @@ __version_tup__ = (0, 4, 11)
 
 # Create the module-scope id generator ...
 
-from upy.id_generator import *
+from upy2.id_generator import *
 id_generator = IDGenerator()
 
 # Load all the things ...
 
-from upy.core import *
-from upy.operators import *
-from upy.umath import *
-from upy.averaging import *
-from upy.linear_regression import *
+from upy2.core import *
+from upy2.operators import *
+from upy2.umath import *
+from upy2.averaging import *
+from upy2.linear_regression import *

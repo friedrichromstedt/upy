@@ -1,10 +1,10 @@
 # Developed since: Jan 2010
 
 import numpy
-import upy
-import upy.dependency
-import upy.characteristic
-import upy.printable
+import upy2
+import upy2.dependency
+import upy2.characteristic
+import upy2.printable
 import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray']
@@ -213,14 +213,14 @@ class undarray:
             self.ndim = self.nominal.ndim
             
             # Create Dependency instance from scratch.
-            dependency = upy.dependency.Dependency(
-                names=upy.id_generator.get_idarray(
+            dependency = upy2.dependency.Dependency(
+                names=upy2.id_generator.get_idarray(
                     shape=self.shape),
                 derivatives=stddev,
             )   # The Dependency constructor doesn't copy the data
                 # given.
 
-            self.characteristic = upy.characteristic.Characteristic(
+            self.characteristic = upy2.characteristic.Characteristic(
                 shape=self.shape,
             )
             self.characteristic.append(dependency)
@@ -235,7 +235,7 @@ class undarray:
 
             # Create a new, empty Characteristic where we can fill in
             # the dependencies introduced by *derivatives*.
-            self.characteristic = upy.characteristic.Characteristic(
+            self.characteristic = upy2.characteristic.Characteristic(
                     shape=self.shape)
 
             # Fill in the dependencies.
@@ -266,7 +266,7 @@ class undarray:
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
 
-            self.characteristic = upy.characteristic.Characteristic(
+            self.characteristic = upy2.characteristic.Characteristic(
                 shape=self.shape,
             )
 #X
@@ -331,7 +331,7 @@ class undarray:
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
 
-            self.characteristic = upy.characteristic.Characteristic(
+            self.characteristic = upy2.characteristic.Characteristic(
                 shape=self.shape,
             )
 
@@ -1000,7 +1000,7 @@ class undarray:
         Note that you can affect the way the array is printed also by calling 
         numpy.set_printoptions()."""
 
-        return upy.printable.PrintableUndarray(self,
+        return upy2.printable.PrintableUndarray(self,
             stddevs=stddevs,
             enforce_sign_value=enforce_sign_value,
             enforce_sign_exponent=enforce_sign_exponent,

@@ -29,13 +29,16 @@ class resemples the interface of numpy ndarrays.
 
 distutils.core.setup(
     name='upy',
-    version='0.4.11b-git',
+    version='2-0.5.0a',
     description='Python Uncertainties',
     long_description=long_description,
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
     url='http://friedrichromstedt.github.com/upy/',
-    packages=['upy'],
+    packages=[
+        'upy2',
+        'upy2.typesetting',
+    ],
     classifiers=\
         ['Development Status :: 4 - Beta',
          'Environment :: Console',
@@ -45,5 +48,5 @@ distutils.core.setup(
          'Operating System :: OS Independent',
          'Programming Language :: Python :: 2',
          'Topic :: Scientific/Engineering :: Information Analysis',
-         'Topic :: Scientific/Engineering :: Mathematics']
+         'Topic :: Scientific/Engineering :: Mathematics'],
 )

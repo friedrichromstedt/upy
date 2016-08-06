@@ -3,9 +3,9 @@
 # Built using 'printable.py', part of upy v0.4.11b, developed since
 # February 2010.
 
-from upy.typesetters.adjstr import LeftRule, RightRule, CentreRule, \
+from upy2.typesetting.adjstr import LeftRule, RightRule, CentreRule, \
     RuledString
-from upy.typesetters.numbers import \
+from upy2.typesetting.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
 
