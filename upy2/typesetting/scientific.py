@@ -248,3 +248,26 @@ class ScientificTypesetter:
                 uncertainty=typeset_uncertainty,
                 exponent=typeset_exponent,
             )
+
+    def typeset(self, uarray):
+        """ Typeset ``undarray`` instance *uarray* using the options
+        handed over on initialisation time. """
+
+        nominal = uarray.nominal.flatten()
+        uncertainty = self.stddevs * uarray.stddev.flatten()
+        N = len(nominal)
+
+        scientific_rule = ScientificRule()
+
+        scientific_elements = numpy.zeros(N, dtype=numpy.object)
+        for index in xrange(0, N):
+            scientific_elements[index] = ScientificElement(
+                nominal=nominal[index],
+                uncertainty=uncertainty[index],
+                typesetter=self,
+                rule=scientific_rule,
+            )
+
+        ready = scientific_elements.reshape(uarray.shape)
+
+        return repr(ready).adjust()
