@@ -3,6 +3,7 @@
 # Built using 'printable.py', part of upy v0.4.11b, developed since
 # February 2010.
 
+import numpy
 from upy2.typesetting.adjstr import LeftRule, RightRule, CentreRule, \
     RuledString
 from upy2.typesetting.numbers import \

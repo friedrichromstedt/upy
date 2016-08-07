@@ -4,7 +4,7 @@ import numpy
 import upy2
 import upy2.dependency
 import upy2.characteristic
-import upy2.printable
+#import upy2.printable
 import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray']
@@ -968,52 +968,54 @@ class undarray:
     # String conversion ...
     #
 
-    def printable(self,
-        stddevs, format=None, precision=None,
-        infinite_precision=None,
-        enforce_sign_value=None, enforce_sign_exponent=None,
-    ):
-        """Return a printable object created from this undarray instance.
-        
-        *stddevs* sigmas will be displayed as uncertainty (default 2).
-        
-        To enforce the printing of optional '+' signs in the value and the
-        exponent, use ENFORCE_SIGN_VALUE and ENFORCE_SIGN_EXPONENT.  
-        
-        The three FORMATS supported are 'float', e.g. 0.120 +- 0.034, 'exp', 
-        e.g.  (1.20 +- 0.34) 10^-1, and 'int', e.g. 12300 +- 4500.  By default,
-        the format will be determined from the values and the uncertainties.
-        The 'int' mode is choosen upon integer type of values and 
-        uncertainties.  If the uncertainty is all-zero, the printing mode will 
-        be determined from the value alone, else both must be integer to 
-        enable int printing mode.
-
-        PRECISION influences the precision of the output.  Generally, the 
-        precision is determined from the uncertainty.  With PRECISION = 1, the 
-        output will look like (1.0 +- 0.3), with PRECISION = 2, like 
-        (1.00 +- 0.23).  If the uncertainty is zero, INFINITE_PRECISION will 
-        be used instead, giving the number of digits behind the point, either 
-        in float or exp mode.  In int mode all post-point digits are 
-        suppressed.  If both the value and the uncertainty are zero, only 
-        (0 +- 0) is printed.  The default PRECISION is 2.
-        
-        Note that you can affect the way the array is printed also by calling 
-        numpy.set_printoptions()."""
-
-        return upy2.printable.PrintableUndarray(self,
-            stddevs=stddevs,
-            enforce_sign_value=enforce_sign_value,
-            enforce_sign_exponent=enforce_sign_exponent,
-            format=format,
-            precision=precision,
-            infinite_precision=infinite_precision,
-        )
-
-    def __str__(self):
-#X        """For scalar undarrays, return a useful print value of the value
-#X        and the error.  For everything else, return some symbolic string."""
-
-#        return str(self.printable())
-        return "<undarray of shape %s>" % (self.shape)
-
-    # No sensible repr(), because the object's interior is complex.
+#X  To be adapted for upy2.
+#X 
+#X     def printable(self,
+#X         stddevs, format=None, precision=None,
+#X         infinite_precision=None,
+#X         enforce_sign_value=None, enforce_sign_exponent=None,
+#X     ):
+#X         """Return a printable object created from this undarray instance.
+#X         
+#X         *stddevs* sigmas will be displayed as uncertainty (default 2).
+#X         
+#X         To enforce the printing of optional '+' signs in the value and the
+#X         exponent, use ENFORCE_SIGN_VALUE and ENFORCE_SIGN_EXPONENT.  
+#X         
+#X         The three FORMATS supported are 'float', e.g. 0.120 +- 0.034, 'exp', 
+#X         e.g.  (1.20 +- 0.34) 10^-1, and 'int', e.g. 12300 +- 4500.  By default,
+#X         the format will be determined from the values and the uncertainties.
+#X         The 'int' mode is choosen upon integer type of values and 
+#X         uncertainties.  If the uncertainty is all-zero, the printing mode will 
+#X         be determined from the value alone, else both must be integer to 
+#X         enable int printing mode.
+#X 
+#X         PRECISION influences the precision of the output.  Generally, the 
+#X         precision is determined from the uncertainty.  With PRECISION = 1, the 
+#X         output will look like (1.0 +- 0.3), with PRECISION = 2, like 
+#X         (1.00 +- 0.23).  If the uncertainty is zero, INFINITE_PRECISION will 
+#X         be used instead, giving the number of digits behind the point, either 
+#X         in float or exp mode.  In int mode all post-point digits are 
+#X         suppressed.  If both the value and the uncertainty are zero, only 
+#X         (0 +- 0) is printed.  The default PRECISION is 2.
+#X         
+#X         Note that you can affect the way the array is printed also by calling 
+#X         numpy.set_printoptions()."""
+#X 
+#X         return upy2.printable.PrintableUndarray(self,
+#X             stddevs=stddevs,
+#X             enforce_sign_value=enforce_sign_value,
+#X             enforce_sign_exponent=enforce_sign_exponent,
+#X             format=format,
+#X             precision=precision,
+#X             infinite_precision=infinite_precision,
+#X         )
+#X 
+#X     def __str__(self):
+#X #X        """For scalar undarrays, return a useful print value of the value
+#X #X        and the error.  For everything else, return some symbolic string."""
+#X 
+#X #        return str(self.printable())
+#X         return "<undarray of shape %s>" % (self.shape)
+#X 
+#X     # No sensible repr(), because the object's interior is complex.

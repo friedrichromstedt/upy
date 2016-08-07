@@ -111,5 +111,8 @@ class Sum(AdjustableString):
         self.a = asadjstr(a)
         self.b = asadjstr(b)
 
+    def __new__(cls, a, b):
+        return AdjustableString.__new__(cls)
+
     def adjust(self):
         return self.a.adjust() + self.b.adjust()
