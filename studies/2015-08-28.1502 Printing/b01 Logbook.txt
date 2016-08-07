@@ -262,3 +262,17 @@ uncommenting the print statements, what is not documented further.
 In general, the result is reproducible with changing the setup to a
 previous state.  Also it appears that elements which are not printed
 in the result are never passed through repr() by numpy.
+
+
+.. rubric:: Sunday, 7 Aug 2016
+
+
+d01.py
+------
+
+Outcome: I see no way to make numpy respect the '__add__' and
+'__radd__' methods of my 'str' subclasses.  numpy seems to treat the
+object as ordinary strings always.
+
+Hence the projected route of ruling the widths of the string fields of
+'upy2' output seems unfeasible.
