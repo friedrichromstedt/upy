@@ -4,40 +4,68 @@
 # February 2010.
 
 import numpy
-from upy2.typesetting.adjstr import LeftRule, RightRule, CentreRule, \
-    RuledString
 from upy2.typesetting.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
 
 
-class ScientificRule:
+class WidthRule(object):
     def __init__(self):
-        self.nominal_left = RightRule()
-        self.nominal_point = CentreRule()
-        self.nominal_right = LeftRule()
+        self.width = 0
 
-        self.uncertainty_left = RightRule()
-        self.uncertainty_point = CentreRule()
-        self.uncertainty_right = LeftRule()
+    def format(self, string):
+        raise NotImplementedError('virtual method called')
 
-        self.exponent = RightRule()
+    def apply(self, string):
+        self.width = max(len(string), self.width)
+        return self.format(string)
 
-    def apply(self, nominal, uncertainty, exponent): 
-        """ Returns an ``AdjustableString`` instance from
-        ``TypesetNumber`` instances *nominal* and *uncertainty*, and
-        a string *exponent*. """
+
+class LeftRule(WidthRule):
+    def format(self, string):
+        return string.ljust(self.width)
+
+class RightRule(WidthRule):
+    def format(self, string):
+        return string.rjust(self.width)
+
+class CentreRule(WidthRule):
+    def format(self, string):
+        return string.center(self.width)
+
+
+class TypesetNumberRule(object):
+    def __init__(self):
+        self.left_rule = RightRule()
+        self.point_rule = CentreRule()
+        self.right_rule = LeftRule()
+
+    def apply(self, typeset_number):
+        left = self.left_rule.apply(typeset_number.left)
+        point = self.point_rule.apply(typeset_number.point)
+        right = self.right_rule.apply(typeset_number.right)
+
+        return left + point + right
+
+class ScientificRule(object):
+    def __init__(self):
+        self.nominal_rule = TypesetNumberRule()
+        self.uncertainty_rule = TypesetNumberRule()
+        self.exponent_rule = RightRule()
+
+    def apply(self, nominal, uncertainty, exponent):
+        """ Applies the ``ScientificRule`` to the components of an
+        uncertain number in scientific notation.  *nominal* and
+        *uncertainty* are :class:`TypesetNumber` instances.
+        *exponent* is a plain string. """
 
         return '(' + \
-            RuledString(nominal.left, self.nominal_left) + \
-            RuledString(nominal.point, self.nominal_point) + \
-            RuledString(nominal.right, self.nominal_right) + \
+            self.nominal_rule.apply(nominal) + \
             ' +- ' + \
-            RuledString(uncertainty.left, self.uncertainty_left) + \
-            RuledString(uncertainty.point, self.uncertainty_point) + \
-            RuledString(uncertainty.right, self.uncertainty_right) + \
+            self.uncertainty_rule.apply(uncertainty) + \
             ') 10^' + \
-            RuledString(exponent, self.exponent)
+            self.exponent_rule.apply(exponent) + \
+            ' '
 
 
 class ScientificElement:
@@ -270,5 +298,4 @@ class ScientificTypesetter:
             )
 
         ready = scientific_elements.reshape(uarray.shape)
-
-        return repr(ready).adjust()
+        str(ready); return str(ready)

@@ -276,3 +276,23 @@ object as ordinary strings always.
 
 Hence the projected route of ruling the widths of the string fields of
 'upy2' output seems unfeasible.
+
+
+.. rubric:: Friday, 19 Aug 2016
+
+
+e01.py
+------
+
+I wondered why formatting my arrays of printable elements of two
+elements actually worked even when the double str()'ingification was
+not yet implemented.  I just oversaw what is layed out above: That
+there are up to two additional str() conversations above that what is
+necessary.
+
+When using three-element arrays, it did not work, as it is expected.
+I implemented then the two-pass str() conversion and everything
+behaved.
+
+[e01.py] is the falsification of the hypothesis, that the
+initialisation mode might be the culprit.
