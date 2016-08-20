@@ -7,31 +7,7 @@ import numpy
 from upy2.typesetters.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
-
-
-class WidthRule(object):
-    def __init__(self):
-        self.width = 0
-
-    def format(self, string):
-        raise NotImplementedError('virtual method called')
-
-    def apply(self, string):
-        self.width = max(len(string), self.width)
-        return self.format(string)
-
-
-class LeftRule(WidthRule):
-    def format(self, string):
-        return string.ljust(self.width)
-
-class RightRule(WidthRule):
-    def format(self, string):
-        return string.rjust(self.width)
-
-class CentreRule(WidthRule):
-    def format(self, string):
-        return string.center(self.width)
+from upy2.typesetters.rules import LeftRule, RightRule, CentreRule
 
 
 class TypesetNumberRule(object):
