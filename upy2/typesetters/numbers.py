@@ -50,18 +50,14 @@ def get_position_of_leftmost_digit(number):
    
      1.   Begin the search at some arbitrary position.
    
-     2.   Move right (increase *pos*) until there are digits
-          non-right to *pos*.
-   
-     3.   Move left (decrease *pos*) until there are no longer
+     2.   Move left (decrease *pos*) until there are no longer
           digits non-right of *pos*.
    
-          At this point, we are one digit left of the left-most
+     3.   Move right (increase *pos*) until there are digits
+          non-right to *pos*.
+
+          At this point, we are at the position of the left-most
           non-zero digit of *number*.
-   
-     4.   The position of the left-most non-zero digit of *number*
-          is hence one digit right of the position resulting from
-          (3.).
    
     When *number* is zero, it does not feature any non-zero digits,
     and hence does not exhibit a left-most non-zero digit.  We return
@@ -72,11 +68,11 @@ def get_position_of_leftmost_digit(number):
     number = abs(number)
 
     pos = 0
-    while (number - number % (10 ** -pos)) == 0:
-        pos += 1
     while (number - number % (10 ** -pos)) != 0:
         pos -= 1
-    return (pos + 1)
+    while (number - number % (10 ** -pos)) == 0:
+        pos += 1
+    return pos
 
 
 class TypesetNumber:
