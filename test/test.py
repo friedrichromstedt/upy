@@ -3,96 +3,208 @@
 import unittest
 from upy2.typesetters.numbers import get_position_of_leftmost_digit
 from upy2.typesetters.numbers import NumberTypesetter
-
-#XXX from upy.typesetting.adjstr import AdjustableString as Adjstr
-#XXX from upy.typesetting.adjstr import NoRule, LeftRule, RightRule, CentreRule
-
 from upy2.typesetters.scientific import \
     ScientificRule, ScientificElement, ScientificTypesetter
 
 
-class TestTypesettersNumbers(unittest.TestCase):
+class Test_TypesettersNumbers(unittest.TestCase):
     """ Test suite for module ``upy.typesetters.numbers``. """
+
+    # Test for :func:`get_position_of_leftmost_digit`.
 
     def test_get_position_of_leftmost_digit(self):
         """ Tests
         upy.typesetters.numbers.get_position_of_leftmost_digit(). """
 
         self.assertIsNone(get_position_of_leftmost_digit(0))
+
         self.assertEqual(get_position_of_leftmost_digit(1), 0)
         self.assertEqual(get_position_of_leftmost_digit(10), -1)
         self.assertEqual(get_position_of_leftmost_digit(0.1), 1)
 
-    def setUp(self):
-        
-        self.without_possign_nonceiling = NumberTypesetter(
+        self.assertEqual(get_position_of_leftmost_digit(-1), 0)
+        self.assertEqual(get_position_of_leftmost_digit(-10), -1)
+        self.assertEqual(get_position_of_leftmost_digit(-0.1), 1)
+
+    def test_woplus_nonceiling(self):
+        ts = NumberTypesetter(
             typeset_positive_sign=False,
             ceil=False,
         )
-        self.with_possign_nonceiling = NumberTypesetter(
-            typeset_positive_sign=True,
-            ceil=False,
-        )
-        self.without_possign_ceiling = NumberTypesetter(
+        
+        # typesetfp tests ...
+
+        # positive
+        self.assertEqual(str(ts.typesetfp(18.37, 3)), '18.370')
+        self.assertEqual(str(ts.typesetfp(18.37, 1)), '18.4')
+        self.assertEqual(str(ts.typesetfp(18.37, 0)), '18')
+        self.assertEqual(str(ts.typesetfp(18.37, -1)), '20')
+        self.assertEqual(str(ts.typesetfp(18.37, -2)), '000')
+        self.assertEqual(str(ts.typesetfp(90, -2)), '100')
+
+        # negative
+        self.assertEqual(str(ts.typesetfp(-18.37, 3)), '-18.370')
+        self.assertEqual(str(ts.typesetfp(-18.37, 1)), '-18.4')
+        self.assertEqual(str(ts.typesetfp(-18.37, 0)), '-18')
+        self.assertEqual(str(ts.typesetfp(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetfp(-18.37, -2)), '-000')
+        self.assertEqual(str(ts.typesetfp(-90, -2)), '-100')
+
+        # typesetint tests ...
+
+        # integer
+        self.assertEqual(str(ts.typesetint(42, 0)), '42')
+        self.assertEqual(str(ts.typesetint(-42, 0)), '-42')
+
+        # positive fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(18.37, 1)
+        self.assertEqual(str(ts.typesetint(18.37, 0)), '18')
+        self.assertEqual(str(ts.typesetint(18.37, -1)), '20')
+        self.assertEqual(str(ts.typesetint(18.37, -2)), '000')
+        self.assertEqual(str(ts.typesetint(90, -2)), '100')
+
+        # negative fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(-18.37, 1)
+        self.assertEqual(str(ts.typesetint(-18.37, 0)), '-18')
+        self.assertEqual(str(ts.typesetint(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetint(-18.37, -2)), '-000')
+        self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
+
+    def test_woplus_ceiling(self):
+        ts = NumberTypesetter(
             typeset_positive_sign=False,
             ceil=True,
         )
-        self.with_possign_ceiling = NumberTypesetter(
+
+        # typesetfp tests ...
+
+        # positive
+        self.assertEqual(str(ts.typesetfp(18.37, 3)), '18.370')
+        self.assertEqual(str(ts.typesetfp(18.37, 1)), '18.4')
+        self.assertEqual(str(ts.typesetfp(18.37, 0)), '19')
+        self.assertEqual(str(ts.typesetfp(18.37, -1)), '20')
+        self.assertEqual(str(ts.typesetfp(18.37, -2)), '100')
+        self.assertEqual(str(ts.typesetfp(90, -2)), '100')
+
+        # negative
+        self.assertEqual(str(ts.typesetfp(-18.37, 3)), '-18.370')
+        self.assertEqual(str(ts.typesetfp(-18.37, 1)), '-18.4')
+        self.assertEqual(str(ts.typesetfp(-18.37, 0)), '-19')
+        self.assertEqual(str(ts.typesetfp(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetfp(-18.37, -2)), '-100')
+        self.assertEqual(str(ts.typesetfp(-90, -2)), '-100')
+
+        # typesetint tests ...
+
+        # integer
+        self.assertEqual(str(ts.typesetint(42, 0)), '42')
+        self.assertEqual(str(ts.typesetint(-42, 0)), '-42')
+
+        # positive fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(18.37, 1)
+        self.assertEqual(str(ts.typesetint(18.37, 0)), '19')
+        self.assertEqual(str(ts.typesetint(18.37, -1)), '20')
+        self.assertEqual(str(ts.typesetint(18.37, -2)), '100')
+        self.assertEqual(str(ts.typesetint(90, -2)), '100')
+
+        # negative fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(-18.37, 1)
+        self.assertEqual(str(ts.typesetint(-18.37, 0)), '-19')
+        self.assertEqual(str(ts.typesetint(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetint(-18.37, -2)), '-100')
+        self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
+
+    def test_wplus_nonceiling(self):
+        ts = NumberTypesetter(
+            typeset_positive_sign=True,
+            ceil=False,
+        )
+
+        # typesetfp tests ...
+
+        # positive
+        self.assertEqual(str(ts.typesetfp(18.37, 3)), '+18.370')
+        self.assertEqual(str(ts.typesetfp(18.37, 1)), '+18.4')
+        self.assertEqual(str(ts.typesetfp(18.37, 0)), '+18')
+        self.assertEqual(str(ts.typesetfp(18.37, -1)), '+20')
+        self.assertEqual(str(ts.typesetfp(18.37, -2)), '+000')
+        self.assertEqual(str(ts.typesetfp(90, -2)), '+100')
+
+        # negative
+        self.assertEqual(str(ts.typesetfp(-18.37, 3)), '-18.370')
+        self.assertEqual(str(ts.typesetfp(-18.37, 1)), '-18.4')
+        self.assertEqual(str(ts.typesetfp(-18.37, 0)), '-18')
+        self.assertEqual(str(ts.typesetfp(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetfp(-18.37, -2)), '-000')
+        self.assertEqual(str(ts.typesetfp(-90, -2)), '-100')
+
+        # typesetint tests ...
+
+        # integer
+        self.assertEqual(str(ts.typesetint(42, 0)), '+42')
+        self.assertEqual(str(ts.typesetint(-42, 0)), '-42')
+
+        # positive fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(18.37, 1)
+        self.assertEqual(str(ts.typesetint(18.37, 0)), '+18')
+        self.assertEqual(str(ts.typesetint(18.37, -1)), '+20')
+        self.assertEqual(str(ts.typesetint(18.37, -2)), '+000')
+        self.assertEqual(str(ts.typesetint(90, -2)), '+100')
+
+        # ngative fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(-18.37, 1)
+        self.assertEqual(str(ts.typesetint(-18.37, 0)), '-18')
+        self.assertEqual(str(ts.typesetint(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetint(-18.37, -2)), '-000')
+        self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
+
+    def test_wplus_ceiling(self):
+        ts = NumberTypesetter(
             typeset_positive_sign=True,
             ceil=True,
         )
 
-    def test_possign(self):
-        
-        plus_wo = self.without_possign_nonceiling.typeset(42, 0)
-        minus_wo = self.without_possign_nonceiling.typeset(-42, 0)
-        
-        plus_w = self.with_possign_nonceiling.typeset(42, 0)
-        minus_w = self.with_possign_nonceiling.typeset(-42, 0)
+        # typesetfp tests ...
 
-        self.assertEqual(plus_wo.left, '42')
-        self.assertEqual(minus_wo.left, '-42')
-        self.assertEqual(plus_w.left, '+42')
-        self.assertEqual(minus_w.left, '-42')
+        # positive
+        self.assertEqual(str(ts.typesetfp(18.37, 3)), '+18.370')
+        self.assertEqual(str(ts.typesetfp(18.37, 1)), '+18.4')
+        self.assertEqual(str(ts.typesetfp(18.37, 0)), '+19')
+        self.assertEqual(str(ts.typesetfp(18.37, -1)), '+20')
+        self.assertEqual(str(ts.typesetfp(18.37, -2)), '+100')
+        self.assertEqual(str(ts.typesetfp(90, -2)), '+100')
 
-    def test_nonceiling(self):
-        
-        plus_prec0 = self.without_possign_nonceiling.typeset(12.34, 0)
-        plus_prec1 = self.without_possign_nonceiling.typeset(12.34, 1)
-        plus_precm1 = self.without_possign_nonceiling.typeset(12.34, -1)
+        # negative
+        self.assertEqual(str(ts.typesetfp(-18.37, 3)), '-18.370')
+        self.assertEqual(str(ts.typesetfp(-18.37, 1)), '-18.4')
+        self.assertEqual(str(ts.typesetfp(-18.37, 0)), '-19')
+        self.assertEqual(str(ts.typesetfp(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetfp(-18.37, -2)), '-100')
+        self.assertEqual(str(ts.typesetfp(-90, -2)), '-100')
 
-        minus_prec0 = self.without_possign_nonceiling.typeset(-12.34, 0)
-        minus_prec1 = self.without_possign_nonceiling.typeset(-12.34, 1)
-        minus_precm1 = self.without_possign_nonceiling.typeset(-12.34, -1)
+        # typesetint tests ...
 
-        self.assertEqual(str(plus_prec0), '12')
-        self.assertEqual(str(plus_prec1), '12.3')
-        self.assertEqual(str(plus_precm1), '10')
+        # positive fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(18.37, 1)
+        self.assertEqual(str(ts.typesetint(18.37, 0)), '+19')
+        self.assertEqual(str(ts.typesetint(18.37, -1)), '+20')
+        self.assertEqual(str(ts.typesetint(18.37, -2)), '+100')
+        self.assertEqual(str(ts.typesetint(90, -2)), '+100')
 
-        self.assertEqual(str(minus_prec0), '-12')
-        self.assertEqual(str(minus_prec1), '-12.3')
-        self.assertEqual(str(minus_precm1), '-10')
-
-    def test_ceiling(self):
-        
-        plus_prec0 = self.without_possign_ceiling.typeset(12.34, 0)
-        plus_prec2 = self.without_possign_ceiling.typeset(12.34, 2)
-
-        self.assertEqual(str(plus_prec0), '13')
-        self.assertEqual(str(plus_prec2), '12.34')
-
-    def test_possign(self):
-        
-        plus_prec0 = self.with_possign_nonceiling.typeset(12.34, 0)
-        self.assertEqual(str(plus_prec0), '+12')
-
-    def test_prec_cornercase(self):
-
-        nonceiling_precm2 = self.without_possign_nonceiling.typeset(12.34, -2)
-        self.assertEqual(str(nonceiling_precm2), '000')
-
-        ceiling_precm2 = self.without_possign_ceiling.typeset(12.34, -2)
-        self.assertEqual(str(ceiling_precm2), '100')
+        # negatve fp
+        with self.assertRaises(ValueError):
+            ts.typesetint(-18.37, 1)
+        self.assertEqual(str(ts.typesetint(-18.37, 0)), '-19')
+        self.assertEqual(str(ts.typesetint(-18.37, -1)), '-20')
+        self.assertEqual(str(ts.typesetint(-18.37, -2)), '-100')
+        self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
 
 
 class TestTypesettersScientific(unittest.TestCase):

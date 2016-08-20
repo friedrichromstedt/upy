@@ -262,6 +262,6 @@ class NumberTypesetter:
         # *digitstream* contains all digits of the result.  For
         # *precision* = -1, one zero needs to be appended to
         # obtain all digits of the typeset number.
-        full = digitstream + '0' * -precision
+        full = sign + digitstream + '0' * -precision
 
         return full
