@@ -4,7 +4,7 @@
 # February 2010.
 
 import numpy
-from upy2.typesetting.numbers import \
+from upy2.typesetters.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
 

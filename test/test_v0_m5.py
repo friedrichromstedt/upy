@@ -1,13 +1,13 @@
 # Developed since: Sep 2015
 
 import unittest
-from upy.typesetters.numbers import get_position_of_leftmost_digit
-from upy.typesetters.numbers import NumberTypesetter
+from upy2.typesetters.numbers import get_position_of_leftmost_digit
+from upy2.typesetters.numbers import NumberTypesetter
 
-from upy.typesetters.adjstr import AdjustableString as Adjstr
-from upy.typesetters.adjstr import NoRule, LeftRule, RightRule, CentreRule
+#XXX from upy.typesetting.adjstr import AdjustableString as Adjstr
+#XXX from upy.typesetting.adjstr import NoRule, LeftRule, RightRule, CentreRule
 
-from upy.typesetters.scientific import \
+from upy2.typesetters.scientific import \
     ScientificRule, ScientificElement, ScientificTypesetter
 
 
