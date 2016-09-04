@@ -1,0 +1,156 @@
+.. vim: syntax=rst
+
+upy Kontexte
+############
+
+Ziele
+=====
+
+1.  Threadlokale Speicherung von Typesetter-Eigenschaften und von Eigenschaften von :func:`u` (welche noch zu erzeugen ist);
+2.  Vererbung von Kontext-Eigenschaften;
+3.  Benutzung als Python Kontext-Manager (Doppelung der Namensgebung ...);
+
+Ein Schema zur Erreichung der Ziele soll hier entwickelt werden.
+
+
+Ueberlegungen
+=============
+
+Eine Festverdrahtung von z.B. :class:`ScientificTypesetter` in den Kontext-Code ist nicht erwuenscht.  Nutzer des Kontextes (wie z.B. :class:`ScientificTypesetter`) greifen auf den Kontext-Code zu, nicht umgekehrt.
+
+Gibt es pro Thread hoechstens genau einen Kontext, oder ist auch dies eine fakultative Sache: Wenn man einen Kontext als Python Kontext-Manager verwendet, traegt er sich in die upy-Registratur der Kontexte ein?
+
+Uebernahme eines vorhandenen Kontextes in einen neuen Thread::
+
+    ctx = upy.Context(inherit=father_context)
+
+    with ctx:
+        [...]
+
+Vermutlich gibt es pro Kontext (:class:`upy.Context`) mehrere 'Realms', in welchen die Nutzer des Kontext-Frameworks ihre Einstellungen speichern.  Jeder Realm enthaelt mehrere "Eintraege" fuer verschiedene Versionen?  Wie werden die Daten geschrieben?
+
+Vielleicht ist es sinnvoll, erst ein Design zu entwickeln, welches *noch nicht* die zentrale upy-Registratur enthaelt, und erst bei Designerfolg dessen die Zentral-Registratur zu entwerfen, um die Verwendung zu vereinfachen.  Z.B. so::
+
+    ctx = upy.Context()
+
+    uarray = 10 +- u(4.2, context=ctx)
+
+Aus diesem Code wuerde dann::
+    
+    with upy.Context() [as ctx]:
+        uarray = 10 +- u(4.2)
+
+Code wie z.B.::
+
+    ctx.u(4.2)
+
+ist *nicht* erwuenscht, weil dies sicherlich Festverdrahtung des Konzeptes ":func:`u`" in der Kontext-Klasse erfordert.
+
+-----
+
+Vielleicht kann man fuer jeden Nutzer des Kontext-Mechanismus' einzelne Kontext-Manager (der Name passt hier) einfuehren::
+    
+    with upy.typesetters.scientific.ScientificContext(stddevs=2, precision=2):
+        print uarray
+    
+    # Dies erfordert, dass der ScientificContext von :class:`undarray` abgefragt wird.
+
+oder::
+    
+    with upy.typesetters.scientific.ScientificContext(stddevs=2, precision=2) as ctx:
+        print ctx.typeset(uarray)  (1)
+        - oder -
+        print uarray.typeset(context=ctx)  (2)
+
+Vermutlich ist es sinnvoll, zu verlangen, dass die Kontext-Manager von Beginn an vollstaendig spezifiziert sind.  Ausserdem kann vielleicht ein gemeinsames Protkoll fuer alle schriftsetzenden Kontexte definiert werden.
+
+Welcher Unterschied besteht zwischen :class:`ScientificContext` und :class:`upy2.typesetters.scientific.ScientificTypesetter`?  Kann man vielleicht :class:`ScientificTypesetter` direkt als Kontext-Manager verwenden?
+
+Vererbung wuerde dann explizit fuer die jeweilige Kontext-Klasse geschehen::
+
+    with ScientificTypsetter(stddevs=2, prevision=2) as toplts:
+        [use topltx ...]
+
+        with ScientificTypesetter(typeset_possign_value=True, inherit=toplts) as subts:
+            [use subts ...]
+
+Impliziter Aufruf des jeweiligen Typesetters nutzt den auf dem Thread-Stack ganz oben liegenden Typesetter.  Andernfalls ist der aequivalente Code::
+
+    print typesetter.typeset(uarray)
+
+Dies waere im Grunde auch das, was :meth:`uarray.__str__` tut: Weiterreichen zum jeweiligen Typesetter.
+
+Es wuerden fuer alle "Familien" von Kontexten einzelne Stacks eingefuehrt.  Z.B.::
+
+    with Convention(stddevs=2):
+        ua = 10 +- u(4.2)
+
+oder::
+
+    with Convention(stddev=2) as c:
+        ua = 10 +- c.u(4.2)
+
+Der Name "Convention" ist dabei noch nicht stabil.
+
+Verhalten bei mehreren Threads; offene Fragen:
+
+1.  Vererbung wird explizit durchgefuehrt.  Code wie::
+
+        with ScientificTypesetter(stddevs=2, precision=2):
+            # Use with two stddevs printout at precision 2 ...
+            with ScientificTypsetter(stddevs=3):
+                # Use with three stddevs and inherit precision=2 ...
+
+    wird *nicht* unterstuetzt, weil der Vater-Kontext und der Kind-Kontext Instanzen verschiedener Klassen sein koennen (z.B. ``ScientificTypesetter`` & ``IntegerTypsetter``).  Die Vererbung ist *nicht* Teil des Protokolls fuer bspw. Typesetter.
+
+    Wenn man weiss was man tut ist vielleicht folgendes moeglich::
+        
+        with ScientificTypesetter(stddevs=2, precision=2):
+            with ScientificTypesetter(inherit=upy.typesetters.current(), precision=3):
+                # Use modified typesetter ...
+
+    Dies ist aeusserst unsauber; die Registries fuer Typesetter sollten *nie* von Usercode beruehrt werden.  Die Registries verwalten die Stacks von Typesetters fuer jenen Thread; die Funktionalitaet zaehlt zur privaten API von upy.
+
+2.  Auf diese Weise ist auch das Problem geloest, von welchem Typesetter "automatisch" vererbt werden soll: Vom letzten Typesetter im Stapel des jew. threads oder vom globalen Typesetter?  Tatsaechlich wird von *keinem* Typesetter automatisch vererbt.
+
+3.  Gibt es ueberhaupt einen globalen Typesetter?  Es waere immerhin wuenschenswert, einen Default-Typesetter durch upy definieren zu lassen.  Vielleicht waere es aber sogar sinnvoll, *keinen* Typesetter als "Standard" auszuzeichnen.  Damit der Usercode nicht einen ``with``-Block um das gesamte Programm legen muss, gibt es folgenden Loesungsansaetze::
+
+        upy2.set_default_typesetter(ScientificTypesetter(stddevs=2, precision=2))
+
+    oder::
+        
+        upy2.ScientificTypesetter(stddevs=2, precision=2).register()
+
+    Ersteres ist wohl sauberer.
+    
+    Der globale "Default"-Typesetter wird verwendet, wenn der Stapel des aktuellen Threads leer ist.
+
+    Ein ``upy2.get_default_typesetter()`` sollte es genauso wenig geben wie obigen [:109] Code ``upy.typesetters.current()``.
+
+4.  upy stellt einen Mechanismus zur Verfuegung, um z.B. die Typesetting-Stacks zu handhaben.  Dabei ist dieser Code agnostisch gegenueber seinem Zweck.  Die Verwendung fuer bspw. Typesetter wird erst durch die Typesetter-Klassen spezifiziert.  Es wird derselbe Mechanismus fuer Typesetters wie auch fuer :func:`u` verwendet.
+
+5.  Eine Methode :meth:`register` wird wahrscheinlich *nicht* bereitgestellt, man nutze einen ``with``-Block oder :func:`upy.set_default_typesetter`.  Allein: Dies geht nicht konform mit der Forderung, dass der Mechanismus agnostisch sein soll.  Also::
+
+        typesetter.default()
+
+    Dies registriert den Typsetter *typesetter* als globalen Standard.
+
+    Vielleicht waere es doch sinnvoll, ausserdem::
+
+        typesetter.register()
+
+    ala [:122] zuzulassen?  Dies wuerde die Instanz threadlokal speichern.
+
+6.  Threadstapel werden geloescht, sobald sie leer sind.  Andernfalls drohen Speicherlecks.
+
+7.  Als Schluessel der Threadstapel-Sammlungen kann die Klasse dienen, welche das jeweilige Protokoll implementiert.  Bspw. teilen alle Typesetter das Protokoll, uarrays setzten zu koennen::
+
+        typesetter.typeset(uarray)
+
+    Indem die das Protokoll definierende Klasse als Schluessel dient, wird automatisch alles richtig voneinanden unterschieden.  Die Gefahr von Namenskollisionen wird so wirkungsvoll gebannt.
+
+8.  :class:`uarray` greift in :meth:`__str__` auf die Stacksammlung unter dem Schluessel der Typesetter-Protokollklasse zu.  Auf diese Weise wird die Typesetter-Stackliste mit :class:`uarrray` verbunden.
+
+Entwurf des Registry-Frameworks::
+
+a.  
