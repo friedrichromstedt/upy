@@ -154,3 +154,41 @@ Verhalten bei mehreren Threads; offene Fragen:
 Entwurf des Registry-Frameworks::
 
 a.  
+
+
+.. rubric:: Mittwoch, d. 28. September 2016
+
+
+Der Text bis hierher wurde am 4. September 2016 < 15:47 Uhr geschrieben.
+
+Ueber ``typesetter.register()`` ist noch zu entscheiden; die Syntax hat den Nachteil dass der Aufruf von ``typesetter.unregister()`` leicht vergessen wird wodurch Speicherlecks drohen bei Beendigung des jew. Threads, und wodurch der vorherige Typesetter nicht wiederhergestellt wird.
+
+``typesetter.default()`` ist sicherlich sinnvoll.
+
+Kontexte gibt es fuer jeden Schluessel.  Jeder Kontext hat einen globalen Default-Eintrag, welcher fuer alle Threads Verwendung finden kann.  Ausserdem sind im jeweiligen Kontext Stapel fuer jeden Thread vorhanden.  Diese werden geloescht sobald sie leer sind.  Ein Eintrag im jeweiligen Threadstapel geschieht durch die Verwendung des jeweiligen Objektes als Python-Kontextmanager.
+
+Kontexte werden nicht erst pro Thread definiert, weil dann keine Moeglichkeit besteht, den globalen Standard-Eintrag zu speichern.
+
+Zu benennende Objekte/Konzepte:
+
+-   Der "Kontext".  Kontexte werden durch ihren Schluessel voneinander unterschieden.  Die Registratur der Kontexte ist global.  Threads spielen hier noch keine Rolle.
+-   Der "Threadstapel".  Dieser speichert die "Eintraege", welche bei der Ausfuehrung des Threads registriert werden.
+-   Der "Eintrag".  Dieser betrifft das letztendlich verwendete Objekt.
+
+Ein Kontext hat einen globalen Default-Eintrag und eine Anzahl Threadstapel.  Wenn der Default-Eintrag noch nicht definiert wurde, wird ``None`` gespeichert.
+
+Es ist noch nicht ganz sicher, ob der "Eintrag" eine eigene Klasse braucht, oder ob es genuegt, das betreffende Objekt direkt in der Liste des Threadstapels zu speichern.
+
+Ausserdem ist nicht ganz klar, ob der "Threadstapel" eine eigene Klasse braucht, oder ob hier eine einfache Python-Liste genuegt.
+
+Es ist nicht unbedingt notwendig, dass der Nutzer einen Default-Eintrag definiert.  Default-Eintraege koennen vermutlich nicht geloescht werden, weil ``typesetter.undefault()`` nicht sinnvoll ist, aber ein direkter Nutzerzugriff nicht gewuenscht ist (der Nutzer muesste die Schluesselklasse kennen).  P.S.: ``typesetter.undefault()`` kann sinnvoll sein, wenn der ``typesetter`` dabei der gegenwaertige Default-Eintrag *ist*.
+
+Die Registratur der Threadstapel wird vom Kontext durchgefuehrt.  Beim Aufruf kann der Kontext den Thread-ID (Identifikator) selber abfragen.  Ausserdem kann der Kontext bei der Abmeldung feststellen, ob der jeweilige Threadstapel leer geworden ist.
+
+Abmeldung: Dies geschieht nicht durch ``threadlist.remove(item)``, sondern erfordert, dass der uebergebene Eintrag der letzte Eintrag in der Liste ist.  Andernfalls tritt eine Ausnahme auf.  Grund: Ein Eintrag kann mehrfach registriert werden; und Eintrage werden sinnvoller Weise in der Reihenfolge zurueckgenommen wie sie publiziert wurden.
+
+Es ist nicht sinnvoll, die bisher als global angenommenen Funktionen in eine Klasse ala ``ContextManager`` zu kapseln, denn dann ist eben die Instanz dessen global; es ist unvermeidlich irgendwann upy2-globale Objekte zu erzeugen.
+
+Interfacing der Kontexte:
+
+a)  Man speichert den zu verwendenden Schluessel als Attribut der Klasse, bspw. die Protkoll-Klasse fuer Typesetter als Attribut einer Klasse, deren Kontextschluessel diese Protokoll-Klasse ist.
