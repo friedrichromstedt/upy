@@ -83,3 +83,13 @@ class Context:
                         'the current default item')
 
             del self.default_stack[-1]
+
+# The module-scope implementation of the Context Registry:
+
+registry = {}  # {Protocol Class: Context}
+
+def define(protocol):
+    self.registry.setdefault(protocol, Context())
+
+def protocol(protocol):
+    return registry[protocol]
