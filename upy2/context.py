@@ -87,9 +87,24 @@ class Context:
 # The module-scope implementation of the Context Registry:
 
 registry = {}  # {Protocol Class: Context}
+registry_lock = threading.Lock()
 
 def define(protocol):
-    self.registry.setdefault(protocol, Context())
+    with registry_lock:
+        # ``registry.setdefault`` should execute atomically, but
+        # better safe than sorry.
+        registry.setdefault(protocol, Context())
+# Contexts exist as long as their key Protocol class, so we don't need
+# :func:`undefine`.
 
 def protocol(protocol):
-    return registry[protocol]
+    with registry_lock:
+        for key in registry.keys():
+            if issubclass(protocol, key):
+                return registry[key]
+
+def protocolobj(protocolobj):
+    with registry_lock:
+        for key in registry.keys():
+            if isinstance(protocolobj, key):
+                return registry[key]
