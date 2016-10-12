@@ -192,3 +192,40 @@ Es ist nicht sinnvoll, die bisher als global angenommenen Funktionen in eine Kla
 Interfacing der Kontexte:
 
 a)  Man speichert den zu verwendenden Schluessel als Attribut der Klasse, bspw. die Protkoll-Klasse fuer Typesetter als Attribut einer Klasse, deren Kontextschluessel diese Protokoll-Klasse ist.
+
+
+.. rubric:: Dienstag, d. 11. Oktober 2016, 16:01 Uhr
+
+
+-   ContextManager: eine Instanz einer Protokoll-Klasse (per Subclassing).  Bei der Verwendung als Python-Kontextmanager wird der richtige Kontext (die richtige Instanz von ``class Context``) gefunden, indem fuer die Schluessel in der Registratur ``isinstance(contextmanager, key)`` verwendet wird.  ContextManager koennen sich somit automatisch in den richtigen Kontext eintragen.  Der Code von ``class ContextManager`` ist allgemein fuer alle upy2-Kontextmanager direkt verwendbar.
+
+-   Benutzer von Kontexten: Man sucht das richtige Protokoll heraus, indem der bekannte Schluessel (eine Protokoll-Klasse) mit den Schluesseln der Registratur verglichen wird.  Mglw. kann dabei ``issubclass`` Verwendung finden.
+
+    Dann ruft der Kontext-Benutzer den Code des Protokolls auf.  Beispiel: Typesetter, ``typesetter.typeset_uarray(self)`` in ``uarray.__str__``.
+
+-   Protokoll: Dies ist beispielsweise die Klasse ``Typesetter``, welche das Interface eines Typesetters definiert: :meth:`typeset_uarray`.
+
+-   ``issubclass`` in Benutzercode:
+
+    a)  Der Schluessel muss eine Unterklasse der uebergebenen Protokoll-Klasse sein; oder
+    b)  Der Schluessel muss eine Oberklasse der uebergebenen Protokoll-Klasse sein.
+
+
+.. rubric:: Mittwoch, d. 12. Oktober 2016, 9:14 Uhr, Universitaetsbibliothek
+
+
+::
+
+    :class:`ContextManager`
+        |
+        |       Protokollklasse, hier genannt :class:`Protocol`, bspw. :class:`Typesetter`
+        |           |
+    in diesem Fall ein spezieller Typesetter, bspw. :class:`ScientificTypesetter`
+
+:class:`ScientificTypesetter` erbt sowohl von :class:`upy2.context.ContextManager` als auch von :class:`Typesetter`.  Ersterer sorgt fuer die Python-Kontextmanagerfunktionalitaet, letzterer ist der Schluessel zur Registratur.
+
+Das Modul, welches :class:`Typesetter` definiert, erstellt auch den upy2-Kontext in :mod:`upy2.context`.  Das Modul verwendet dabei :class:`Typesetter` als Schluessel.
+
+Fuer :class:`ContextManager` muss die aufrufende Klasse eine Unterklasse der Protokollklasse sein.
+
+Benutzer von Kontexten uebergeben die Schluesselklasse explizit (bspw. :class:`undarray`); Kontextmanager uebergeben sie *implizit* durch die Klasse, deren Instanz sie sind.  Demnach sollte fuer Benutzer die uebergebene Protokoll-Klasse eine *Unterklasse* der Schluesselklasse in der Registratur sein.  Es trifft von [:210 f.] (b) zu.
