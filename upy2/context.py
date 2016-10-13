@@ -2,7 +2,7 @@
 
 import threading
 
-class Context:
+class Context(object):
     def __init__(self):
         """ Initialises the Context with an empty Thread Stack
         registry and an empty stack of Defaults. """
@@ -97,8 +97,22 @@ def protocol(protocol):
     for key in registry.keys():
         if issubclass(protocol, key):
             return registry[key]
+    raise KeyError('No Context defined for protocol %s' % protocol)
 
 def protocolobj(protocolobj):
     for key in registry.keys():
         if isinstance(protocolobj, key):
             return registry[key]
+    raise KeyError('No Context defined for protocol object %s' % protocolobj)
+
+# The upy2 protocol class context manager:
+
+class ContextManager(object):
+
+    def __enter__(self):
+        context = protocolobj(self)
+        context.register(self)
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        context = protocolobj(self)
+        context.unregister(self)
