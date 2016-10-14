@@ -2,6 +2,9 @@
 
 import threading
 
+
+# The implementation of the "upy Context" notion:
+
 class Context(object):
     def __init__(self):
         """ Initialises the Context with an empty Thread Stack
@@ -105,14 +108,20 @@ def protocolobj(protocolobj):
             return registry[key]
     raise KeyError('No Context defined for protocol object %s' % protocolobj)
 
-# The upy2 protocol class context manager:
+# Registering and unregistering at the registry:
 
-class ContextManager(object):
+class ContextProvider(object):
+    """ This class implements the Python Context Manager protocol to
+    register and unregister the instance of this class at a
+    :class:`upy2.Context` instance (to "Provide Context"). """
 
     def __enter__(self):
-        context = protocolobj(self)
-        context.register(self)
+        self._context = protocolobj(self)
+            # Protocol classes registered later might "shadow" the
+            # Context retrieved here when they are subclasses of the
+            # respective protocol class.  Hence we store the Context
+            # in ``self._context`` for later use in :meth:`__exit__`.
+        self._context.register(self)
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        context = protocolobj(self)
-        context.unregister(self)
+        self._context.unregister(self)
