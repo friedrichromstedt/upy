@@ -69,6 +69,11 @@ class Context(object):
         raise LookupError('No applicable item found')
 
     def default(self, item):
+        """ Provide *item* as the new thread-global default item.
+        This will be used by :meth:`current` when there is no
+        thread-local item present.  The new item will be placed on the
+        Default Stack. """
+
         # We need to respect the atomicity of the access to
         # :attr:`default_stack` in :meth:`undefault` and
         # :meth:`current`:
@@ -76,6 +81,10 @@ class Context(object):
             self.default_stack.append(item)
 
     def undefault(self, item):
+        """ Calls back *item* defined previously as Default Item.  It
+        is a ``ValueError`` to provide an *item* which is not the
+        toplevel item on the Default Stack. """
+
         # It can happen that another thread defines a new Default
         # between the check below and the removal.  Hence we need
         # to render the un-defaulting transaction atomic.
@@ -116,12 +125,12 @@ class ContextProvider(object):
     :class:`upy2.Context` instance (to "Provide Context"). """
 
     def __enter__(self):
-        self._context = protocolobj(self)
+        self._upy_context = protocolobj(self)
             # Protocol classes registered later might "shadow" the
             # Context retrieved here when they are subclasses of the
             # respective protocol class.  Hence we store the Context
-            # in ``self._context`` for later use in :meth:`__exit__`.
-        self._context.register(self)
+            # for later use in :meth:`__exit__`.
+        self._upy_context.register(self)
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        self._context.unregister(self)
+        self._upy_context.unregister(self)
