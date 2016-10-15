@@ -124,13 +124,27 @@ class ContextProvider(object):
     register and unregister the instance of this class at a
     :class:`upy2.Context` instance (to "Provide Context"). """
 
-    def __enter__(self):
+    def __init__(self):
         self._upy_context = protocolobj(self)
             # Protocol classes registered later might "shadow" the
             # Context retrieved here when they are subclasses of the
             # respective protocol class.  Hence we store the Context
-            # for later use in :meth:`__exit__`.
+            # for later use.
+
+    def default(self):
+        self._upy_context.default(self)
+
+    def undefault(self):
+        self._upy_context.undefault(self)
+
+    def register(self):
         self._upy_context.register(self)
 
-    def __exit__(self, exc_type, exc_value, exc_tb):
+    def unregister(self):
         self._upy_context.unregister(self)
+
+    def __enter__(self):
+        self.register()
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.unregister()
