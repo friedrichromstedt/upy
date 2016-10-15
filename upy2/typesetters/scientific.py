@@ -8,6 +8,7 @@ from upy2.typesetters.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
 from upy2.typesetters.rules import LeftRule, RightRule, CentreRule
+from upy2.typesetter import Typesetter
 
 
 class TypesetNumberRule(object):
@@ -62,7 +63,7 @@ class ScientificElement:
         return result
 
 
-class ScientificTypesetter:
+class ScientificTypesetter(Typesetter):
     def __init__(self,
         stddevs,
         relative_precision,
