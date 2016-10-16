@@ -1,12 +1,12 @@
 # Developed since: Sep 2015
 
 import unittest
-from upy2.typesetters.numbers import get_position_of_leftmost_digit
-from upy2.typesetters.numbers import NumberTypesetter
-from upy2.typesetters.rules import LeftRule, RightRule, CentreRule
-from upy2.typesetters.scientific import \
+from upy2.typesetting.numbers import get_position_of_leftmost_digit
+from upy2.typesetting.numbers import NumberTypesetter
+from upy2.typesetting.rules import LeftRule, RightRule, CentreRule
+from upy2.typesetting.scientific import \
     TypesetNumberRule, ScientificRule
-from upy2.typesetters.scientific import \
+from upy2.typesetting.scientific import \
     ScientificElement, ScientificTypesetter
 
 

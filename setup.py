@@ -37,7 +37,7 @@ distutils.core.setup(
     url='http://friedrichromstedt.github.com/upy/',
     packages=[
         'upy2',
-        'upy2.typesetters',
+        'upy2.typesetting',
     ],
     classifiers=\
         ['Development Status :: 4 - Beta',

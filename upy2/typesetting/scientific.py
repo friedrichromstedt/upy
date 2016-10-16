@@ -4,11 +4,11 @@
 # February 2010.
 
 import numpy
-from upy2.typesetters.numbers import \
+from upy2.typesetting.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
-from upy2.typesetters.rules import LeftRule, RightRule, CentreRule
-from upy2.typesetter import Typesetter
+from upy2.typesetting.rules import LeftRule, RightRule, CentreRule
+from upy2.typesetting.protocol import Typesetter
 
 
 class TypesetNumberRule(object):
