@@ -35,8 +35,8 @@ class Context(object):
         ID = threading.current_thread().ident
         thread_stack = self.thread_stacks[ID]
         if item is not thread_stack[-1]:
-            raise ValueError('The item to be unregistered is not the '
-                    'topmost entry on the stack')
+            raise ValueError('The context item to be unregistered is '
+                'not the topmost entry on the stack')
 
         del thread_stack[-1]
         if len(thread_stack) == 0:
@@ -66,7 +66,7 @@ class Context(object):
                 return self.default_stack[-1]
         
         # When we reached here, no item is applicable.
-        raise LookupError('No applicable item found')
+        raise LookupError('No applicable context item found')
 
     def default(self, item):
         """ Provide *item* as the new thread-global default item.
@@ -91,8 +91,8 @@ class Context(object):
 
         with self.lock_default:
             if item is not self.default_stack[-1]:
-                raise ValueError('Un-defaulting an item which is not '
-                        'the current default item')
+                raise ValueError('Un-defaulting a context item which '
+                    'is not the current default item')
 
             del self.default_stack[-1]
 
