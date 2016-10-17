@@ -71,6 +71,8 @@ class ScientificTypesetter(Typesetter):
         typeset_possign_exponent=None,
         infinite_precision=None,
     ):
+        Typesetter.__init__(self)
+
         if typeset_possign_value is None:
             typeset_possign_value = False
         if typeset_possign_exponent is None:
