@@ -1,15 +1,21 @@
 # Developed since: Jan 2010
 
+"""The central upy2 module, implementing the uncertain ndarray:
+:class:`undarray`."""
+
 import numpy
 import upy2
 import upy2.dependency
 import upy2.characteristic
+import upy2.typesetting.protocol
+import upy2.context
 #import upy2.printable
 import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray']
 
-"""The central module, implementing the uncertain ndarray: undarray."""
+typesetting_context = upy2.context.protocol(
+    upy2.typesetting.protocol.Typesetter)
 
 #
 # Internal helper function(s) ...
@@ -118,7 +124,7 @@ def copy(uarray_like):
 # The central undarray class ...
 #
 
-class undarray:
+class undarray(object):
     """Implements uncertain ndarrays.  The name is derived from
     numpy.ndarray. """
 
@@ -967,6 +973,10 @@ class undarray:
     #
     # String conversion ...
     #
+
+    def __str__(self):
+        typesetter = typesetting_context.current()
+        return typesetter.typeset(self)
 
 #X  To be adapted for upy2.
 #X 
