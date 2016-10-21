@@ -12,7 +12,7 @@ import upy2.context
 #import upy2.printable
 import warnings
 
-__all__ = ['undarray', 'uzeros', 'asuarray']
+__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u']
 
 typesetting_context = upy2.context.protocol(
     upy2.typesetting.protocol.Typesetter)
@@ -119,6 +119,45 @@ def copy(uarray_like):
     if isinstance(uarray_like, undarray):
         return uarray_like.copy()
     return undarray(nominal=uarray_like)
+
+#
+# Syntactic Sugar ...
+#
+
+# Definition of the "Uncertainty" Protocol:
+
+class U(upy2.context.ContextProvider):
+    def __init__(self, stddevs):
+        """ "Uncertainty" (``U``) Context Providers provide
+        uncertainty *standard deviations* based on *errors*.  The
+        *error* is supposed to be a multiple of the *standard
+        deviation*.  The connecting factor is given by the *stddevs*
+        argument. """
+
+        upy2.context.ContextProvider.__init__(self)
+
+        self.stddevs = stddevs
+
+    def provide(self, error):
+        """ Provides an undarray with zero nominal value and a
+        dispersion based on *error*.  *error* is interpreted as a
+        multiple of the standard deviation as defined on
+        initialisation time. """
+
+        stddev = numpy.asarray(error) / self.stddevs
+        return undarray(
+            nominal=numpy.zeros_like(stddev),
+            stddev=stddev,
+        )
+
+upy2.context.define(U)
+
+# Access to the "U" Context:
+
+U_context = upy2.context.protocol(U)
+
+def u(error):
+    return U_context.current().provide(error)
 
 #
 # The central undarray class ...
