@@ -761,6 +761,9 @@ class undarray(object):
 
             # Update the respective subsets ...
 
+            self.nominal = numpy.asarray(self.nominal)
+                # Turn "true" scalars into scalar ndarrays prior to
+                # item assignment.
             self.nominal[key] = value.nominal
             self.characteristic[key] = value.characteristic
 
@@ -784,6 +787,9 @@ class undarray(object):
                 self.nominal = self.nominal + numpy.zeros([],
                     dtype=value.dtype)
             self.characteristic.clear(key)
+            self.nominal = numpy.asarray(self.nominal)
+                # Turn "true" scalars into scalar ndarrays prior to
+                # item assignment.
             self.nominal[key] = value
 #XX        
 #XX        else:

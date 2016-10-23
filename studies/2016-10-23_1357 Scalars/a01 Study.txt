@@ -1,0 +1,53 @@
+.. vim: syntax=rst
+
+The Problem
+===========
+
+All attributes which are key accessed need to be scalar numpy.ndarrays.  Many operations involving scalar ndarrays result in "true" numpy scalars.  Consider the following (taken from [test/drafts/2016-10-21_1954/a03.py]::
+
+    import numpy
+
+    a = numpy.asarray(1)
+    print repr(a)
+
+    b = a + 0
+    print repr(b)
+
+    c = a + numpy.asarray(0)
+    print repr(c)
+
+    d = numpy.asarray(a + 0)
+    print repr(d)
+
+This results in::
+
+    array(1)
+    1
+    1
+    array(1)
+
+Expressions like the ``b`` and ``c`` rows need to encapsulated by ``numpy.asarray`` like in the ``d`` row.
+
+
+Attributes Involved
+===================
+
+I'll scan ``dependency.py``, ``characteristic.py`` and ``core.py`` for key access, collecting a list of all attributes which need to be ndarrays *always*.
+
+
+``dependency.py``
+-----------------
+
+-   *names* and *derivatives* in Dependency.__init__()
+-   Dependency.names
+-   Dependency.derivatives
+
+-----
+
+It turns out, that only *item assignment* is impossible for true scalars.  Indexing is fine::
+    
+    >>> X = numpy.float64(1)
+    >>> X[()]
+    1.0
+
+Only statements of item assignment to ndarrays need to be checked.  This are only a few.  It is sufficient to update the attributes before use by ``<x> = numpy.asarray(<x>)``.

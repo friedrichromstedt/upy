@@ -144,7 +144,9 @@ class Dependency:
             self.derivatives = self.derivatives + numpy.zeros([],
                 dtype=other.derivatives.dtype)
                 # numpy.zeros([]) returns a scalar zero.  Adding this
-                # is a no-op on any numeric array except for dtype.
+                # is a no-op on any non-scalar numeric array except
+                # for dtype (scalar ndarrays turn into "true"
+                # scalars).
         #
         # From now on, we can use ``+=`` on ``self.derivatives`` with
         # (parts of) ``other.derivatives`` without danger of dtype
@@ -155,6 +157,9 @@ class Dependency:
         matching_mask = (self.names[key] == other.names)
             # This might involve broadcasting of ``other.names``.
 
+        self.derivatives = numpy.asarray(self.derivatives)
+            # Turn "true" scalars into scalar ndarrays prior to item
+            # assignment.
         self.derivatives[key] += matching_mask * other.derivatives
             # If the shape of ``matching_mask * other.derivatives`` is
             # too large, numpy will complain.  In all other cases, the
@@ -177,6 +182,10 @@ class Dependency:
         other_filled_mask = (other.names != 0)
         fillin_mask = empty_mask * other_filled_mask
 
+        self.names = numpy.asarray(self.names)
+            # Turn "true" scalars into scalar ndarrays prior to item
+            # assignment.  *self.derivatives* has already been
+            # prepared above.
         self.names[key] += fillin_mask * other.names
         self.derivatives[key] += fillin_mask * other.derivatives
 
@@ -259,6 +268,10 @@ class Dependency:
         """Clear the portion given by KEY, by setting the values stored to
         zero."""
 
+        self.names = numpy.asarray(self.names)
+        self.derivatives = numpy.asarray(self.derivatives)
+            # Turn "true" scalars into scalar ndarrays prior to item
+            # assignment.
         self.names[key] = 0
         self.derivatives[key] = 0
 
