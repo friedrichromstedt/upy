@@ -75,9 +75,10 @@ class Dependency:
     def variance(self):
         """Get the variance induced by this dependency."""
 
-        if numpy.iscomplexobj(self.derivatives):
-            raise ValueError("The variance of complex-valued "
-                "Dependencies is ambiguous.")
+        if not numpy.isrealobj(self.derivatives):
+            # It might be complex.
+            raise ValueError('Refusing to calculate variances '
+                    'of non-real Dependency')
         return (self.names != 0) * self.derivatives ** 2
 
     #
