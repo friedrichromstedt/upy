@@ -262,8 +262,9 @@ class Dependency:
         derivatives and variances."""
         
         return Dependency(
-                names=self.names[key],
-                derivatives=self.derivatives[key])
+                names=self.names[key].copy(),
+                derivatives=self.derivatives[key].copy(),
+        )
 
     def clear(self, key):
         """Clear the portion given by KEY, by setting the values stored to
