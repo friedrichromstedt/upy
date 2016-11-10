@@ -229,3 +229,38 @@ Das Modul, welches :class:`Typesetter` definiert, erstellt auch den upy2-Kontext
 Fuer :class:`ContextManager` muss die aufrufende Klasse eine Unterklasse der Protokollklasse sein.
 
 Benutzer von Kontexten uebergeben die Schluesselklasse explizit (bspw. :class:`undarray`); Kontextmanager uebergeben sie *implizit* durch die Klasse, deren Instanz sie sind.  Demnach sollte fuer Benutzer die uebergebene Protokoll-Klasse eine *Unterklasse* der Schluesselklasse in der Registratur sein.  Es trifft von [:210 f.] (b) zu.
+
+
+.. rubric:: Donnerstag, d. 10. November 2016, 18:24 Uhr
+
+
+Bei der Benutzung von :mod:`upy2.context` stellt sich heraus, dass *alle* von der jeweiligen Protokollklasse abgeleitete Klassen stets auch von :class:`upy2.context.ContextProvider` erben.  Aus diesem Grund wurde die jeweilige Protokollklasse direkt von :class:`upy2.context.ContextProvider` abgeleitet.  Die Beispiele sind:
+
+1.  :class:`ScientificTypsetter`::
+
+        :class:`upy2.context.ContextProvider`
+            |
+            |
+        :class:`upy2.typesetting.protocol.Typesetter`
+            |
+            |
+        :class:`upy2.typesetting.scientific.ScientificTypesetter`
+
+    Die Protokollklasse ist hier :class:`upy2.typesetting.protocol.Typesetter`.
+
+2.  :class:`upy2.core.U`::
+
+        :class:`upy2.context.ContextProvider`
+            |
+            |
+        :class:`upy2.core.U`
+
+    :class:`upy2.core.U` wird hier direkt verwendet.  :class:`upy2.core.U` ist ausserdem die Protokollklasse.
+
+Die Protokollklassen sind in diesen beiden Beispielen bereits Unterklassen von :class:`upy2.context.ContextProvider`.
+
+Es ergibt sich hieraus der Vorschlag, :class:`upy2.context.ContextProvider` in :class:`upy2.context.Protocol` oder :class:`ContextProtocol` umzubenennen, da sie sich als der Prototyp der tatsaechlichen Protokoll-Klassen herausgestellt hat.
+
+Es ist die Frage, ob die Klassen, welche das jeweilige Protokoll implementieren, immer auch von :class:`upy2.context.ContextProvider` erben.  Diese Frage ist mit Ja zu beantworten, denn ohne ein solches Erbe kann die jeweilige Klasse sich nicht in den upy2-Kontext des Protokolls eintragen und als Python-Kontextmanager verwendet werden.
+
+Protokollklassen sind damit zweckmaessigerweise *immer* bereits Unterklassen von :class:`upy2.context.ContextProvider`.  :class:`ContextProvider` ist daher der Prototyp aller Protokoll-Klassen.  Ein treffender Name ist daher :class:`upy2.context.Protocol`.  *Interessant!*
