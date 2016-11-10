@@ -126,7 +126,7 @@ def copy(uarray_like):
 
 # Definition of the "Uncertainty" Protocol:
 
-class U(upy2.context.ContextProvider):
+class U(upy2.context.Protocol):
     def __init__(self, stddevs):
         """ "Uncertainty" (``U``) Context Providers provide
         uncertainty *standard deviations* based on *errors*.  The

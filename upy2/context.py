@@ -119,10 +119,11 @@ def protocolobj(protocolobj):
 
 # Registering and unregistering at the registry:
 
-class ContextProvider(object):
+class Protocol(object):
     """ This class implements the Python Context Manager protocol to
     register and unregister the instance of this class at a
-    :class:`upy2.Context` instance (to "Provide Context"). """
+    :class:`upy2.Context` instance.  It is the base class of all
+    Protocol Classes and their implementations. """
 
     def __init__(self):
         self._upy_context = protocolobj(self)
