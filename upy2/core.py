@@ -110,15 +110,15 @@ def asuarray(uarray_like):
         return uarray_like
     return undarray(uarray_like)
 
-def copy(uarray_like):
-    """ If *undarray_like* is an instance of :class:`undarray`, its
+def ucopy(uarray_like):
+    """ If *uarray_like* is an instance of :class:`undarray`, its
     contents will be copied.  Otherwise, a new :class:`undarray` is
-    constructed; in that case the ``undarray_like`` data structure
-    will be copied. """
+    constructed; in that case the ``uarray_like`` data structure
+    will be copied using ``numpy.copy``. """
 
     if isinstance(uarray_like, undarray):
         return uarray_like.copy()
-    return undarray(nominal=uarray_like)
+    return undarray(nominal=numpy.copy(uarray_like))
 
 #
 # Syntactic Sugar ...

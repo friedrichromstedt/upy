@@ -1,0 +1,19 @@
+.. vim: syntax=rst
+
+Study on Copying
+################
+
+Key Access
+==========
+
+Do not return views of numpy ndarrays contained.  undarrays
+constructed with views will easily deviate from being a true view of
+the original undarray.  This violates the idea of constructing a view.
+
+
+Creation of undarrays
+=====================
+
+When taking over ndarrays provided by the user, do *not* copy them.
+The user can easily enough copy these arguments.  Use the advantage to
+save the copying step.
