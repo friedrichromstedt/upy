@@ -248,7 +248,7 @@ class ScientificTypesetter(Typesetter):
                 number=0, precision=0)
             typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                 number=0, precision=0)
-            typeset_exponent = self.exponent_typsetter.typesetint(
+            typeset_exponent = self.exponent_typesetter.typesetint(
                 number=0, precision=0)
 
             return rule.apply(
