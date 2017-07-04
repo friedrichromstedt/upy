@@ -14,7 +14,7 @@ import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u']
 
-typesetting_context = upy2.context.protocol(
+typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
 
 #
@@ -134,7 +134,7 @@ class U(upy2.context.Protocol):
         deviation*.  The connecting factor is given by the *stddevs*
         argument. """
 
-        upy2.context.ContextProvider.__init__(self)
+        upy2.context.Protocol.__init__(self)
 
         self.stddevs = stddevs
 
@@ -154,7 +154,7 @@ upy2.context.define(U)
 
 # Access to the "U" Context:
 
-U_context = upy2.context.protocol(U)
+U_context = upy2.context.byprotocol(U)
 
 def u(error):
     return U_context.current().provide(error)

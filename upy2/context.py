@@ -105,13 +105,13 @@ def define(protocol):
 # Contexts exist as long as their key Protocol class, so we don't need
 # :func:`undefine`.
 
-def protocol(protocol):
+def byprotocol(protocol):
     for key in registry.keys():
         if issubclass(protocol, key):
             return registry[key]
     raise KeyError('No Context defined for protocol %s' % protocol)
 
-def protocolobj(protocolobj):
+def byprotocolobj(protocolobj):
     for key in registry.keys():
         if isinstance(protocolobj, key):
             return registry[key]
@@ -126,7 +126,7 @@ class Protocol(object):
     Protocol Classes and their implementations. """
 
     def __init__(self):
-        self._upy_context = protocolobj(self)
+        self._upy_context = byprotocolobj(self)
             # Protocol classes registered later might "shadow" the
             # Context retrieved here when they are subclasses of the
             # respective protocol class.  Hence we store the Context
