@@ -10,8 +10,7 @@ __all__ = ['Characteristic']
 
 class Characteristic:
     """ A Characteristic stores several :class:`Dependency` instances.
-    It stores all dependencies which are characteristic for an
-    uncertain value. """
+    It stores all dependencies which characterise an uncertain value. """
 
     #
     # Initialisation ...
@@ -117,7 +116,7 @@ class Characteristic:
                 source_remnant = target.add(source_remnant, key)
 
                 if source_remnant.is_empty():
-                    # We're don with this source.
+                    # We're done with this source.
                     break
 
             if source_remnant.is_nonempty():

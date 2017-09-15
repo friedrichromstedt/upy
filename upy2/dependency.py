@@ -91,7 +91,14 @@ class Dependency:
 
         return Dependency(
             names=self.names.copy(),
-            derivatives=self.derivatives.real,
+            derivatives=self.derivatives.real.copy(),
+                # ``array.real`` returns a *view*::
+                #
+                #   >>> z = numpy.asarray(1 + 1j)
+                #   >>> r = z.real
+                #   >>> z[()] = 2 + 1j
+                #   >>> r
+                #   array(2.0)
         )
 
     @property
@@ -100,7 +107,7 @@ class Dependency:
         
         return Dependency(
             names=self.names.copy(),
-            derivatives=self.derivatives.imag,
+            derivatives=self.derivatives.imag.copy(),
         )
 
     #
@@ -189,6 +196,9 @@ class Dependency:
             # prepared above.
         self.names[key] += fillin_mask * other.names
         self.derivatives[key] += fillin_mask * other.derivatives
+            # Do use augmented assignment ``+=`` because portions
+            # where the assigned arrays are zero are to be preserved
+            # *without change*.
 
         # Mark the cells as used.
         other = other & (1 - fillin_mask)

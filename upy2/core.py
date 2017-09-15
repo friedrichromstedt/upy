@@ -174,52 +174,39 @@ class undarray(object):
             characteristic=None,
             dtype=None,
             shape=None):
-        """If *nominal* is an undarray, its content will be copied.
-        
+        """ If *stddev* and *nominal* aren't None, *nominal* and
+        *stddev* will be converted to numpy.ndarrays by
+        ``numpy.asarray``.  The initial Characteristic will reflect
+        the single dependency expressed by *stddev*.
+
         If *derivatives* and *nominal* are not None, *derivatives*
         must be a list ``[(undarray instance, derivative), ...]``,
         giving the derivatives with that the new undarray depends on
         the given undarrays.  *nominal* will be converted to a
-        numpy.ndarray.
-
-        If *stddev* and *nominal* aren't None, *nominal* and *stddev*
-        will be copied to numpy.ndarrays.  The initial Characteristic
-        will reflect the single dependency expressed by *stddev*.
+        ``numpy.ndarray``.
 
         If *characteristic* and *nominal* are not None, *nominal* is
-        copied in order to produce a numpy.ndarray, and the
-        *characteristic* is copied as well.
+        converted to a ``numpy.ndarray`` by means of ``numpy.asarray``
+        and the *characteristic* is taken over *without copying it*.
 
-        .. to be phased out:
-
-            If *nominal* isn't None, but all other branches mentioned
-            so far are not fulfilled, Mixed-Mode applies.  In this
-            mode, *master* will not be converted to an numpy.ndarray,
-            but will be recursed into.  Nevertheless the objects
-            comprising *master* must match the effective shape of the
-            *master*.  *master* may be contain upy.undarrays.  The
-            shape of the new undarray is obtained from the first
-            scalar element in the upy.ravel()ed version of the
-            *master* and from the lengthes of the sequences containing
-            that first element.  Scalars are objects for which
-            numpy.isscalar() returns True.  When there are shape
-            inconsistencies, an exception will occur.  If the first
-            element is an undarray, its shape will be taken into
-            account.  In Mixed-Mode, the *dtype* of the initially zero
-            .value ndarray is either determined automatically from all
-            values contained in *master* and undarrays therein, or can
-            be given explicitly via *dtype*.  It is strongly
-            recommended to use *dtype*, because raveling large
-            datasets can be very expensive in memory and time both.
+        If otherwise *nominal* is given, it will be converted by
+        ``numpy.asarray`` and the ``undarray`` instance will carry an
+        empty Characteristic.
         
         If *nominal* is None, *shape* is taken into account, to create
-        a new, zero-valued undarray of dtype *dtype* (Giving ``None``
-        as *dtype* results in numpy.float used as dtype).  As the
+        a new, zero-valued undarray of dtype *dtype* (giving ``None``
+        as *dtype* results in ``numpy.float`` used as dtype).  As the
         Characteristic is empty in this case, and only the
         Dependencies carry a dtype, the *dtype* given pertains to the
         ``nominal`` attribute alone.
         
-        If none of these branches match, ValueError will be raised."""
+        If none of these branches matches, ValueError will be raised.
+
+        *nominal* and *stddev* will be used as returned from
+        ``numpy.asarray``.  They won't be copied explicitly.  The
+        ``Characterstic`` instances of the ``undarray`` instances in
+        ``derivatives`` *will* be copied during the initialisation.
+        """
         
 #X        if isinstance(master, undarray):
 #X
@@ -245,8 +232,8 @@ class undarray(object):
             # Constuct a new undarray ...
 
             # Convert to ndarrays.
-            nominal = numpy.copy(nominal)
-            stddev = numpy.copy(stddev)
+            nominal = numpy.asarray(nominal)
+            stddev = numpy.asarray(stddev)
 
             # Check shape.
             if nominal.shape != stddev.shape:
@@ -257,7 +244,7 @@ class undarray(object):
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
             
-            # Create Dependency instance from scratch.
+            # Create a Dependency instance from scratch.
             dependency = upy2.dependency.Dependency(
                 names=upy2.id_generator.get_idarray(
                     shape=self.shape),
@@ -274,7 +261,7 @@ class undarray(object):
 
             # Derive the new undarray from known ones ...
 
-            self.nominal = numpy.copy(nominal)
+            self.nominal = numpy.asarray(nominal)
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
 
@@ -290,14 +277,14 @@ class undarray(object):
 
         elif characteristic is not None and nominal is not None:
 
-            nominal = numpy.copy(nominal)
+            nominal = numpy.asarray(nominal)
             if characteristic.shape != nominal.shape:
                 raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
 
             # Take over the characteristic ...
 
             self.nominal = nominal
-            self.characteristic = characteristic.copy()
+            self.characteristic = characteristic
 
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
@@ -306,7 +293,7 @@ class undarray(object):
 
             # Construct a new undarray with an empty Characteristic.
 
-            self.nominal = numpy.copy(nominal)
+            self.nominal = numpy.asarray(nominal)
 
             self.shape = self.nominal.shape
             self.ndim = self.nominal.ndim
@@ -394,7 +381,7 @@ class undarray(object):
         the nominal value as well as the Characteristic. """
 
         return undarray(
-            nominal=self.nominal.real,
+            nominal=self.nominal.real.copy(),
             characteristic=self.characteristic.real,
         )
 
@@ -404,7 +391,7 @@ class undarray(object):
         the nominal value as well as the Characteristic. """
 
         return undarray(
-            nominal=self.nominal.imag,
+            nominal=self.nominal.imag.copy(),
             characteristci=self.characteristic.imag,
         )
 
@@ -575,11 +562,12 @@ class undarray(object):
             )
 
     #
-    # Reverse binary arithmetics ...
+    # Reflected binary arithmetics ...
     #
 
     def __radd__(self, other):
         # *other* is not an undarray.
+        other=numpy.asarray(other)
         return undarray(
             nominal=(other + self.nominal),
             derivatives=[(self, 1.0)],
@@ -587,6 +575,7 @@ class undarray(object):
 
     def __rsub__(self, other):
         # *other* is not an undarray.
+        other=numpy.asarray(other)
         return undarray(
             nominal=(other - self.nominal),
             derivatives=[(self, -1.0)],
@@ -594,6 +583,7 @@ class undarray(object):
 
     def __rmul__(self, other):
         # *other* is not an undarray.
+        other=numpy.asarray(other)
         return undarray(
             nominal=(other * self.nominal),
             derivatives=[(self, other)],
@@ -601,7 +591,7 @@ class undarray(object):
 
     def __rdiv__(self, other):
         # *other* is not an undarray.
-#X?        other=numpy.asarray(other)
+        other=numpy.asarray(other)
         #
         # f = other / self = other . self ^ (-1)
         #
@@ -614,6 +604,7 @@ class undarray(object):
 
     def __rpow__(self, other):
         # *other* is not an undarray.
+        other=numpy.asarray(other)
         other_pow_self = other ** self.nominal
         # See :meth:`__pow__`.
         return undarray(
@@ -641,6 +632,17 @@ class undarray(object):
         absolute_value = numpy.abs(self.nominal)
         nominal_prepared = self.nominal + (self.nominal == 0)
         normalisation_factor = absolute_value / nominal_prepared
+            # Consider *self.nominal* as 0 + 1j.  Then the absolute
+            # value (1.0) results from multiplying *self.nominal* with
+            # 0 - 1j.  Hence the normalised undarray depends on the
+            # previous *self.nominal* with a derivative of this 0 - 1j
+            # figure.  This value is precisely the
+            # *normalisation_factor* defined above: absolute value
+            # divided by *self.nominal*.
+            #
+            # The reader might want to verify this finding by more
+            # examples: 1 + 1j, 5j, -5, ...
+            #
             # When an element of self.nominal is zero, its absolute
             # value is zero as well, and the 1.0 introduced in
             # ``nominal_prepared`` is effectless:  The normalisation
@@ -648,7 +650,15 @@ class undarray(object):
         return undarray(
             nominal=absolute_value,
             derivatives=[(self, normalisation_factor)],
+                # Notice that *normalisation_factor* is not a scalar.
         )
+            # Another notation for the same outcome would be::
+            #
+            #   return (self * normalisation_factor).real
+            #
+            # with the ``.real`` statement to ignore the negligible
+            # imaginary components of the product.
+            #
         # For complex undarrays, the ``absolute_value`` is guaranteed
         # to be real-valued.  However, the dependencies might turn out
         # complex, when their phase differs from the phase of
@@ -683,45 +693,46 @@ class undarray(object):
         if isinstance(other, undarray):
             return self.nominal < other.nominal
         else:
-            return self.nominal < other
+            return self.nominal < numpy.asarray(other)
 
     def __le__(self, other):
         if isinstance(other, undarray):
             return self.nominal <= other.nominal
         else:
-            return self.nominal <= other
+            return self.nominal <= numpy.asarray(other)
 
     def __gt__(self, other):
         if isinstance(other, undarray):
             return self.nominal > other.nominal
         else:
-            return self.nominal > other
+            return self.nominal > numpy.asarray(other)
 
     def __ge__(self, other):
         if isinstance(other, undarray):
             return self.nominal >= other.nominal
         else:
-            return self.nominal >= other
+            return self.nominal >= numpy.asarray(other)
 
     def __eq__(self, other):
         if isinstance(other, undarray):
             return self.nominal == other.nominal
         else:
-            return self.nominal == other
+            return self.nominal == numpy.asarray(other)
 
     def __ne__(self, other):
         if isinstance(other, undarray):
             return self.nominal != other.nominal
         else:
-            return self.nominal != other
+            return self.nominal != numpy.asarray(other)
     
     #
     # Keying methods ...
     #
     
     def __getitem__(self, key):
-        """Returns the given subset of the undarray array, by applying the
-        KEY both to the value and the Characteristic. """
+        """Returns the given subset of the undarray array, by applying
+        *key* both to the nominal value as well as to the
+        Characteristic. """
 
         return undarray(
             nominal=self.nominal[key],
@@ -843,45 +854,52 @@ class undarray(object):
 
         return self.nominal.argsort(*args, **kwargs)
 
-    def clip(self, a_min, a_max):
-        """Refer to numpy.clip() for documentation of the functionality.
-        
-        The errors of the clipped values will be set to zero and any
-        dependency stored before in them will be removed.  Thus the clipped
-        values are then exact.
-        
-        Returned is a copy."""
-
-        # Retrieve the clipped nominal value.
-        clipped_nominal = self.nominal.clip(a_min, a_max)
-
-        # Retrieve the mask where to set the error to 0.0.
-        changed_mask = (self.nominal != clipped_nominal)
-
-        copied_characteristic = self.characteristic.copy()
-        copied_characteristic.clear(changed_mask)
-            # This statement finally boils down in :class:`Dependency`
-            # to:
-            #
-            #   >>> import numpy
-            #   >>> a = numpy.arange(10).reshape(2, 5)
-            #   >>> a
-            #   array([[0, 1, 2, 3, 4],
-            #          [5, 6, 7, 8, 9]])
-            #   >>> idx = (a % 2) == 0
-            #   >>> idx
-            #   array([[ True, False,  True, False,  True],
-            #          [False,  True, False,  True, False]], dtype=bool)
-            #   >>> a[idx]
-            #   array([0, 2, 4, 6, 8])
-            #   >>> a[idx] = -1
-            #   >>> a
-            #   array([[-1,  1, -1,  3, -1],
-            #          [ 5, -1,  7, -1,  9]])
-        return undarray(
-            nominal=clipped_nominal,
-            characteristic=copied_characteristic,
-        )
+# It is difficult to match the semantics of ``clip``: What shall be
+# the nominal value and the standard deviation of the result?  *Any
+# possible value* is *probable*.  The implementation below, which
+# sets the errors of clipped values to zero, in not precise by just
+# ignoring the highly asymmetric and constrained pdf of a clipped
+# Gaussian.
+#
+#    def clip(self, a_min, a_max):
+#        """Refer to numpy.clip() for documentation of the functionality.
+#        
+#        The errors of the clipped values will be set to zero and any
+#        dependency stored before in them will be removed.  Thus the clipped
+#        values are then exact.
+#        
+#        Returned is a copy."""
+#
+#        # Retrieve the clipped nominal value.
+#        clipped_nominal = self.nominal.clip(a_min, a_max)
+#
+#        # Retrieve the mask where to set the error to 0.0.
+#        changed_mask = (self.nominal != clipped_nominal)
+#
+#        copied_characteristic = self.characteristic.copy()
+#        copied_characteristic.clear(changed_mask)
+#            # This statement finally boils down in :class:`Dependency`
+#            # to:
+#            #
+#            #   >>> import numpy
+#            #   >>> a = numpy.arange(10).reshape(2, 5)
+#            #   >>> a
+#            #   array([[0, 1, 2, 3, 4],
+#            #          [5, 6, 7, 8, 9]])
+#            #   >>> idx = (a % 2) == 0
+#            #   >>> idx
+#            #   array([[ True, False,  True, False,  True],
+#            #          [False,  True, False,  True, False]], dtype=bool)
+#            #   >>> a[idx]
+#            #   array([0, 2, 4, 6, 8])
+#            #   >>> a[idx] = -1
+#            #   >>> a
+#            #   array([[-1,  1, -1,  3, -1],
+#            #          [ 5, -1,  7, -1,  9]])
+#        return undarray(
+#            nominal=clipped_nominal,
+#            characteristic=copied_characteristic,
+#        )
 
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
@@ -901,16 +919,16 @@ class undarray(object):
         means, that the undarray will bahave in all arithmetics the same as
         the original, except for that it has its own memory.
         
-        This behaviour is choosen, because there may happen too many
+        This behaviour is chosen, because there may happen too many
         complications with lost intercorrelations when the data would be
         dropped and replaced by new names completely.  Also, it cannot be
         decided at this program level which correlation to keep and which
         to "copy", i.e., to replicate with new names."""
 
         return undarray(
-            nominal=self.nominal,
-            characteristic=self.characteristic,
-        )   # The constructor performs the copying.
+            nominal=self.nominal.copy(),
+            characteristic=self.characteristic.copy(),
+        )
             
 
 # This method is deprecated, because its implementation is too rough.
