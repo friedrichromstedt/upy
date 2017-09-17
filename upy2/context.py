@@ -101,17 +101,32 @@ class Context(object):
 registry = {}  # {Protocol Class: Context}
 
 def define(protocol):
+    """ Define a :class:`Context` for the given *protocol*.  When the
+    respective Context already exists, this function is a no-op.
+    Otherwise an empty :class:`Context` instance will be registered
+    for the key *protocol*.
+
+    The *protocol* should be a subclass of
+    :class:`upy2.context.Protocol`. """
+
     registry.setdefault(protocol, Context())
 # Contexts exist as long as their key Protocol class, so we don't need
 # :func:`undefine`.
 
 def byprotocol(protocol):
+    """ Returns the Context for a Protocol class *protocol*.  Keys
+    which are a *parent class* of *protocol* will match. """
+
     for key in registry.keys():
         if issubclass(protocol, key):
             return registry[key]
     raise KeyError('No Context defined for protocol %s' % protocol)
 
 def byprotocolobj(protocolobj):
+    """ Returns the Context for an instance of :class:`Protocol` given
+    as *protocolobj*.  Keys will match when *protocolobj* is an
+    instance of the respective key class. """
+
     for key in registry.keys():
         if isinstance(protocolobj, key):
             return registry[key]
@@ -121,28 +136,23 @@ def byprotocolobj(protocolobj):
 
 class Protocol(object):
     """ This class implements the Python Context Manager protocol to
-    register and unregister the instance of this class at a
-    :class:`upy2.Context` instance.  It is the base class of all
-    Protocol Classes and their implementations. """
-
-    def __init__(self):
-        self._upy_context = byprotocolobj(self)
-            # Protocol classes registered later might "shadow" the
-            # Context retrieved here when they are subclasses of the
-            # respective protocol class.  Hence we store the Context
-            # for later use.
+    register and unregister instances of this class at the respective
+    :class:`upy2.context.Context` instance.  It is the base class of
+    all Protocol Classes and their implementations.  It also provides
+    means to register/unregister and to default/undefault its
+    instances explicitly. """
 
     def default(self):
-        self._upy_context.default(self)
+        byprotocolobj(self).default(self)
 
     def undefault(self):
-        self._upy_context.undefault(self)
+        byprotocolobj(self).undefault(self)
 
     def register(self):
-        self._upy_context.register(self)
+        byprotocolobj(self).register(self)
 
     def unregister(self):
-        self._upy_context.unregister(self)
+        byprotocolobj(self).unregister(self)
 
     def __enter__(self):
         self.register()

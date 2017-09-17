@@ -264,3 +264,27 @@ Es ergibt sich hieraus der Vorschlag, :class:`upy2.context.ContextProvider` in :
 Es ist die Frage, ob die Klassen, welche das jeweilige Protokoll implementieren, immer auch von :class:`upy2.context.ContextProvider` erben.  Diese Frage ist mit Ja zu beantworten, denn ohne ein solches Erbe kann die jeweilige Klasse sich nicht in den upy2-Kontext des Protokolls eintragen und als Python-Kontextmanager verwendet werden.
 
 Protokollklassen sind damit zweckmaessigerweise *immer* bereits Unterklassen von :class:`upy2.context.ContextProvider`.  :class:`ContextProvider` ist daher der Prototyp aller Protokoll-Klassen.  Ein treffender Name ist daher :class:`upy2.context.Protocol`.  *Interessant!*
+
+
+.. rubric:: Sonntag, d. 17. Septemer 2017, 13:30 Uhr
+
+
+Bemerkungen zur Benennung der involvierten Konzepte:
+
+1.  upy2-Kontexte sind Instanzen von :class:`upy2.context.Context`.
+
+2.  Die Implementierungen von upy2-Protokollen sind Instanzen von Unterklassen von :class:`upy2.context.Protocol`.
+
+3.  Instanzen von :class:`upy2.context.Protocol` (via davon abgeleiteter Klassen) koennen als *Python Kontext-Manager* verwendet werden.
+
+4.  Die *Protokolle* sind die Konvention, welche von allen von einem *Kontext* zurueckgegebenen Objekte einzuhalten ist.  Die "Erfuellung der Konvention" oder die "Einhaltung des Protokolls" wird durch Ableitung von der jeweiligen Protokoll-Klasse implementiert.  Dies kann dann fuer die Ermittlung des fuer eine Protokoll-Implementierung massgebenden Kontextes verwendet werden.
+
+Das Wort "Manager" wurde bereits aus dem Namen ``upy2.context.ContextManager`` gestrichen.  Es tritt daher keine Doppelung von "Kontext-Manager" auf:  Ein *Kontext* ist *immer* ein ``upy``-Konstrukt und das Wort "Kontext-Manager" wird eindeutig fuer die Verwendung einer Instanz von :class:`upy2.context.Protocol` in einem ``with``-Statement verwendet.
+
+Ich habe lange ueberlegt ob man die Worte zugunsten der Verwendung von "Konvention" (*Convention*) umsortiert, aber:
+
+-   Die gegenwaertige Benennung ist stringent und eingaengig.
+
+-   Es handelt sich *in der Tat* in beiden Faellen (:class:`upy2.context.Context`-Instanzen und als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen) um *Kontexte*.  Tatsaechlich sind als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen der *Manager* eines *upy2-Kontextes*.  Die Benennung ist also sogar *richtig* in der Verwendung desselben Wortes *Kontext* in beiden Faellen!
+
+Die Nomenklatur ist daher in ihrem gegenwaertigen Zustand zu begruessen.
