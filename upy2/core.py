@@ -150,6 +150,21 @@ class U(upy2.context.Protocol):
             stddev=stddev,
         )
 
+    def __call__(self, error):
+        """ Convenience method to provide a short-hand for
+        :meth:`provide`.
+
+        Example::
+
+            u5 = U(5)
+            ua = nominal +- u5(five_sigma_error)
+
+        Writing ``.provide(...)`` is not needed to ensure readability
+        and hence the syntax can be made more terse by pruning the
+        explicit call to :meth:`provide`. """
+
+        return self.provide(error)
+
 upy2.context.define(U)
 
 # Access to the "U" Context:
