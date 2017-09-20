@@ -156,7 +156,6 @@ class Protocol(object):
 
     def __enter__(self):
         self.register()
-        return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.unregister()
