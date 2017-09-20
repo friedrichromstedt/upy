@@ -288,3 +288,50 @@ Ich habe lange ueberlegt ob man die Worte zugunsten der Verwendung von "Konventi
 -   Es handelt sich *in der Tat* in beiden Faellen (:class:`upy2.context.Context`-Instanzen und als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen) um *Kontexte*.  Tatsaechlich sind als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen der *Manager* eines *upy2-Kontextes*.  Die Benennung ist also sogar *richtig* in der Verwendung desselben Wortes *Kontext* in beiden Faellen!
 
 Die Nomenklatur ist daher in ihrem gegenwaertigen Zustand zu begruessen.
+
+
+.. rubric:: Mittwoch, d. 20. September 2017, 12:51 Uhr im FWW
+
+
+Soll :meth:`upy2.context.Protocol.__enter__` ``self`` zurueckgeben oder nicht?
+
+Moegliche Szenarios zur Verwendung einer Protokoll-Implementation:
+
+1.  Im lokalen Scope und *nicht* ausserhalb dessen::
+
+        u = U(2)
+        x = v +- u(...)
+
+    Die Funktionalitaet [:296] wird hier nicht gebraucht.
+
+2.  Im lokalen Scope *und* ausserhalb dessen::
+
+        with U(2):
+            x = v +- u(...)
+
+    mit ``upy2.core.u`` als ``u``.  [:296] wird auch hier nicht gebraucht.
+
+3.  *Nur* ausserhalb des aktuellen Scopes und *nicht* innerhalb dessen::
+
+        ... Definition eines eigenen ``u`` ...
+
+        with U(2):
+            ...
+
+    Auch hier wird [:296] nicht gebraucht.
+
+4.  Der einzige verbleibende Fall ist, dass die Protokoll-Implementation *gar nicht* gebraucht wird; auch dann ist [:296] freilich nicht notwendig.
+
+Eine Verwendung von Protokoll-Implementierungen ``P`` ala::
+
+    with P(...) as p:
+        ... nutze p ...
+
+wird also *nie* gebraucht.  Lediglich im Fall (2.) *koennte* geschrieben werden::
+
+    with U(2) as u:
+        x = v +- u(...)
+
+aber da ist es stringerter *direkt* ``upy2.core.u`` zu verwenden und auf den ``U``-Kontext zuzugreifen.
+
+Ich *entferne* daher die von e39329b9c3 eingefuehrte Funktionalitaet wieder.  Sie wird *per Intention* **nicht** unterstuetzt.
