@@ -335,3 +335,50 @@ wird also *nie* gebraucht.  Lediglich im Fall (2.) *koennte* geschrieben werden:
 aber da ist es stringerter *direkt* ``upy2.core.u`` zu verwenden und auf den ``U``-Kontext zuzugreifen.
 
 Die Funktionalitaet [:296] wird folglich absichtlich *nicht unterstuetzt*.
+
+Ich untersuche noch, ob diese Schlussfolgerung auch auf Typesetters zutrifft:
+
+1.  Lokal::
+
+        ts = SomeTypesetter(<...>)
+        print ts.typeset(<...>)
+        typeset = ts.typeset(<...>)
+
+2.  Lokal & ausserhalb:
+
+    -   Wenn man *nur* ``print`` benutzen moechte, reicht aus::
+
+            with SomeTypesetter(<...>):
+                ...
+                print ua
+                ...
+
+    -   Moechte man den Typesetter auch lokal explizit verwenden, muesste::
+
+            with SomeTypesetter(<...>) as ts:
+                ...
+                typeset = ts.typeset(<...>)
+                print ua
+                ...
+
+        unterstuetzt werden.
+
+3.  Nur ausserhalb und *nicht* lokal::
+
+        with SomeTypesetter(<...>):
+            ...
+
+Der zweite Stichpunkt in (2.) spricht *fuer* die Rueckgabe von ``self`` im Rahmen des Python-Kontext-Manager-Protokolls.  In dem Fall kann allerdings auch geschrieben werden::
+
+    ts = SomeTypesetter(<...>)
+    with ts:
+        ...
+        typeset = ts.typeset(<...>)
+        print ua
+        ...
+
+    othertypeset = ts.typeset(<...>)
+
+Dieser Ersatz gefaellt mir besser: Er macht klar, dass ``ts`` nur lokal gueltig ist, und spricht ausserdem deutlich aus, dass ``ts`` in den upy2-Typesetter-Kontext eingetragen wird.
+
+*Es bleibt also dabei: Keine Unterstuetzung fuer [:296].*
