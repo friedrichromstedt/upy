@@ -231,8 +231,8 @@ class ScientificTypesetter(Typesetter):
                 exponent, precision=0)
 
             return rule.apply(
-                nominal=typset_nominal,
-                uncertainty=typset_uncertainty,
+                nominal=typeset_nominal,
+                uncertainty=typeset_uncertainty,
                 exponent=typeset_exponent,
             )
 
