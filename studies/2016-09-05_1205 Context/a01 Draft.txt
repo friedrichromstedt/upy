@@ -382,3 +382,9 @@ Der zweite Stichpunkt in (2.) spricht *fuer* die Rueckgabe von ``self`` im Rahme
 Dieser Ersatz gefaellt mir besser: Er macht klar, dass ``ts`` nur lokal gueltig ist, und spricht ausserdem deutlich aus, dass ``ts`` in den upy2-Typesetter-Kontext eingetragen wird.
 
 *Es bleibt also dabei: Keine Unterstuetzung fuer [:296].*
+
+
+.. rubric:: Freitag, d. 29. September 2017, 18:27 Uhr, Kirchheim
+
+
+Das was frueher als *Context Item* bezeichnet wurde, wird mittlerweile (seit ab92d61c) als *Context Provider* bezeichnet.  Es kam mir seit dem noch der Namensvorschlag *Convention* unter, weil sowohl :class:`U` als auch :class:`ScientificTypesetter` eine *Konvention* definieren.  Ich bin mit der Aenderung aber sehr vorsichtig weil es wirklich funktionieren muss.  Dabei halte ich es fuer moeglich dass es upy2-Kontexte geben kann, welche *nicht* eine Konvention definieren.  Vorerst bleibe ich deshalb bei *Context Provider*.  Ich finde den Namen *Convention* aber sehr verlockend.
