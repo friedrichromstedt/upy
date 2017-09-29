@@ -12,7 +12,7 @@ import upy2.context
 #import upy2.printable
 import warnings
 
-__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u']
+__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'copy']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)

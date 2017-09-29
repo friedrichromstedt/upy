@@ -67,7 +67,7 @@ class Context(object):
                 return self.default_stack[-1]
         
         # When we reached here, no item is applicable.
-        raise LookupError('No applicable context item found')
+        raise LookupError('No applicable context provider found')
 
     def default(self, provider):
         """ Provide *provider* as the new thread-global default
@@ -92,8 +92,8 @@ class Context(object):
 
         with self.lock_default:
             if item is not self.default_stack[-1]:
-                raise ValueError('Un-defaulting a context item which '
-                    'is not the current default item')
+                raise ValueError('Un-defaulting a context provider '
+                    'which is not the current default item')
 
             del self.default_stack[-1]
 

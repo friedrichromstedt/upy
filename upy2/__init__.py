@@ -1,7 +1,3 @@
-# XXX Don't forget to modify the version string in setup.py
-__version__ = '0.5.0a'
-__version_tup__ = (0, 5, 0)
-
 # Developed since: Jan 2010
 
 # Create the module-scope ID generator ...
