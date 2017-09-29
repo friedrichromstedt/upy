@@ -1,0 +1,1 @@
+from upy2.typesetting.scientific import ScientificTypesetter

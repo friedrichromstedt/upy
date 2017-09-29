@@ -16,38 +16,39 @@ class Context(object):
             # A non-reentrant lock to serialise transactions on
             # *self.default_stack*.
 
-    def register(self, item):
-        """ Register a new item *item*.  It will be placed on the
-        stack of the thread which is calling this method. """
+    def register(self, provider):
+        """ Register a new Context Provider *provider*.  The provider
+        will be placed on the stack of the thread which is calling
+        this method. """
 
         # We don't need to lock here, since *ID* is unique for all
         # running threads.
         ID = threading.current_thread().ident
         self.thread_stacks.setdefault(ID, [])
-        self.thread_stacks[ID].append(item)
+        self.thread_stacks[ID].append(provider)
 
-    def unregister(self, item):
-        """ Unregister the item *item* from the stack of the thread
-        which is calling.  It is a ``ValueError`` to provide an item
-        which isn't the top-level item on the respective stack. """
+    def unregister(self, provider):
+        """ Unregister the Context Provider *provider* from the stack
+        of the thread which is calling.  It is a ``ValueError`` to
+        specify a Provider which isn't the top-level Provider on the
+        respective stack. """
 
         # Ditto as for :meth:`register`: No locking required.
         ID = threading.current_thread().ident
         thread_stack = self.thread_stacks[ID]
-        if item is not thread_stack[-1]:
-            raise ValueError('The context item to be unregistered is '
-                'not the topmost entry on the stack')
+        if provider is not thread_stack[-1]:
+            raise ValueError('The Context Provider to be unregistered'
+                'is not the topmost entry on the stack')
 
         del thread_stack[-1]
         if len(thread_stack) == 0:
             del self.thread_stacks[ID]
 
     def current(self):
-        """ Returns the item applicable to the thread calling.  When
-        the stack of the thread calling is empty, the Default Stack
-        will be considered.  When this is empty too, a LookupError
-        will be raised.
-        """
+        """ Returns the Context Provider applicable to the thread
+        calling.  When the stack of the thread calling is empty, the
+        Default Stack will be considered.  When this is empty too, a
+        LookupError will be raised. """
 
         ID = threading.current_thread().ident
         # No locking required:  Only the thread defined by *ID* can
@@ -66,24 +67,24 @@ class Context(object):
                 return self.default_stack[-1]
         
         # When we reached here, no item is applicable.
-        raise LookupError('No applicable context item found')
+        raise LookupError('No applicable context provider found')
 
-    def default(self, item):
-        """ Provide *item* as the new thread-global default item.
-        This will be used by :meth:`current` when there is no
-        thread-local item present.  The new item will be placed on the
-        Default Stack. """
+    def default(self, provider):
+        """ Provide *provider* as the new thread-global default
+        Context Provider.  This will be used by :meth:`current` when
+        there is no thread-local Provider present.  The new item will
+        be placed on the Default Stack. """
 
         # We need to respect the atomicity of the access to
         # :attr:`default_stack` in :meth:`undefault` and
         # :meth:`current`:
         with self.lock_default:
-            self.default_stack.append(item)
+            self.default_stack.append(provider)
 
-    def undefault(self, item):
-        """ Calls back *item* defined previously as Default Item.  It
-        is a ``ValueError`` to provide an *item* which is not the
-        toplevel item on the Default Stack. """
+    def undefault(self, provider):
+        """ Recalls *provider* defined previously as Default Context
+        Provider.  It is a ``ValueError`` to provide a *provider*
+        which is not the toplevel item on the Default Stack. """
 
         # It can happen that another thread defines a new Default
         # between the check below and the removal.  Hence we need
@@ -91,8 +92,8 @@ class Context(object):
 
         with self.lock_default:
             if item is not self.default_stack[-1]:
-                raise ValueError('Un-defaulting a context item which '
-                    'is not the current default item')
+                raise ValueError('Un-defaulting a context provider '
+                    'which is not the current default item')
 
             del self.default_stack[-1]
 
@@ -101,17 +102,32 @@ class Context(object):
 registry = {}  # {Protocol Class: Context}
 
 def define(protocol):
+    """ Define a :class:`Context` for the given *protocol*.  When the
+    respective Context already exists, this function is a no-op.
+    Otherwise an empty :class:`Context` instance will be registered
+    for the key *protocol*.
+
+    The *protocol* should be a subclass of
+    :class:`upy2.context.Protocol`. """
+
     registry.setdefault(protocol, Context())
 # Contexts exist as long as their key Protocol class, so we don't need
 # :func:`undefine`.
 
-def protocol(protocol):
+def byprotocol(protocol):
+    """ Returns the Context for a Protocol class *protocol*.  Keys
+    which are a *parent class* of *protocol* will match. """
+
     for key in registry.keys():
         if issubclass(protocol, key):
             return registry[key]
     raise KeyError('No Context defined for protocol %s' % protocol)
 
-def protocolobj(protocolobj):
+def byprotocolobj(protocolobj):
+    """ Returns the Context for an instance of :class:`Protocol` given
+    as *protocolobj*.  Keys will match when *protocolobj* is an
+    instance of the respective key class. """
+
     for key in registry.keys():
         if isinstance(protocolobj, key):
             return registry[key]
@@ -119,29 +135,25 @@ def protocolobj(protocolobj):
 
 # Registering and unregistering at the registry:
 
-class ContextProvider(object):
+class Protocol(object):
     """ This class implements the Python Context Manager protocol to
-    register and unregister the instance of this class at a
-    :class:`upy2.Context` instance (to "Provide Context"). """
-
-    def __init__(self):
-        self._upy_context = protocolobj(self)
-            # Protocol classes registered later might "shadow" the
-            # Context retrieved here when they are subclasses of the
-            # respective protocol class.  Hence we store the Context
-            # for later use.
+    register and unregister instances of this class at the respective
+    :class:`upy2.context.Context` instance.  It is the base class of
+    all Protocol Classes and their implementations.  It also provides
+    means to register/unregister and to default/undefault its
+    instances explicitly. """
 
     def default(self):
-        self._upy_context.default(self)
+        byprotocolobj(self).default(self)
 
     def undefault(self):
-        self._upy_context.undefault(self)
+        byprotocolobj(self).undefault(self)
 
     def register(self):
-        self._upy_context.register(self)
+        byprotocolobj(self).register(self)
 
     def unregister(self):
-        self._upy_context.unregister(self)
+        byprotocolobj(self).unregister(self)
 
     def __enter__(self):
         self.register()

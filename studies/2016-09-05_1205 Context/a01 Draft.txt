@@ -229,3 +229,164 @@ Das Modul, welches :class:`Typesetter` definiert, erstellt auch den upy2-Kontext
 Fuer :class:`ContextManager` muss die aufrufende Klasse eine Unterklasse der Protokollklasse sein.
 
 Benutzer von Kontexten uebergeben die Schluesselklasse explizit (bspw. :class:`undarray`); Kontextmanager uebergeben sie *implizit* durch die Klasse, deren Instanz sie sind.  Demnach sollte fuer Benutzer die uebergebene Protokoll-Klasse eine *Unterklasse* der Schluesselklasse in der Registratur sein.  Es trifft von [:210 f.] (b) zu.
+
+
+.. rubric:: Donnerstag, d. 10. November 2016, 18:24 Uhr
+
+
+Bei der Benutzung von :mod:`upy2.context` stellt sich heraus, dass *alle* von der jeweiligen Protokollklasse abgeleitete Klassen stets auch von :class:`upy2.context.ContextProvider` erben.  Aus diesem Grund wurde die jeweilige Protokollklasse direkt von :class:`upy2.context.ContextProvider` abgeleitet.  Die Beispiele sind:
+
+1.  :class:`ScientificTypsetter`::
+
+        :class:`upy2.context.ContextProvider`
+            |
+            |
+        :class:`upy2.typesetting.protocol.Typesetter`
+            |
+            |
+        :class:`upy2.typesetting.scientific.ScientificTypesetter`
+
+    Die Protokollklasse ist hier :class:`upy2.typesetting.protocol.Typesetter`.
+
+2.  :class:`upy2.core.U`::
+
+        :class:`upy2.context.ContextProvider`
+            |
+            |
+        :class:`upy2.core.U`
+
+    :class:`upy2.core.U` wird hier direkt verwendet.  :class:`upy2.core.U` ist ausserdem die Protokollklasse.
+
+Die Protokollklassen sind in diesen beiden Beispielen bereits Unterklassen von :class:`upy2.context.ContextProvider`.
+
+Es ergibt sich hieraus der Vorschlag, :class:`upy2.context.ContextProvider` in :class:`upy2.context.Protocol` oder :class:`ContextProtocol` umzubenennen, da sie sich als der Prototyp der tatsaechlichen Protokoll-Klassen herausgestellt hat.
+
+Es ist die Frage, ob die Klassen, welche das jeweilige Protokoll implementieren, immer auch von :class:`upy2.context.ContextProvider` erben.  Diese Frage ist mit Ja zu beantworten, denn ohne ein solches Erbe kann die jeweilige Klasse sich nicht in den upy2-Kontext des Protokolls eintragen und als Python-Kontextmanager verwendet werden.
+
+Protokollklassen sind damit zweckmaessigerweise *immer* bereits Unterklassen von :class:`upy2.context.ContextProvider`.  :class:`ContextProvider` ist daher der Prototyp aller Protokoll-Klassen.  Ein treffender Name ist daher :class:`upy2.context.Protocol`.  *Interessant!*
+
+
+.. rubric:: Sonntag, d. 17. Septemer 2017, 13:30 Uhr
+
+
+Bemerkungen zur Benennung der involvierten Konzepte:
+
+1.  upy2-Kontexte sind Instanzen von :class:`upy2.context.Context`.
+
+2.  Die Implementierungen von upy2-Protokollen sind Instanzen von Unterklassen von :class:`upy2.context.Protocol`.
+
+3.  Instanzen von :class:`upy2.context.Protocol` (via davon abgeleiteter Klassen) koennen als *Python Kontext-Manager* verwendet werden.
+
+4.  Die *Protokolle* sind die Konvention, welche von allen von einem *Kontext* zurueckgegebenen Objekte einzuhalten ist.  Die "Erfuellung der Konvention" oder die "Einhaltung des Protokolls" wird durch Ableitung von der jeweiligen Protokoll-Klasse implementiert.  Dies kann dann fuer die Ermittlung des fuer eine Protokoll-Implementierung massgebenden Kontextes verwendet werden.
+
+Das Wort "Manager" wurde bereits aus dem Namen ``upy2.context.ContextManager`` gestrichen.  Es tritt daher keine Doppelung von "Kontext-Manager" auf:  Ein *Kontext* ist *immer* ein ``upy``-Konstrukt und das Wort "Kontext-Manager" wird eindeutig fuer die Verwendung einer Instanz von :class:`upy2.context.Protocol` in einem ``with``-Statement verwendet.
+
+Ich habe lange ueberlegt ob man die Worte zugunsten der Verwendung von "Konvention" (*Convention*) umsortiert, aber:
+
+-   Die gegenwaertige Benennung ist stringent und eingaengig.
+
+-   Es handelt sich *in der Tat* in beiden Faellen (:class:`upy2.context.Context`-Instanzen und als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen) um *Kontexte*.  Tatsaechlich sind als Python-Kontext-Manager verwendete :class:`upy2.context.Protocol`-Instanzen der *Manager* eines *upy2-Kontextes*.  Die Benennung ist also sogar *richtig* in der Verwendung desselben Wortes *Kontext* in beiden Faellen!
+
+Die Nomenklatur ist daher in ihrem gegenwaertigen Zustand zu begruessen.
+
+
+.. rubric:: Mittwoch, d. 20. September 2017, 12:51 Uhr im FWW
+
+
+Soll :meth:`upy2.context.Protocol.__enter__` ``self`` zurueckgeben oder nicht?
+
+Moegliche Szenarios zur Verwendung einer Protokoll-Implementation:
+
+1.  Im lokalen Scope und *nicht* ausserhalb dessen::
+
+        u = U(2)
+        x = v +- u(...)
+
+    Die Funktionalitaet [:296] wird hier nicht gebraucht.
+
+2.  Im lokalen Scope *und* ausserhalb dessen::
+
+        with U(2):
+            x = v +- u(...)
+
+    mit ``upy2.core.u`` als ``u``.  [:296] wird auch hier nicht gebraucht.
+
+3.  *Nur* ausserhalb des aktuellen Scopes und *nicht* innerhalb dessen::
+
+        ... Definition eines eigenen ``u`` ...
+
+        with U(2):
+            ...
+
+    Auch hier wird [:296] nicht gebraucht.
+
+4.  Der einzige verbleibende Fall ist, dass die Protokoll-Implementation *gar nicht* gebraucht wird; auch dann ist [:296] freilich nicht notwendig.
+
+Eine Verwendung von Protokoll-Implementierungen ``P`` ala::
+
+    with P(...) as p:
+        ... nutze p ...
+
+wird also *nie* gebraucht.  Lediglich im Fall (2.) *koennte* geschrieben werden::
+
+    with U(2) as u:
+        x = v +- u(...)
+
+aber da ist es stringerter *direkt* ``upy2.core.u`` zu verwenden und auf den ``U``-Kontext zuzugreifen.
+
+Die Funktionalitaet [:296] wird folglich absichtlich *nicht unterstuetzt*.
+
+Ich untersuche noch, ob diese Schlussfolgerung auch auf Typesetters zutrifft:
+
+1.  Lokal::
+
+        ts = SomeTypesetter(<...>)
+        print ts.typeset(<...>)
+        typeset = ts.typeset(<...>)
+
+2.  Lokal & ausserhalb:
+
+    -   Wenn man *nur* ``print`` benutzen moechte, reicht aus::
+
+            with SomeTypesetter(<...>):
+                ...
+                print ua
+                ...
+
+    -   Moechte man den Typesetter auch lokal explizit verwenden, muesste::
+
+            with SomeTypesetter(<...>) as ts:
+                ...
+                typeset = ts.typeset(<...>)
+                print ua
+                ...
+
+        unterstuetzt werden.
+
+3.  Nur ausserhalb und *nicht* lokal::
+
+        with SomeTypesetter(<...>):
+            ...
+
+Der zweite Stichpunkt in (2.) spricht *fuer* die Rueckgabe von ``self`` im Rahmen des Python-Kontext-Manager-Protokolls.  In dem Fall kann allerdings auch geschrieben werden::
+
+    ts = SomeTypesetter(<...>)
+    with ts:
+        ...
+        typeset = ts.typeset(<...>)
+        print ua
+        ...
+
+    othertypeset = ts.typeset(<...>)
+
+Dieser Ersatz gefaellt mir besser: Er macht klar, dass ``ts`` nur lokal gueltig ist, und spricht ausserdem deutlich aus, dass ``ts`` in den upy2-Typesetter-Kontext eingetragen wird.
+
+*Es bleibt also dabei: Keine Unterstuetzung fuer [:296].*
+
+
+.. rubric:: Freitag, d. 29. September 2017, 18:27 Uhr, Kirchheim
+
+
+Das was frueher als *Context Item* bezeichnet wurde, wird mittlerweile (seit ab92d61c) als *Context Provider* bezeichnet.  Es kam mir seit dem noch der Namensvorschlag *Convention* unter, weil sowohl :class:`U` als auch :class:`ScientificTypesetter` eine *Konvention* definieren.  Ich bin mit der Aenderung aber sehr vorsichtig weil es wirklich funktionieren muss.  Dabei halte ich es fuer moeglich dass es upy2-Kontexte geben kann, welche *nicht* eine Konvention definieren.  Vorerst bleibe ich deshalb bei *Context Provider*.  Ich finde den Namen *Convention* aber sehr verlockend.
+
+Weiterhin ist festzuhalten: Vor 07970de9 hiess :class:`Protocol` noch :class:`ContextProvider`.  Dies ist genau damit in Einklang, dass die Instanzen von :class:`Protocol` (via Subclassing) nun in :class:`Context` *auch* als *Context Providers* bezeichnet werden.  Diese unabhaengige Bestaetigung des gegenwaertigen Namens *Context Provider* verstaerkt meinen Glauben darein, dass die Benennung als *provider* durchtraegt.

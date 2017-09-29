@@ -29,7 +29,7 @@ class resemples the interface of numpy ndarrays.
 
 distutils.core.setup(
     name='upy',
-    version='2-0.5.0a',
+    version='2.0.0b1',
     description='Python Uncertainties',
     long_description=long_description,
     author='Friedrich Romstedt',

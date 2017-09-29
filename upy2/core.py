@@ -12,9 +12,9 @@ import upy2.context
 #import upy2.printable
 import warnings
 
-__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u']
+__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'copy']
 
-typesetting_context = upy2.context.protocol(
+typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
 
 #
@@ -126,7 +126,7 @@ def ucopy(uarray_like):
 
 # Definition of the "Uncertainty" Protocol:
 
-class U(upy2.context.ContextProvider):
+class U(upy2.context.Protocol):
     def __init__(self, stddevs):
         """ "Uncertainty" (``U``) Context Providers provide
         uncertainty *standard deviations* based on *errors*.  The
@@ -134,7 +134,7 @@ class U(upy2.context.ContextProvider):
         deviation*.  The connecting factor is given by the *stddevs*
         argument. """
 
-        upy2.context.ContextProvider.__init__(self)
+        upy2.context.Protocol.__init__(self)
 
         self.stddevs = stddevs
 
@@ -150,11 +150,26 @@ class U(upy2.context.ContextProvider):
             stddev=stddev,
         )
 
+    def __call__(self, error):
+        """ Convenience method to provide a short-hand for
+        :meth:`provide`.
+
+        Example::
+
+            u5 = U(5)
+            ua = nominal +- u5(five_sigma_error)
+
+        Writing ``.provide(...)`` is not needed to ensure readability
+        and hence the syntax can be made more terse by pruning the
+        explicit call to :meth:`provide`. """
+
+        return self.provide(error)
+
 upy2.context.define(U)
 
 # Access to the "U" Context:
 
-U_context = upy2.context.protocol(U)
+U_context = upy2.context.byprotocol(U)
 
 def u(error):
     return U_context.current().provide(error)
