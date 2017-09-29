@@ -66,7 +66,7 @@ class ScientificElement:
 class ScientificTypesetter(Typesetter):
     def __init__(self,
         stddevs,
-        relative_precision,
+        precision,
         typeset_possign_value=None,
         typeset_possign_exponent=None,
         infinite_precision=None,
@@ -94,7 +94,7 @@ class ScientificTypesetter(Typesetter):
         self.exponent_typesetter = NumberTypesetter(
             typeset_positive_sign=typeset_possign_exponent)
 
-        self.relative_precision = relative_precision
+        self.relative_precision = precision
         self.infinite_precision = infinite_precision
         self.stddevs = stddevs
     
