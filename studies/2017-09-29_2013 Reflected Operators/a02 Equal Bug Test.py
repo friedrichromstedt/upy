@@ -14,7 +14,7 @@ class Reporter(object):
     def __call__(self, a, b, *args, **kwargs):
         print b
 
-numpy.set_numeric_ops(equal=Reporter())
+numpy.set_numeric_ops(equal=Reporter(), not_equal=Reporter())
 
 
 class X(object):
@@ -26,3 +26,8 @@ numpy.asarray([1, 2]) == X()
 #   <__main__.X object at 0x7f78e0ae7c50>
 #
 # as it should be.
+
+numpy.asarray(42) == X()
+numpy.asarray([10, 20]) != X()
+numpy.asarray(1) != X()
+# everything okay.
