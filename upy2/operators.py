@@ -1,57 +1,52 @@
 # Developed since: Feb 2010
-""" Overloads the numpy operators in such a way, that in expressions
-undarrays have the highest precedence. """
+""" Overloads the numpy operators in such a way, that the
+implementations of binary operations in :class:`undarray` have highest
+precedence. """
 
 
 import numpy
-import upy.core
+from upy2.core import undarray
 
 __all__ = ['add', 'subtract', 'multiply', 'divide', 'power', \
         'less', 'less_equal', 'greater', 'greater_equal', 'equal', \
         'not_equal']
 
-# Consider the expression:
-#
-#   numpyarray * upyarray
-#
-# When executing this, ``numpyarray.__mul__`` is called, or,
-# equivalently, ``numpy.multiply``.  ``numpy.multiply`` checks whether
-# the other operand is a numpy.ndarray, and if not, it treats it as a
-# scalar, and multiplies all scalar elements of the ``numpy.ndarray``
-# instance *numpyarray* by it, resulting in a large
-# ``numpy.object``-dtype ndarray.  This is not what was intended.  
-#
-# Calls like the one discussed above behave as expected, when the
-# ``undarray`` operation overloads of ``undarray`` instances as second
-# operands are called.  This is done by the ufunc wrappers below.  The
-# wrappers only handle the special case of ``undarray`` instances as
-# second operands; all other cases are handed over to the original
-# numpy ufuncs.  The ufunc wraps are registered in numpy via
-# numpy.set_numeric_ops().
-
 # Arithmetic operators ...
 
-# We store the original numpy settings, then create the callable objects,
-# which take their .ufunc attribute from this array.
+# We store the original numpy settings and then create the callable
+# objects, which take their .ufunc attribute from this array.
 original_numpy_ops = numpy.set_numeric_ops()
 
-class ufuncWrap:
-    """Wraps numpy ufuncs.  Behaves like the original, with the exception
-    that __call__() will be overloaded."""
+class Shadow(object):
+    """ :class:`Shadow` instances can be called to implement a binary
+    operation originally implemented by a ``numpy`` ufunc.  This
+    ``numpy`` ufunc will be shadowed by the implementation provided by
+    an ``undarray`` instance given as the second operand. """
 
-    def __init__(self, ufunc_name, overload):
-        """UFUNC is the ufunc to be wrapped.  OVERLOAD is the name (string)
-        of the undarray method to be used in overloading __call__()."""
+    def __init__(self, ufunc, shadow_by):
+        """ *ufunc* is the name of the ``numpy`` ufunc to be shadowed.
+        *shadow_by* is the name of the undarray method to be used to
+        shadow the numpy ufunc. """
 
-        self.ufunc_name = ufunc_name
-        self.ufunc = original_numpy_ops[ufunc_name]
-        self.overload = overload
+        self.ufunc_name = ufunc
+        self.ufunc = original_numpy_ops[ufunc]
+        self.shadow_by = shadow_by
 
     def __call__(self, a, b, *args, **kwargs):
-        """When B is an undarray, call B.overload(a), else .ufunc(a, b)."""
+        """ When *b* is an ``undarray`` instance, its shadowing method
+        will be used to implement the call.  Otherwise, the original
+        ufunc will be called.
 
-        if isinstance(b, upy.core.undarray):
-            return getattr(b, self.overload)(a)
+        Optional positional and keyword arguments aside of *a* and *b*
+        will be handed over to the original ufunc when it is called.
+        
+        When the shadowing method of the ``undarray`` instance *b* is
+        used to implement the call, *a* will be the only argument; all
+        optional positional and all keyword argument will be
+        discarded. """
+
+        if isinstance(b, undarray):
+            return getattr(b, self.shadow_by)(a)
         else:
             return self.ufunc(a, b, *args, **kwargs)
 
@@ -66,8 +61,8 @@ class ufuncWrap:
     
     def __repr__(self):
             
-        return "ufuncWrap(ufunc_name = %r, overload = %r)" % \
-                (self.ufunc_name, self.overload)
+        return "Shadow(ufunc_name=%r, shadow=%r)" % \
+                (self.ufunc_name, self.shadow)
 
 class Add(ufuncWrap):
     def __init__(self):
