@@ -1,0 +1,184 @@
+.. vim: syntax=rst
+
+Handling numpy Operators
+########################
+
+.. rubric:: Friday, 3 Nov 2017, 17:23+
+
+This document covers *all* numpy ufuncs which can be overridden by means of ``numpy.set_numeric_ops``.  The short discussion of each of them *has led* to this introduction; so some repetition and some outdated arguments are present.  *This document is not meant for publication!*
+
+For each ufunc a decision is given whether or not to replace it by an upy Operator.
+
+Notice that there are some more ufuncs present in numpy which cannot be patched by ``numpy.set_numeric_ops``.  For example ``numpy.around`` cannot be patched, but ``numpy.rint`` can.
+
+There are a couple of operators whose implementations necessarily require to *drop the uncertainty information*.  This are: ``ceil``, ``floor``, ``equal``, ``not_equal``, ``greater``, ``greater_equal``, ``less``, ``less_equal``, ``maximum``, ``minimum``, ``floor_divide``, ``remainder`` and ``rint``.
+
+The uncertainty information *cannot be used* to implement these operations unambiguously.  This means, *dropping* the uncertainty information is *the only feasible way* to implement them.
+
+In most cases, it is *easily* possible to *drop* the uncertainty explicitly.  For example, to compare two undarrays w.r.t. their nominal value, one can write::
+
+    ua1.nominal == ua2.nominal
+
+Such syntax clarifies that the uncertainty information has been dropped to carry out the operation.
+
+There are examples which might warrant providing these operators for undarrays:
+
+1.  The ``remainder`` operator boils down to::
+
+        remainder(x1, x2) = x1 - floor(x1 / x2) * x2
+
+    Of course, this can be written explicitly::
+
+        x1 - numpy.floor(x1.nominal / x2.nominal) * x2
+
+    An undarray-ready ``remainder`` operator might be helpful in this case.
+
+2.  The ``floor_divide`` operator drops uncertainty information, but is close to ``divide``.
+
+Irrespective of these use cases, upy does *not* support to drop uncertainties automatically; users need to unravel ``remainder`` and floor division explicitly.  Clarity it preferred over brevity.
+
+It is an inherent feature of the ``remainder`` implementation that its upy counterpart is *not* simple.
+
+*Not supporting to drop uncertainties* means that user code using the respective ufuncs will *break* when using undarrays instead of ordinary numpy ndarrays.
+
+On the other hand accessing the ``.nominal`` attribute will fail when handing over standard numpy ndarrays.  As a remedy, the operands can be converted to numpy ndarrays by using ``numpy.asarray``.  The equality example above would be spelled::
+
+    numpy.asarray(operandA) == numpy.asarray(operandB)
+
+This code produces the desired results when using undarrays and will continue to work with non-undarray operands.
+
+Accessing ``.nominal`` is the most clear; it might be prefered over ``numpy.asarray`` when undarrays are expected as operands.
+
+TODO Behaviour of ``numpy.floor`` and ``numpy.remainder`` with operands featuring ``__array__``?  Ditto for binary operators like ``numpy.multiply``?
+
+
+absolute
+========
+
+``numpy.absolute`` is *identical* to ``numpy.abs``::
+
+    >>> numpy.absolute is numpy.abs
+    True
+
+Can be overridden by defining the ``__abs__`` method.
+
+Notice that ``numpy.absolute`` applied to complex numbers produces the complex magnitude.
+
+
+add, subtract, multiply, divide, true_divide
+============================================
+
+Should be overriden by upy Operators.
+
+
+bitwise_and, bitwise_or, bitwise_xor
+====================================
+
+Should not be supported.
+
+
+ceil (and floor)
+================
+
+Would be possible, but a much clearer use is::
+
+    >>> numpy.ceil(ua.nominal)
+    [...]
+
+So no upy support for ``ceil``.
+
+
+conjugate (aka conj)
+====================
+
+``numpy.conj`` and ``numpy.conjugate`` are *identical*.
+
+Can be overridden by the ``conjugate`` method.
+
+N.B. that ``numpy.ndarray.conj`` and ``numpy.ndarray.conjugate`` are *not* identical (the doc strings differ).
+
+
+equal, not_equal
+================
+
+Should not be overridden by upy Operators.  The semantic is not unambiguous: Shall the nominal values be compared to each other or shall the uncertainties be taken into account?
+
+
+floor_divide
+============
+
+Writing ``numpy.floor_divide(x1, x2)`` is equivalent to writing ``numpy.floor(x1 / x2)``, and this has been identified above to be unsupported by upy.
+
+
+greater, greater_equal, less, less_equal
+========================================
+
+Should not be overridden by upy Operators, for the same reason as ``equal`` and ``not_equal`` shall not be supported.
+
+
+invert, left_shift, right_shift, logical_and, logical_or
+========================================================
+
+Not applicable to undarrays; not supported.
+
+
+maximum, minimum
+================
+
+Use ``ua.nominal``.
+
+
+negative
+========
+
+Can be overridden by the ``__neg__`` method.
+
+
+power
+=====
+
+Should be overridden by an upy Operator.
+
+
+reciprocal
+==========
+
+Can be overridden by the ``__rdiv__`` method.
+
+
+remainder
+=========
+
+The *remainder* boils down to ``floor()``::
+
+    remainder(x1, x2) = x1 - floor(x1 / x2) * x2
+
+so it is unsupported by upy; ``ua.nominal`` can be used instead.
+
+One might write::
+
+    uremainder(x1, x2) = x1 - numpy.floor(x1.nominal / x2.nominal) * x2
+
+which is equivalent to::
+
+    uremainder(x1, x2) = x1 - numpy.floor((x1 / x2).nominal) * x2
+
+?
+
+
+rint ("round to the nearest integer")
+=====================================
+
+Use ``numpy.rint`` on ``ua.nominal``.
+
+
+sqrt
+====
+
+Can be overridden by defining the ``sqrt`` method.
+
+
+square
+======
+
+Can be overridden by means of ``__mul__``.
