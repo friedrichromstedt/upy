@@ -5,7 +5,7 @@ Handling numpy Operators
 
 .. rubric:: Friday, 3 Nov 2017, 17:23+
 
-This document covers *all* numpy ufuncs which can be overridden by means of ``numpy.set_numeric_ops``.  The short discussion of each of them *has led* to this introduction; so some repetition and some outdated arguments are present.  *This document is not meant for publication!*
+This document covers *all* numpy ufuncs which can be overridden by means of ``numpy.set_numeric_ops``.  The short discussion of each of them *has led* to this introduction; so some repetition and some outdated arguments are present.  *This document is not meant for publication to users!*
 
 For each ufunc a decision is given whether or not to replace it by an upy Operator.
 
@@ -13,7 +13,7 @@ Notice that there are some more ufuncs present in numpy which cannot be patched 
 
 There are a couple of operators whose implementations necessarily require to *drop the uncertainty information*.  This are: ``ceil``, ``floor``, ``equal``, ``not_equal``, ``greater``, ``greater_equal``, ``less``, ``less_equal``, ``maximum``, ``minimum``, ``floor_divide``, ``remainder`` and ``rint``.
 
-The uncertainty information *cannot be used* to implement these operations unambiguously.  This means, *dropping* the uncertainty information is *the only feasible way* to implement them.
+The uncertainty information *cannot be used* unambiguously to implement these operations.  This means, *dropping* the uncertainty information is *the only feasible way* to implement them.
 
 In most cases, it is *easily* possible to *drop* the uncertainty explicitly.  For example, to compare two undarrays w.r.t. their nominal value, one can write::
 

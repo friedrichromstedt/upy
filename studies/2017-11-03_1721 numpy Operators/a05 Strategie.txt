@@ -1,0 +1,101 @@
+.. vim: syntax=rst
+
+.. rubric:: Samstag, d. 25. November 2017, 18:49 Uhr
+
+
+Strategie
+=========
+
+1.  Die binaeren numerischen Operatoren in ``numpy``, welche von ``undarray`` implementiert werden sollen, werden ueberladen:
+
+    a)  Wenn genau zwei Operanden uebergeben werden, und der zweite Operand ein ``undarray`` ist, wird die ``undarray``-Implementierung des gespiegelten Operators aufgerufen.
+    b)  In *allen anderen Faellen* Aufruf der orignalen ``numpy``-ufunc.
+
+2.  In binaeren Operatoren, welche von der dazu gehoerigen gewoehnlichen ``numpy``-ufunc Gebrauch machen sollen, wird die Operation mit ``numpy.asarray(self)`` als erstem Operanden erneut berechnet.  Dabei soll die gewoehnliche Python-Syntax der betreffenden Operation verwendet werden; die ``numpy``-ufunc soll nicht explizit aufgerufen werden.
+
+
+Diskussion
+==========
+
+Ueberladung der numerischen ``numpy``-Operatoren
+------------------------------------------------
+
+Die Ueberladung der numerischen Operatoren in ``numpy``, welche durch die Operatoren in ``undarray`` definiert werden sollen ist erforderlich, weil andernfalls ``numpy`` den ``undarray``-Operanden per ``undarray.__array__`` in ein ``ndarray`` ueberfuehrt, sodass die Unsicherheit *nicht propagiert wird*.
+
+Wenn der erste Operand ein ``undarray`` ist, wird dessen Implementierung der betreffenden Operation *a priori* aufgerufen.  Es ist deswegen nicht notwendig, in der Ueberladung einer ``numpy``-ufunc zu pruefen, ob der *erste Operand* ein ``undarray`` ist.
+
+Der Aufruf der originalen ``numpy`` ufunc sollte sich genauso verhalten wie wenn die ufunc mit dem per ``undarray.__array__`` abgeleiteten ``ndarray`` aufgerufen wird.  Moeglicherweise ist eine Warnung angebracht, sobald auf diese Weise Unsicherheitsinformationen verschwinden.  Dies trifft zu, wenn der zweite Operand ein ``undarray`` ist, aber noch weitere Argumente uebergeben werden (bspw. ein *out*-Argument), sodass die ``undarray``-Implementierung *nicht verwendet werden kann*.
+
+Unaere Operatoren koennen durch eine speziell benannte Methode des ``undarray``-s ueberladen werden.  Ob diese Implementierung in allen Faellen hinreicht, ist zu pruefen (die ``numpy``-ufuncs erlauben eine Vielzahl zusaetzlicher Schluesselwort-Argumente).
+
+
+Rueckgriff auf ``numpy``-ufuncs
+-------------------------------
+
+Wenn keiner der Operanden ein ``ndarray`` ist, bleibt die Implementierung der Operation den Operanden ueberlassen.  Dies trifft beispielsweise zu, wenn beide Operanden ein ``undarray`` sind.  Fuer Operationen, welche durch ``upy`` ueberladen werden, wird der entsprechende Operator korrekt aufgerufen.  Fuer andere Operationen findet jedoch kein Rueckgriff auf ``numpy`` statt, weil kein ``ndarray`` beteiligt ist.
+
+Um in diesen Faellen ``numpy`` ins Spiel zu bringen, wird der erste Operand per ``numpy.asarray`` ueber seine ``undarray.__array__``-Methode in ein ``ndarray`` konvertiert, und dann die Operation auf dessen Implementierung zurueckgefuehrt.
+
+Der zweite Operand braucht *nicht* in ein ``ndarray`` konvertiert zu werden.  Im Falle, dass es sich beim zweiten Operanden *auch* um ein ``undarray`` handelt, wird die ``numpy``-ufunc diesen korrekt in ein ``ndarray`` per ``undarray.__array__`` ueberfuehren.  In allen anderen Faellen ist es sinnvoll, *nicht von Anfang an* anzunehmen, dass auch der zweite Operand in ein ``ndarray`` konvertiert zu werden braucht.
+
+Um die Bindung an ``numpy`` moeglichst lose zu gestalten, soll die ``numpy``-ufunc nach Moeglichkeit *nicht explizit* aufgerufen werden.  Beispielsweise sollte anstelle des Aufrufs von ``numpy.equal`` der Vergleichsoperator ``==`` zur Implementierung verwendet werden.
+
+Die Vermeidung *direkter Aufrufe* der ``numpy``-ufuncs ist auch deshalb sinnvoll, weil auch bei Ueberladung der ``numpy`` ufuncs per ``numpy.set_numeric_ops`` der direkte Zugriff per ``numpy.<ufunc>`` *stets* die *originale* ufunc liefert.  Man wuerde also bei direktem Zugriff auf die entsprechende ufunc *keinen weiteren Raum* fuer Modifikation der Standard-ufunc durch *Dritte* lassen.
+
+
+.. rubric:: Montag, d. 27. November 2017, 19:37 Uhr in Erfurt
+
+
+Klaerung der Rolle von ``numpy.set_numeric_ops``
+================================================
+
+Die Funktion ``numpy.set_numeric_ops`` ersetzt *nicht* die ufunc-Attribute von ``numpy``.  Beispielseweise ist auch nach Ausfuehrung von ``numpy.set_numeric_ops(add=<...>)`` das ufunc-Attribut ``numpy.add`` unveraendert deren orignale Version.  Im Beispiel der ``add``-Operation wird die an ``numpy.set_numeric_ops`` uebergebene Funktion lediglich bei ``+``-Operationen aufgerufen werden.
+
+Werden die ueberladenden Funktionen ausschliesslich ueber solche sprachlichen Konstrukte wie ``+`` aufgerufen, besteht daher kein Bedarf mehr, auch die Schluesselwortargumente zu unterstuezten, welche von den ``ufuncs`` akzeptiert werden.
+
+Es stellt sich die Frage, ob es Bedarf gibt, die ``upy``-Operatoren *wie die originalen numpy ufuncs* aufrufen zu koennen.  Wenn dies der Fall ist, sollte die erweiterte Aufrufsynatx mit Schluesselwortargumenten *unterstuetzt* werden; andernfalls kann diese Komplizierung fortgelassen werden.
+
+Die ``upy``-Operatoren werden *ausschliesslich* bei Aufruf *ohne Schluesselwortargumente* den ``upy``-Code der jeweiligen Operation aufrufen.  Das Verhalten der ueberladenden Objekte ist daher *mit Schluesselworten identisch* zu dem der orignalen ufunc.  Man kann dann daher auch gleich die orignale ufunc aufrufen.
+
+Anders verhaelt es sich, wenn die ueberladene ufunc *bereits von der originalen ufunc abweicht*, weil Dritte sie modifiziert hatten, bevor die ``upy``-Operatoren installiert wurden.
+
+-   ``upy`` ruft die ``upy``-Operatorimplementierungen *immer* auf, sobald der zweite Operand ein ``undarray`` ist; moegliche Codepfade durch den ueberladenen Operator werden *nicht erwogen*.
+
+Letztendlich verringert sich das Problem dazu, zu entscheiden, ob Schluesselworte unterstuetzt werden sollen; wenn das zweite Argument *kein* ``undarray`` ist, wird der von ``numpy.set_numeric_ops`` zurueckgegebene Operator aufgerufen, inklusive moeglicher frueherer Modifikationen durch Dritte.
+
+
+.. rubric:: Mittwoch, d. 29. November 2017, 19:41 Uhr in Erfurt
+
+
+Ich entscheide mich dazu, fuer die erste Implementierung der ``upy``-Operatoren, welche *nicht* die originalen ufuncs aufrufen sollen, *auf weitere Argumente* zu verzichten.  Operatoren, welche stattdessen auf die originalen ``numpy``-ufuncs zurueckgreifen, brauchen nicht in ``numpy`` ueberladen werden, weil der Rueckgriff durch Konversion des ersten Arguments in ein ``numpy.ndarray`` und erneuten Aufruf mit diesem Operanden erreicht wird.
+
+Die Codes fuer die *ueberladenden* ``upy``-Operatoren sollten durch Verzicht auf die Extra-Argumente, welche von ``numpy``-ufuncs unterstuetzt werden, deutlich einfacher ausfallen.
+
+Als ein weiteres, schwaecheres Argument mag vielleicht noch herhalten, dass die Extra-Argumente der ufuncs nicht relevant sind, wenn ausschliesslich solche Operationen in Betracht gezogen werden, welche durch Python-Sprachmerkmale ausgefuehrt werden koennen.  Gewissermassen ist die *Imitierung* von ``numpy``-ufuncs dann eine unnoetig enge Bindung.
+
+Die Implementierung der Operationen *mit Extra-Argumenten* wuerden direkt auf die ``numpy``-basierten Operatoren zurueckgreifen und die Unsicherheiten wuerden fallengelassen; es ist mithin fraglich ob die Unterstuetzung solcher Syntax ueberhaupt zu ``upy`` etwas hinzufuegt.  Die Sache bleibt ``upy``-fremd.
+
+Wenn man die Extra-Argumente der ufuncs wirklich *mit Fehlerpropagation* unterstuetzt, muesste man auch die Methoden der ufuncs unterstuetzen, andernfalls ist die Imitation unvollstaendig.
+
+Da derartige Komplettierung auch spaeter hinzugefuegt werden kann, ihr Nutzen im Moment aber als sehr gering angenommen werden kann, *lasse ich derartige Ziele fallen*.  Die Ziele sind daher:
+
+1.  Ueberladung der binaeren ``numpy``-Operatoren, welche andernfalls unerwuenschter Weise die Unsicherheiten eines zweiten ``upy``-Operanden *fallen lassen*;
+2.  Sicherstellung, dass binaere Operationen, welche von ``upy`` nicht ueberladen werden, auch dann auf ``numpy`` zurueckgreifen, wenn beide Operanden ``undarray``-s sind;
+3.  Ueberladung unaerer ``numpy``-Operatoren mittels Definition von speziell benannten ``undarray``-Methoden.
+
+Sobald diese Ziele alle erreicht sind, ist ``upy`` bereit fuer die konsistente und vollstaendige Propagation von Unsicherheiten.
+
+
+.. rubric:: Freitag, d. 1. Dezember 2017, 18:28 Uhr in Kirchheim
+
+
+Optionale ufunc-Schluesselwortparameter
+=======================================
+
+https://docs.scipy.org/doc/numpy/reference/ufuncs.html#ufunc
+
+Es waere *vielleicht* schoen, *out* und *where* zu haben.  *Moeglicherweise* muss dazu die Implementierung der Operationen fort aus der ``undarray``-Klasse in dedizierte ``ufunc``-Pendants verschoben werden.
+
+Die uebrigen Schluesselwortartumente *casting*, *order*, *dtype*, *subok*, *signature* und *extobj* muessten in upy *irgendwie* an die ``ndarrays`` in ``undarray`` et al. *weitergeleitet* werden.  Das Ganze liegt noch ziemlich im Dunkeln.  Es ist *nicht sicher*, ob eine solche Weiterleitung ueberall moeglich ist.
+
+*Wenn man upy-ufuncs implementieren moechte*, wuerden ihre Verwendung per per :func:`numpy.set_numeric_ops` die Schluesselwortargumente nicht nutzen.  In Zusammenhang mit ``priops`` wuerde die Schluesselwort-Funktionalitaet moeglicherweise schlicht ignoriert werden.  Alternativ koennte man auch in ``priops`` vielleicht ufunc-Argumente *unterstuetzen*.  Das ist alles noch ziemlich unklar.  Es waere wuenschenswert, dass ``priops`` die ufunc-Schluesselworte nutzen koennte.  Auf der anderen Seite ist eine solche enge Anbindung an numpy vielleicht nicht erwuenscht.  *Wenn man ufunc-Schluesselworte in priops ermoeglicht*, wuerde spaetestens die Nutzung *fuer Python-Operationen* sie ignorieren.

@@ -1,0 +1,33 @@
+.. vim: syntax=rst
+
+.. rubric:: Thu, 23 Nov 2017
+
+
+:class:`undarray` will feature a :meth:`__array__` method.  This has far-reaching implications.
+
+When using non-``ndarray`` operands with a numpy operator ufunc, is appears that ``numpy`` is:
+
+1.  looking for a :meth:`__array__` method in order to cast the operand to an ``ndarray``;
+2.  trying to deal with the operand as a *scalar*.
+
+These two code pathes are demonstrated in [a04.py].
+
+Originally, I didn't want to support operators like ``__eq__`` for ``undarrays``.  However, even when I do not implement the ``__eq__`` method in ``undarray``, it might be casted to an ``ndarray`` by means of its ``__array__`` method.  The result of this casting then is a proper operand for the numpy ufunc, and the call succeeds.
+
+However, such conversions *only appear* when the numpy ufunc is called.  When both operands are ``undarray`` instances, the lack of an implementation of the operator in both of them would make the call fail, even though both operands *could* be converted to numpy ``ndarray``-s to make the call work.
+
+This means, *without implementing* the operators which work with ``numpy`` by means of ``__array__`` the result is inconsistent.
+
+As a result, I am planning to implement the affected operations by means of methods in ``undarray`` wherever possible.
+
+It might be possible to call the ``numpy`` operator ufuncs in cases where the ``__array__`` conversion is not performed automatically.  This would bind ``upy`` tightly to ``numpy``.  A transition to ``priops`` would then be much more difficult.
+
+..  In general it appears that there is need for a registry ala ``numpy.set_numeric_ops`` *inside* of ``upy``.  When ``numpy`` operators are overridden via ``upy2.install_numpy_operators`` (or ``upy2.register_in_numpy``), these registries in ``upy2`` would be populated with ``numpy`` operators.  When opting for using ``priops``, the ``priops`` operators would be registered instead.
+
+Hence it should be avoided to call ``numpy`` ufunc attributes like ``numpy.equal`` *directly* in ``undarray`` methods implementing an operation.
+
+
+.. rubric:: Friday, 24 November 2017
+
+
+It might help to convert *self* and also probably the other operand to an ``ndarray`` in methods of ``undarray`` implementing an operation which is discarding uncertainties.

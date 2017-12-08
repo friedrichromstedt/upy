@@ -1,0 +1,40 @@
+.. vim: syntax=rst
+
+.. rubric:: Samstag, d. 2. Dezember 2017, 16:55 Uhr in Kirchheim
+
+
+uufuncs
+#######
+
+-   uufuncs geben *immer* ein ``undarray`` zurueck.
+-   Ersetzungen fuer die numpy numeric operators pruefen, ob unter den Operanden ein ``undarray`` ist und rufen dann die entsprechende uufunc auf; andernfalls die orignale numpy-ufunc.
+-   Methoden von ``undarray``, welche die Python-Operatoren ueberladen, greifen *stets* auf die entsprechende uufunc zurueck.
+
+Auf diese Weise wird es moeglich, *out* und *where* in uufuncs zu unterstuetzen.
+
+-   Die Implementierungen der Operatoren sind *ausschliesslich* in den uufuncs.
+
+:func:`upy.install_numpy_operators` installiert die numpy-Operatoren [:10] per :func:`numpy.set_numeric_ops`.
+
+-   Vermehrende (*augmenting*) Operatoren in ``undarray``:
+
+    a)  Ohne Implementierung wird auf die Standard-Operatoren zurueckgegriffen.
+    b)  Vielleicht kann das *out*-Argument der entsprechenden uufunc verwendet werden - dies ist aber nicht sicher der Seiteneffekte wegen.
+    c)  Eine dedizierte Implementierung *direkt* in den Operator-Overloads loest das Problem, ist aber schwerer zu warten.
+
+-   Der Aufruf einer uufunc mit einem *out*-Argument, welches kein ``undarray`` ist, ist ein Fehler.
+
+Derartige uufuncs koennen moeglicherweise *gut* in priops integriert werden.  Der jeweilige priop ruft dann die uufunc auf wenn es angemessen ist.  Anstelle dass man die upy-Fallback-Varianten derartiger Priops in numpy installiert, installiert man ``upy`` stattdessen in ``priops`` und ``priops`` in ``numpy``.
+
+Fuer ``priops`` sind die Schluesselwortargumente der (u)ufuncs *nicht relevant*, weil priops *allein* fuer die Ueberladung von Python-Operatoren zustaendig ist.
+
+Operatoren, welche:
+
+1.  Nur *direkt* als ``numpy.<op>`` aufgerufen werden koennen; und welche
+2.  keine Fehler propagieren,
+
+werden *nicht* in ``upy`` definiert (dies betrifft bspw. ``numpy.divmod`` -- P.S.: ``numpy.divmod`` existiert nicht!).  Stattdessen kann man die numpy-Operatoren direkt aufrufen; dort werden eventuelle ``undarray``-s per ``.__array__`` in ``ndarray``-s konvertiert werden.
+
+Operatoren, fuer welche nur (2.) gilt, aber nicht (1.), *werden* moeglicherweise von upy bereitgestellt, fuehren sich selbst aber sicherlich auf die numpy-ufuncs zurueck.  Dies ist sinnvoll, weil die jeweilige Operation mit "gemischten" Argumenten (d.h. mit einem numpy ``ndarray`` als ein Operand) funktioniert.  Ein Beispiel ist die Modulus-Operation ``%``.
+
+Nachtrag zu ``priops`` [:29]: *Moeglicherweise* gibt ein Priop uebergebene Schluesselwortargumente *ohne Aenderung* an die Implementierung weiter, welche als zustaendig herausgefunden wurde (anhand der ersten beiden positionalen Argumente).

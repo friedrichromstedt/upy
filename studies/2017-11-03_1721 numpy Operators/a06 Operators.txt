@@ -1,0 +1,48 @@
+.. vim: syntax=rst
+
+.. rubric:: Thursday, 30 Nov 2017, 19:00
+
+absolute
+========
+
+Can be overridden by defining the ``__abs__`` method.
+
+..  ``numpy.absolute`` will cast an ``undarray`` given to an ``ndarray`` by means of ``undarray.__array__``.  For ``ndarray``-s also the builtin ``abs`` function can be used.  To parallel this possibility ``undarray.__abs__`` *should be implemented*.  The implementation should just ``return abs(numpy.asarray(self))``, it should *not* return ``numpy.absolute(self)``.  The former allows using an numpy numeric operator which is overloaded by *third party*; the latter would call the *original numpy ufunc* unconditinally.
+
+    This is completely off!  The absolute value of an undarray *can be calculated* with error propagation!  -- 1 Dec 2017
+
+
+add, subtract, multiply, divide and true_divide
+===============================================
+
+add, subtract and multiply
+--------------------------
+
+``add``, ``subtract`` and ``multiply`` should be overridden by callables taking care of the situation that the second operand is an ``undarray``.
+
+
+divide, true_divide and floor_divide
+------------------------------------
+
+In Python 3, there is only *true_divide* and *floor_divide*.
+
+The behaviour of numpy's *divide* in Python 2 depends on the dtype of the operands: When both operands are integer, the result is the floor'ed quotient.  In Python 3, numpy *divide* behaves *like true_divide*.
+
+The overload of ``divide`` should call ``__rdiv__`` as the implementing method; ``true_divide`` should call ``__rtruediv__`` and ``floor_divide`` should call ``__rfloordiv__`` of an ``undarray`` second operand.
+
+With this methodology, the ``divide`` overload won't behave *like true_divide* in Python 3 as the original numpy *divide* does; instead, it will always mimic Python 2 division, relying on ``__rdiv__``.  This won't be a problem as ``undarray`` exposes ``__rdiv__`` also in Python 3.  Maybe the codes for ``__rdiv__`` and ``__rtruediv__`` are identical, leaving the distinction to the ndarrays involved and to the Python generation running the code.
+
+..  The behaviour w.r.t. integer numbers should be defined by the ``undarray`` class.
+
+    Maybe it is an option to issue ``from __future__ import division`` in the ``undarray`` core module.
+
+Since ``floor_divide`` does not propagate uncertainties, there is no need to handle the case of an ``undarray`` second operand specially.  However, ``__floordiv__`` should be defined, calling back on ``numpy.asarray(self) // other`` for consistency.
+
+
+.. rubric:: Friday, 1 Dec 2017, 19.40
+
+
+.. note::
+    Some numpy numeric operators might be callable *directly only*, without a triggering Python language element.
+
+    If there is no extension of a such a numpy operator defined by upy, the respective numpy operator doesn't need any treatment by upy.  It will always convert ``undarray`` instances to ``ndarray`` instances by means of :meth:`undarray.__array__`.
