@@ -38,3 +38,18 @@ werden *nicht* in ``upy`` definiert (dies betrifft bspw. ``numpy.divmod`` -- P.S
 Operatoren, fuer welche nur (2.) gilt, aber nicht (1.), *werden* moeglicherweise von upy bereitgestellt, fuehren sich selbst aber sicherlich auf die numpy-ufuncs zurueck.  Dies ist sinnvoll, weil die jeweilige Operation mit "gemischten" Argumenten (d.h. mit einem numpy ``ndarray`` als ein Operand) funktioniert.  Ein Beispiel ist die Modulus-Operation ``%``.
 
 Nachtrag zu ``priops`` [:29]: *Moeglicherweise* gibt ein Priop uebergebene Schluesselwortargumente *ohne Aenderung* an die Implementierung weiter, welche als zustaendig herausgefunden wurde (anhand der ersten beiden positionalen Argumente).
+
+
+.. rubric:: Samstag, d. 9. Dezember 2017, 16:54 Uhr in Kirchheim
+
+
+Argumente gegen uufuncs
+=======================
+
+Wenn *out* und *where* Verwendung finden sollen, muessen die originalen numpy-ufuncs (beispielsweise ``numpy.add``) aufgerufen werden.  Diese sind allerdings nicht ueberladbar, sodass man sich *definitiv* auf ``numpy.ndarray``-s als Nominalwerte festlegt.
+
+Um ueberladbare Operatoren zu verwenden, *muss* man regulaere Python-Syntax (z.B. ``+``) verwenden.  Derartige Ausdruecke greifen u.U. auf die per :func:`numpy.set_numeric_ops` *ueberladbaren* Operatoren zurueck, bzw. verwenden die Operatoren, welche von den Operanden implementiert werden.
+
+Man *koennte* derartige Codepfade ausfuehren, wenn *out*, *where* und Konsorten nicht verwendet werden, aber solches loest das Problem nicht an der Wurzel und fuehrt Inkonsistenzen ein.
+
+**Ich entscheide mich deswegen gegen numpy-ufunc-Funktionalitaet.**
