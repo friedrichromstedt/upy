@@ -1,0 +1,55 @@
+.. vim: syntax=rst
+
+.. rubric:: Samstag, d. 9. Dezember 2017, in Kirchheim
+
+
+Doodling:
+
+#.  upy-ufuncs einfuehren, welche aber keine Argumente wie *out* und *where* unterstuetzen.
+
+#.  Nicht ueberladene Operationen (wie ``==``) verwenden *nicht* ``numpy.asarray``, um die Operation auf Operanden zurueckzufuehren, welche eine Implementierung bereitstellen.  Stattdessen Rueckfuehrung auf die Nominalwerte.  Die Nominalwerte sind nicht notwendiger Weise ``numpy.ndarray``-s.
+
+#.  Beibehaltung von :meth:`__array__`.
+
+    Die *Nominalwerte* koennen alles moegliche sein, aber sie muessen in ``ndarray``-s konvertierbar sein, um die richtigen Koeffizienten bei Komposition eines neuen ``undarray``-s ermitteln zu koennen.  Daher muessen die Nominalwerte eine :meth:`__array__` bereitstellen.  Wenn ich dies von den Nominalwert-Klassen erwarte, *muss ich es auch selber tun*, damit ``undarray`` als "Nominalwert" einer *anderen* Klasse herhalten kann.
+
+    Ein Beispiel derartigen Zusammenbaus ist die Augmentierung von ``undarray`` um AD-Eigenschaften durch Verwendung von dazu geeigneten Nominalwert-Instanzen.  In der "Spiegelung" der Situation sollte ``undarray`` als Nominalwert einer solchen AD-Klasse herhalten koennen, also sollte ``undarray`` eine :meth:`__array__` aufweisen.
+
+#.  Damit zurueckgefuehrte Operationen (z.B. ``==``) *nicht* per ``__array__`` auf ``ndarray``-s zurueckgefuehrt werden, sondern anstelle auf die Nominalwerte, muessen alle derartigen ``numpy``-Operatoren geeignet ueberladen werden.
+
+#.  Die Operator-Methoden von ``undarray`` greifen auf die upy-ufuncs zurueck.  Jene pruefen alle Operanden, ob sie Instanzen von ``undarray`` sind und verfahren dementsprechend.
+
+    Dadurch wird die Asymmetrie von Paaren wie :meth:`__add__` und :meth:`__radd__` umgangen.  Gegenwaertig prueft der reflektierte Operator *nicht*, ob der andere Operand ein ``undarray`` ist, in der Annahme, dass jener dann die Operation schon selbst implementiert haette, wenn er ein ``undarray`` waere.  Diese Argumentation stimmt fuer :class:`undarray`-Instanzen, aber nicht mit Notwendigkeit auch fuer spezialisierte davon abgeleitete Klassen.
+
+    Die Rueckfuehrung auf die entsprechende uufunc erledigt diese Randfaelle ohne unstatthafte Verkomplizierung des Quellcodes.
+
+#.  *Rueckfuehrung auf die Nominalwerte*: Es ist gut moeglich, dass dies auf dieselbe Implementierung fuehrt wie wenn man die Operation auf die per ``numpy.asarray`` erstellten Operanden zurueckfuehrt.  Insbesondere wenn die Nominalwerte ``ndarray``-s sind gilt dies.  Durch Verwendung von ``numpy.asarray`` *ueberspringt* man jedoch den Schritt, den Nominalwerten *selbst* die Implementierung zu ermoeglichen. 
+
+#.  Die augmentierten Operationen werden *direkt* von :class:`undarray` implementiert.  Das ist noch weitgehend im Unklaren.  Die Sache kann schadlos verschoben werden, weil die augmentierten Operatoren aus den gewoehnlichen abgeleitet werden koennen.
+
+#.  Die Nominalwerte werden stets *ohne Aenderung* uebernommen.  Wenn sie jedoch als Koeffizient verwendet werden, wird ``numpy.asarray`` auf sie angewendet.
+
+#.  Man kann bestimmte numpy-Hilfsfunktionen anwenden, um ueber Typverallgemeinerung zu entscheiden.  Die gegenwaertige Methode einer "Addition der Null" kann dadurch expliziter gemacht werden.
+
+
+Folglich Tickets:
+
+#.  Implementierung von uufuncs fuer alle binaeren Operationen.  Ueberladung der unaeren Operationen durch speziell benannte Methoden von :class:`undarray`.
+
+    Rueckfuehrung der binaeren Operationen auf die neuen uufuncs.
+
+#.  Implementierung von :meth:`__array__` - dies ist nahezu trivial.
+
+#.  Einfuehrung von "numpy-Operatoren" und von :func:`upy2.install_numpy_operators`.
+
+#.  Bereitstellung augmentierender Operationen.
+
+#.  Sorgfaeltige Pruefung der Verwendung von ``numpy.asarray`` in allen Pfaden.
+
+#.  Verwendung von numpy-Hilfsfunktionen anstelle der Addition der Null etc. - vielleicht auch fuer Fragen des Broadcastings.  Broadcasting: :func:`numpy.broadcast` und :func:`numpy.broadcast_arrays`: 'Array objects > Standard array subclasses > Array Iterators', dort Abschnitt "Iterator for broadcasting" sowie 'Routines > Array manipulation routines > Changing number of dimensions'.
+
+
+.. rubric:: Mittwoch, d. 13. Dezember 2017, 19:52 Uhr in Erfurt(FWW)
+
+
+#.  Auch die *unaeren* Operationen sollten vielleicht durch ``uufuncs`` implementiert werden, damit diese konsistent mit den binaeren Operationen explizit aufrufbar sind.
