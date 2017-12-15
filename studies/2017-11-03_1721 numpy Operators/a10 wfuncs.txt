@@ -1,0 +1,13 @@
+.. vim: syntax=rst
+
+.. rubric:: Montag, d. 11. Dezember 2017, in Erfurt(FWW)
+
+Als Name der numpy-Operatoren wird ``wfuncs`` vorgeschlagen: Die englische Aussprache von "w" ist "Double-You", oder auch "double-u", sodass der Name "wfuncs" auf das Doppel-u des vorigen Entwurfs ``uufuncs`` anspielt, welcher auf "uncertainty-ufuncs" zurueckgeht.  Alternative Rueckfuehrung: "upy-ufunc".
+
+
+.. rubric:: Mittwoch, d. 13. Dezember 2017, 19:48 Uhr in Erfurt(FWW)
+
+
+[:5]: Es handelt sich nicht um die *numpy-Operatoren*, sondern um deren Implementierung.  Die numpy-Operatoren greifen auf diese zurueck, sie koennen aber auch unabhaengig davon verwendet werden.
+
+Das phonetische Spiel mit dem *double-u* kann auch bei syntaktischer Benennung der ufunc-Derivate als ``uufuncs`` beibehalten werden.
