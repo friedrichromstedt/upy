@@ -7,6 +7,25 @@ precedence. """
 import numpy
 from upy2.core import undarray
 
+# We only need to patch binary operations.
+
+# Operations to be patched are (in alphabetic order):
+#   add, divide, equal, greater, greater_equal, less, less_equal,
+#   multiply, not_equal, power, subtract.
+#
+# Operations probably not to be patched are:
+#   bitwise_and, bitwise_or, bitwise_xor, ceil, conjugate, divmod,
+#   floor, floor_divide, invert, left_shift, logical_and, logical_or,
+#   maximum, minimum, negative, positive, reciprocal, remainder,
+#   right_shift, rint, sqrt, square, true_divide.
+#
+# Unary operations which can be overloaded by means of methods with a
+# special name:
+#
+#   *   conjugate (with ``conjugate``)
+#   *   floor (with ``floor``)
+#   *   
+
 __all__ = ['add', 'subtract', 'multiply', 'divide', 'power', \
         'less', 'less_equal', 'greater', 'greater_equal', 'equal', \
         'not_equal']
@@ -175,3 +194,8 @@ numpy.set_numeric_ops(
         greater_equal = greater_equal,
         equal = equal,
         not_equal = not_equal)
+
+def patch_numpy(names=None):
+    # Obtain the fallback original numpy operators *right here*, not
+    # globally in module scope.
+    pass
