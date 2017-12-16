@@ -1,0 +1,39 @@
+.. vim: syntax=rst
+
+.. rubric:: Freitag, d. 15. Dezember 2017, 18:03 Uhr in Kirchheim
+
+
+Warum auf ``__array__`` verzichtet werden muss
+##############################################
+
+Beispiel::
+
+    class X(object):
+        def __array__(self):
+            return numpy.asarray([10, 11])
+
+        def cos(self):
+            return 42
+
+Mit dieser Klasse::
+
+    >>> numpy.cos(X())
+    array([-0.83907153,  0.0044257 ])
+
+Also hat ``__array__`` hoehere Prioritaet als ``cos``.
+
+Damit ist bei Praesenz von ``__array__`` die Ueberladung von bspw. ``numpy.cos`` *nicht mehr moeglich*.  Aus diesem Grund muss auf ``__array__`` *verzichtet* werden.
+
+Das gesamte Gedankengebaeude zur Unterstuetzung *beliebiger Nominalwerte* faellt damit in sich zusammen.  Derartige nicht-ndarray-Nominalwerte koennen ``__array__`` aus genau demselben Grund *nicht unterstuetzen*.
+
+Implikationen:
+
+-   Das Argument der impliziten Konversion in ein ``ndarray`` in bspw. ``array == uarray`` *faellt weg*.
+-   Es koennen nun auch *out* und *where* etc. prinzipiell unterstuetzt werden.
+-   Die Unterstuetzung von bspw. ``==`` steht erneut zur Diskussion.
+
+
+.. rubric:: Samstag, d. 16. Dezember 2017, 19:19 Uhr in Kirchheim
+
+
+Operatoren ohne Verwendung der Unsicherheiten (bspw. ``==``) sind sinnvoll, da sie fuer ndarrays konzipierten Code helfen lauffaehig zu halten.
