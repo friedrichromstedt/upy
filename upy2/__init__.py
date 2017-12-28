@@ -7,8 +7,7 @@ id_generator = IDGenerator()
 
 # Load all the things ...
 
-from upy2.core import undarray
-from upy2.core import uadd
+from upy2.core import *
 from upy2.numpy_operators import install_numpy_operators
 #from upy2.umath import *
 #from upy2.averaging import *
