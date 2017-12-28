@@ -10,7 +10,7 @@ import upy2.characteristic
 import upy2.typesetting.protocol
 import upy2.context
 #import upy2.printable
-import warnings
+#import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy', 'uadd']
 
