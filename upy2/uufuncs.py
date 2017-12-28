@@ -1,5 +1,8 @@
 from upy2.core import undarray
 
+#
+# uufunc classes ...
+#
 
 class Add(object):
     def __call__(self, a, b):
@@ -21,3 +24,9 @@ class Add(object):
             nominal=(A + B),
             derivatives=derivatives,
         )
+
+#
+# The actual uufuncs ...
+#
+
+uadd = Add()
