@@ -7,15 +7,15 @@ class BinaryOperator(object):
         self.ufunc = ufunc
         self.uufunc = uufunc
 
-    def __call__(self, a, b, *args, **kwargs):
+    def __call__(self, x1, x2, *args, **kwargs):
         """ *args* and *kwargs* are only used when calling the numpy
         ufunc. """
 
-        if not isinstance(a, undarray) and \
-                not isinstance(b, undarray):
-            return self.ufunc(a, b, *args, **kwargs)
+        if not isinstance(x1, undarray) and \
+                not isinstance(x2, undarray):
+            return self.ufunc(x1, x2, *args, **kwargs)
         else:
-            return self.uufunc(a, b)
+            return self.uufunc(x1, x2)
 
     def __getattr__(self, name):
         """ Forwards the attribute request to the ufunc contained. """

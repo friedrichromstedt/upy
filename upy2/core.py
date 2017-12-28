@@ -1110,35 +1110,35 @@ class undarray(object):
 #X     # No sensible repr(), because the object's interior is complex.
 
 #
-# uufunc classes ...
+# uufuncs ...
 #
 
+# uufunc classes ...
+
 class Add(object):
-    def __call__(self, a, b):
+    def __call__(self, x1, x2):
         derivatives = []
 
-        if isinstance(a, undarray):
-            A = a.nominal
-            derivatives.append((a, 1.0))
+        if isinstance(x1, undarray):
+            y1 = x1.nominal
+            derivatives.append((x1, 1.0))
         else:
-            A = a
+            y1 = x1
 
-        if isinstance(b, undarray):
-            B = b.nominal
-            derivatives.append((b, 1.0))
+        if isinstance(x2, undarray):
+            y2 = x2.nominal
+            derivatives.append((x2, 1.0))
         else:
-            B = b
+            y2 = x2
 
         return undarray(
-            nominal=(A + B),
+            nominal=numpy.add(y1, y2),
             derivatives=derivatives,
         )
 
     def __repr__(self):
         return "<upy Add uufunc>"
 
-#
 # The actual uufuncs ...
-#
 
 uadd = Add()
