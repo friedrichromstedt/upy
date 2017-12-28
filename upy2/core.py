@@ -493,16 +493,17 @@ class undarray(object):
     #
 
     def __add__(self, other):
-        if isinstance(other, undarray):
-            return undarray(
-                nominal=(self.nominal + other.nominal),
-                derivatives=[(self, 1.0), (other, 1.0)],
-            )
-        else:
-            return undarray(
-                nominal=(self.nominal + other),
-                derivatives=[(self, 1.0)],
-            )
+        return uadd(self, other)
+#!        if isinstance(other, undarray):
+#!            return undarray(
+#!                nominal=(self.nominal + other.nominal),
+#!                derivatives=[(self, 1.0), (other, 1.0)],
+#!            )
+#!        else:
+#!            return undarray(
+#!                nominal=(self.nominal + other),
+#!                derivatives=[(self, 1.0)],
+#!            )
 
     def __sub__(self, other):
         if isinstance(other, undarray):
@@ -1107,3 +1108,37 @@ class undarray(object):
 #X         return "<undarray of shape %s>" % (self.shape)
 #X 
 #X     # No sensible repr(), because the object's interior is complex.
+
+#
+# uufunc classes ...
+#
+
+class Add(object):
+    def __call__(self, a, b):
+        derivatives = []
+
+        if isinstance(a, undarray):
+            A = a.nominal
+            derivatives.append((a, 1.0))
+        else:
+            A = a
+
+        if isinstance(b, undarray):
+            B = b.nominal
+            derivatives.append((b, 1.0))
+        else:
+            B = b
+
+        return undarray(
+            nominal=(A + B),
+            derivatives=derivatives,
+        )
+
+    def __repr__(self):
+        return "<upy Add uufunc>"
+
+#
+# The actual uufuncs ...
+#
+
+uadd = Add()
