@@ -21,7 +21,7 @@ class Test(object):
     def __radd__(self, o):
         return Test('calculated by __radd__')
     def __rsub__(self, o):
-        return Test('calculated by __radd__')
+        return Test('calculated by __rsub__')
     def __rmul__(self, o):
         return Test('calculated by __rmul__')
     def __rdiv__(self, o):
