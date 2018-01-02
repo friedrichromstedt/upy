@@ -1,0 +1,80 @@
+.. vim: syntax=rst
+
+.. rubric:: Dienstag, d. 2. Januar 2018, 8:53 Uhr
+
+Zu ueberladen
+=============
+
+Mit klarer Funktion
+-------------------
+
+*   add
+*   subtract
+*   multiply
+*   divide
+*   true_divide
+*   floor_divide
+
+*   equal
+*   not_equal
+*   greater
+*   greater_equal
+*   less
+*   less_equal
+
+*   absolute
+*   positive
+*   negative
+*   conjugate
+*   sqrt
+*   power
+*   floor
+*   ceil
+
+
+Mit noch unklarer Funktion
+--------------------------
+
+*   remainder
+*   divmod
+
+Sollen diese Funktionen Unsicherheiten verarbeiten oder diese
+vernachlaessigen?
+
+
+Nicht zu ueberladen
+===================
+
+*   bitwise_and
+*   bitwise_or
+*   bitwise_xor
+
+*   invert
+
+*   right_shift
+*   left_shift
+
+*   reciprocal
+
+``reciprocal`` besitzt keine aufrufende Python-Syntax.
+
+*   logical_and
+*   logical_or
+
+*   maximum
+*   minimum
+*   rint
+
+``maximum`` und ``minimum`` sind *nicht* das Aequivalent zu
+``a.max()`` oder Pythons ``max``.
+
+Es gibt fuer ``maximum``, ``minimum`` und ``rint`` keine aufrufende
+Python-Syntax.
+
+
+Offene Fragen
+=============
+
+Warum koennen ``reciprocal``, ``maximum``, ``minimum`` und ``rint``
+per ``numpy.set_numeric_ops`` ueberladen werden, obwohl sie doch durch
+keine Python-Syntax aufgerufen werden koennen?
