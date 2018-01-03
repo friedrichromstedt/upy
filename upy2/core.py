@@ -1119,7 +1119,7 @@ class Binary(object):
     """ The base class for binary uufuncs.  In uufunc classes deriving
     from this base class, define the following methods:
 
-    *   :meth:`_derivative1` and :meth:`derivative2` to provide the
+    *   :meth:`_derivative1` and :meth:`_derivative2` to provide the
         derivatives of the result w.r.t. the first and second operand,
         respectively;
 
