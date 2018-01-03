@@ -1116,14 +1116,25 @@ class undarray(object):
 # uufunc classes ...
 
 class Binary(object):
-    """ The base class for binary uufuncs.  Define the following
-    methods:
+    """ The base class for binary uufuncs.  In uufunc classes deriving
+    from this base class, define the following methods:
 
-    *   :meth:`_derivative1` and :meth:`derivative2`;
-    *   :meth:`_perform`
+    *   :meth:`_derivative1` and :meth:`derivative2` to provide the
+        derivatives of the result w.r.t. the first and second operand,
+        respectively;
 
-    in uufunc classes deriving from this base class.
+    *   :meth:`_perform` to calculate the nominal result without
+        uncertainty information, based on the nominal values of the
+        operands.
+
+    Opon calling the derived binary uufunc, :meth:`_derivative1` will
+    only be called when the first operand is an ``undarray``, and
+    likewise :meth:`_derivative2` will only be used when the second
+    operand is an ``undarray``.
+
+    The result of calling a binary uufunc is *always* an ``undarray``.
     """
+
     def __call__(self, x1, x2):
         """ Performs the operation on operands *x1* and *x2*. """
 
@@ -1138,7 +1149,7 @@ class Binary(object):
             y2 = x2.nominal
         else:
             y2 = x2
-        
+
         if isinstance(x1, undarray):
             derivatives.append((x1, self._derivative1(y1, y2)))
         if isinstance(x2, undarray):
