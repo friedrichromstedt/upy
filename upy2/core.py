@@ -1125,6 +1125,9 @@ class uufunc(object):
 
         self.ufunc = ufunc
 
+    def __repr__(self):
+        return "<upy %r uufunc>" % self.ufunc
+
 
 class Binary(uufunc):
     """The base class for binary uufuncs.  Derive binary uufunc classes
@@ -1172,29 +1175,16 @@ class Binary(uufunc):
         )
 
 
-class Add(object):
-    def __call__(self, x1, x2):
-        derivatives = []
+class Add(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.add)
 
-        if isinstance(x1, undarray):
-            y1 = x1.nominal
-            derivatives.append((x1, 1.0))
-        else:
-            y1 = x1
+    def _derivative1(self, y1, y2):
+        return 1.0
 
-        if isinstance(x2, undarray):
-            y2 = x2.nominal
-            derivatives.append((x2, 1.0))
-        else:
-            y2 = x2
+    def _derivative2(self, y1, y2):
+        return 1.0
 
-        return undarray(
-            nominal=numpy.add(y1, y2),
-            derivatives=derivatives,
-        )
-
-    def __repr__(self):
-        return "<upy Add uufunc>"
 
 # The actual uufuncs ...
 
