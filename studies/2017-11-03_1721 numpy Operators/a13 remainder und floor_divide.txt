@@ -1,0 +1,147 @@
+.. vim: syntax=rst
+
+.. rubric:: Mittwoch, d. 3. Januar 2018, 9:39 Uhr
+
+
+Ziel
+====
+
+Es ist festzustellen, welche Unsicherheitsinformationen von den uufuncs fuer ``remainder`` und ``floor_divide`` zurueckgegeben werden sollen.
+
+
+``floor_divide``
+----------------
+
+Aus den numpy-docs:
+
+    Gibt die groesste ganze Zahl zurueck, welche kleiner oder gleich dem Quotienten der beiden Operanden ist.
+
+Demnach gibt ``floor_divide`` *keinerlei* Unsicherheiten zurueck.  Die uufunc fuer ``floor_divide`` gibt daher ein ``undarray`` ohne Unsicherheit zurueck.
+
+
+``remainder``
+-------------
+
+Seien *x1* und *x2* zwei undarrays.  Dann ist der Teilungsrest *r*::
+
+    r = x1 % x2
+
+    r = x1 - (x1 // x2) * x2
+    r = x1 - numpy.floor(x1 / x2) * x2
+
+Es soll gelten::
+
+    x1 = x2 * (x1 // x2) + r
+
+Rein formal gilt bereits::
+
+    x2 * (x1 // x2) + r  # r = [:29]
+    = x2 * (x1 // x2) + [x1 - (x1 // x2) * x2]
+    = x1 + [x2 * (x1 // x2)] - [(x1 // x2) * x2]
+    = x1
+
+Wenn dies auch *inklusive der Unsicherheitsinformationen* gilt, kann eine uufunc ``remainder`` formuliert werden, welche Unsicherheiten zurueck gibt.
+
+Algorithmisch wird formuliert::
+
+    r = x1 - numpy.floor(y1 / y2) * x2
+
+mit Eingabeoperanden ``x1, x2``, welche undarrays sein koennen, und deren Nominalwerten ``y1`` und ``y2``.
+
+Zu pruefen ist also::
+
+    x2 * numpy.floor(y1 / y2) + r  # r = [:47]
+    = x2 * numpy.floor(y1 / y2) + [x1 - numpy.floor(y1 / y2) * x2]
+
+und dabei heben sich die Unsicherheiten so heraus, dass sich ergibt::
+
+    x2 * numpy.floor(y1 / y2) + r
+    = x1
+
+*inklusive Unsicherheitsinformationen*.
+
+
+Vorzeichen
+^^^^^^^^^^
+
+Aus der numpy-Doku:
+
+    ``x1 % x2`` hat dasselbe Vorzeichen wie der Divisor ``x2``.
+
+Pruefe folgende Implementierung::
+    
+    r = x1 - numpy.floor(y1 / y2) * x2
+
+``numpy.floor`` rundet in *negativer Richtung* ab::
+    
+    numpy.floor(-2.5) = -3
+
+Wir probieren das Ganze aus an folgenden Beispielen::
+    
+    y1 = +-5
+    y2 = +-2
+
+    y1 = +-5
+    y2 = +-3
+
+    y1 = +-5
+    y2 = +-6
+
+jeweils::
+
+    r = y1 - y2 * (y1 // y2)
+
+=== === =========== === ===================
+y1  y2  y1 // y2    r   y2 * (y1 // y2) + r
+=== === =========== === ===================
++5  +2  +2          +1  +5
++5  -2  -3          -1  +5
+-5  +2  -3          +1  -5
+-5  -2  +2          -1  -5
+--- --- ----------- --- -------------------
++5  +3  +1          +2  +5
++5  -3  -2          -1  +5
+-5  +3  -2          +1  -5
+-5  -3  +1          -2  -5
+--- --- ----------- --- -------------------
++5  +6  +0          +5  +5
++5  -6  -1          -1  +5
+-5  +6  -1          +1  -5
+-5  -6  +0          -5  -5
+=== === =========== === ===================
+
+Das ist noch kein Beweis, aber die Zeichen stehen gut, dass die Implementierung mit ``numpy.floor`` die richtige ist.
+
+
+Tatsaechliche Implementierung
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Feinheiten:
+
+1.  ``numpy.remainder`` gibt 0 zurueck, wenn ``x2 == 0`` und wenn beide Operanden ganzzahlig sind.
+
+2.  ``numpy.floor_divide`` gibt Ganzzahlen zurueck; ``numpy.floor`` Gleitkommazahlen.
+
+Wenn man ``numpy.floor(y1 / y2)`` schreibt mit ``y2 == 0``, ergibt dies:
+
+a.  eine Ausnahme, wenn ``y1`` und ``y2`` *keine* ndarrays sind; und
+
+b.  sonst eine Warnung::
+
+        >>> numpy.asarray([7]) / numpy.asarray([0])
+        __main__:1: RuntimeWarning: divide by zero encountered in divide
+        array([0])
+
+        >>> numpy.asarray([7.0]) / numpy.asarray([0])
+        __main__:1: RuntimeWarning: divide by zero encountered in divide
+        array([ inf])
+
+Verhalten von ``numpy.floor_divide``::
+
+   >>> numpy.floor_divide(7, 0)
+   __main__:1: RuntimeWaring: divide by zero encountered in floor_divide
+   0
+
+   >>> numpy.floor_divide(7.0, 0)
+   __main__:1: RuntimeWarning: invalid value encountered in floor_divide
+   nan
