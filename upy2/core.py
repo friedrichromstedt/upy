@@ -1115,17 +1115,26 @@ class undarray(object):
 
 # uufunc classes ...
 
-class Binary(object):
-    """ The base class for binary uufuncs.  In uufunc classes deriving
-    from this base class, define the following methods:
+class uufunc(object):
+    """ uufuncs augment a numpy ufunc by propagation of
+    uncertainties. """
 
-    *   :meth:`_derivative1` and :meth:`_derivative2` to provide the
-        derivatives of the result w.r.t. the first and second operand,
-        respectively;
+    def __init__(self, ufunc):
+        """ *ufunc* is the numpy ufunc calculating the nominal value
+        of the resulting undarray. """
 
-    *   :meth:`_perform` to calculate the nominal result without
-        uncertainty information, based on the nominal values of the
-        operands.
+        self.ufunc = ufunc
+
+
+class Binary(uufunc):
+    """The base class for binary uufuncs.  Derive binary uufunc classes
+    from this class and define:
+
+    *   :meth:`_derivative1` to provide the derivatives of the result
+        w.r.t. the first operand, and
+
+    *   likewise :meth:`_derivative2` for the derivatives w.r.t. the
+        second operand.
 
     Opon calling the derived binary uufunc, :meth:`_derivative1` will
     only be called when the first operand is an ``undarray``, and
@@ -1155,7 +1164,7 @@ class Binary(object):
         if isinstance(x2, undarray):
             derivatives.append((x2, self._derivative2(y1, y2)))
 
-        yout = self._perform(y1, y2)
+        yout = self.ufunc(y1, y2)
 
         return undarray(
             nominal=yout,
