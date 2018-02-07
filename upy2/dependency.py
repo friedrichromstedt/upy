@@ -23,32 +23,48 @@ class Dependency:
     # Initialisation methods ...
     #
 
-    def __init__(self, names = None, derivatives = None, shape = None):
+    def __init__(self,
+            names=None, derivatives=None,
+            shape=None, dtype=None):
         """Initialise the dependency on error sources *names* of unity 
         variances with derivatives *derivatives*.  Both are supposed to be
-        ndarrays of equal shape.  As an alternative, everything can be left 
-        out when specifying *shape*.  In this case, an empty Dependency 
-        containing numpy.ndarrays of dtype=None [float] will be created."""
+        ndarrays of equal shape.
 
-        if shape is None:
+        Alternatively, *shape* and *dtype* can be specified.  In this
+        case, an empty Dependency with a derivatives array of dtype
+        *dtype* will be constructed. """
+
+        if names is not None and derivatives is not None:
 
             if names.shape != derivatives.shape:
-                raise ValueError("Shape mismatch in initialising a Dependency: names.shape = %s, derivatives.shape = %s"
-                % (names.shape, derivatives.shape))
+                raise ValueError("Shape mismatch in initialising a"
+                    " Dependency:"
+                    " names.shape = %s, derivatives.shape = %s"
+                    % (names.shape, derivatives.shape))
             
             self.names = names
             self.derivatives = derivatives
 
             self.shape = self.names.shape
+            self.dtype = self.derivatives.dtype
             self.ndim = self.names.ndim
 
-        else:
+        elif shape is not None:
 
             self.names = numpy.zeros(shape, dtype=numpy.int)
-            self.derivatives = numpy.zeros(shape)
+            self.derivatives = numpy.zeros(shape, dtype=dtype)
+                # leaving *dtype* ``None`` leads to a derivatives
+                # ndarray with "standard" dtype (``numpy.float``).
 
             self.shape = shape
-            self.ndim = len(shape)
+            self.dtype = self.derivatives.dtype
+                # When *dtype* is None, ``self.derivatives.dtype``
+                # will differ from *dtype*.
+            self.ndim = len(self.shape)
+
+        else:
+            raise ValueError("Dependency: Unable to initialise from"
+                " the arguments provided")
 
 #X    def copy_names(self):
 #X        """Return a new Dependency with copied .names."""
@@ -114,15 +130,11 @@ class Dependency:
     # Arithmetics:  Binary arithmetics ...
     #
 
-    def add(self, other, key = None):
-        """ Adds the OTHER to self as far as possible, what is left
-        and could not be added is returned as new Dependency.  If KEY
-        is given, it specifies the portion of self where the OTHER
-        applies.  If KEY is given, it must be a tuple or a scalar.
-        
-        ``self.derivatives`` might be replaced by a version with
-        another dtype if the dtypes of the derivatives of *self* and
-        *other* differ."""
+    def add(self, other, key=None):
+        """ Adds the *other* to self as far as possible, what is left
+        and could not be added is returned as a new Dependency.  If
+        *key* is given, it specifies the portion of *self* where the
+        *other* is applied. """
 
         if key is None:
             # Index everything.
@@ -139,26 +151,26 @@ class Dependency:
 #X1                % (other.shape, indexed_shape, key, self.shape)
 #X1            )
 
-        # Make sure the dtype of ``self.derivatives`` can
-        # hold the dtype of the sum with copy's derivatives.
-        #
-        # In fact, strictly speaking this is only a problem when the
-        # dtype of ``copy.derivatives`` is "larger" than the dtype of
-        # ``self.derivatives``.  However, we always replace the dtype
-        # of ``self.derivatives`` as soon as the two dtypes differ.
-
-        if self.derivatives.dtype != other.derivatives.dtype:
-            # Possibly "upgrade" ``self.derivatives``.
-            self.derivatives = self.derivatives + numpy.zeros([],
-                dtype=other.derivatives.dtype)
-                # numpy.zeros([]) returns a scalar zero.  Adding this
-                # is a no-op on any non-scalar numeric array except
-                # for dtype (scalar ndarrays turn into "true"
-                # scalars).
-        #
-        # From now on, we can use ``+=`` on ``self.derivatives`` with
-        # (parts of) ``other.derivatives`` without danger of dtype
-        # downgrading.
+#X        # Make sure the dtype of ``self.derivatives`` can
+#X        # hold the dtype of the sum with copy's derivatives.
+#X        #
+#X        # In fact, strictly speaking this is only a problem when the
+#X        # dtype of ``copy.derivatives`` is "larger" than the dtype of
+#X        # ``self.derivatives``.  However, we always replace the dtype
+#X        # of ``self.derivatives`` as soon as the two dtypes differ.
+#X
+#X        if self.derivatives.dtype != other.derivatives.dtype:
+#X            # Possibly "upgrade" ``self.derivatives``.
+#X            self.derivatives = self.derivatives + numpy.zeros([],
+#X                dtype=other.derivatives.dtype)
+#X                # numpy.zeros([]) returns a scalar zero.  Adding this
+#X                # is a no-op on any non-scalar numeric array except
+#X                # for dtype (scalar ndarrays turn into "true"
+#X                # scalars).
+#X        #
+#X        # From now on, we can use ``+=`` on ``self.derivatives`` with
+#X        # (parts of) ``other.derivatives`` without danger of dtype
+#X        # downgrading.
 
         # First, add on same name ...
 
