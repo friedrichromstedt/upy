@@ -223,24 +223,15 @@ class undarray(object):
         ``derivatives`` *will* be copied during the initialisation.
         """
         
-#X        if isinstance(master, undarray):
-#X
-#X            # Take over attributes from existing undarray ...
-#X        
-#X            self.value = master.value.copy()
-#X            self.characteristic = master.characteristic.copy()
-#X
-#X            self.shape = master.shape
-#X            self.ndim = master.ndim
-#X
-#X        elif derivatives is not None and master is not None:
-
         # Attributes to initialise:
         #
         # - self.nominal
+        # - self.dependencies
+        # - self.dtype
         # - self.shape
         # - self.ndim
-        # - self.characteristic
+
+        self.dependencies = []
 
         if stddev is not None and nominal is not None:
             
@@ -393,50 +384,31 @@ class undarray(object):
     @property
     def real(self):
         """ Returns the real component of *self*.  This pertains to
-        the nominal value as well as the Characteristic. """
+        the nominal value as well as to the Dependencies. """
 
-        return undarray(
-            nominal=self.nominal.real.copy(),
-            characteristic=self.characteristic.real,
-        )
+        result = undarray(self.nominal.real.copy())
+        for dependency in self.dependencies:
+            result.append(dependency.real)
+        return result
 
     @property
     def imag(self):
         """ Returns the imaginary component of *self*.  This pertains to
-        the nominal value as well as the Characteristic. """
+        the nominal value as well as to the Dependencies. """
 
-        return undarray(
-            nominal=self.nominal.imag.copy(),
-            characteristic=self.characteristic.imag,
-        )
+        result = undarray(self.nominal.imag.copy())
+        for dependency in self.dependencies:
+            result.append(dependency.imag)
+        return result
 
     @property
     def variance(self):
         """Returns the variance array, i.e., stddev ** 2."""
 
-#?        warnings.warn(DeprecationWarning('undarray.variance is a property '
-#?            'since >v0.4.11b, if you call it your program will fail')
-        return self.characteristic.variance
-
-#?    def sigma(self):
-#?        """Returns the sigma array, i.e., the square root of the variance.
-#?        
-#?        This method will be deprecated in v0.5, use :meth:`~undarray.stddev` 
-#?        instead."""
-#?
-#?        warnings.warn(DeprecationWarning('undarray.sigma() will be deprecated '
-#?            'in v0.5, use undarray.stddev instead')
-#?        return numpy.sqrt(self.variance)
-#?
-#?    def dispersion(self):
-#?        """Returns the dispersion, i.e., the sigma.
-#?        
-#?        This method will be deprecated in v0.5, use :meth:`~undarray.stddev`
-#?        instead."""
-#?
-#?        warnings.warn(DeprecationWarning('undarray.dispersion() will be '
-#?            'deprecated in v0.5, use undarray.stddev instead')
-#?        return numpy.sqrt(self.variance)
+        result = numpy.zeros(shape=self.shape, dtype=self.dtype)
+        for dependency in self.dependencies:
+            result += dependency.variance
+        return result
     
     @property
     def stddev(self):
@@ -448,17 +420,6 @@ class undarray(object):
             # the :class:`Dependency` instance exhibiting complex
             # derivatives.
 
-#?    def error(self):
-#?        """Returns the error, i.e., 2 * sigma.
-#?        
-#?        This method will be deprecated in v0.5, use ``2 * ua.stddev`` 
-#?        instead."""
-#?
-#?        warnings.warn(DeprecationWarning('undarray.error() will be '
-#?            'deprecated in v0.5, use 2 * undarray.stddev instead')
-#?
-#?        return 2 * self.stddev
-#?    
 #?    def uncertainty(self, sigmas):
 #?        """Returns ``sigmas * self.stddev``.
 #?        
