@@ -407,7 +407,7 @@ class undarray(object):
 
         return undarray(
             nominal=self.nominal.imag.copy(),
-            characteristci=self.characteristic.imag,
+            characteristic=self.characteristic.imag,
         )
 
     @property

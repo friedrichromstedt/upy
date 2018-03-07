@@ -240,20 +240,25 @@ class Dependency:
         """Multiply the dependency by some ndarray factor, i.e., scale the 
         derivatives."""
 
-        other = numpy.asarray(other)
-
-        zeros = numpy.lib.stride_tricks.as_strided(
-            numpy.zeros([], dtype=numpy.bool),
-            shape=other.shape,
-            strides=([0] * other.ndim),
-        )
-            # We're going to add this zero array to ``self.names`` in
-            # order to broadcast ``self.names`` and the shape of
-            # *other*.
+        result_derivatives = self.derivatives * other
+        (bc_names, bc_derivatives) = numpy.broadcast_arrays(
+                self.names, result_derivatives)
+        # The shape of *bc_derivatives* will always be equal to the
+        # shape of *result_derivatives*, since *self.derivatives* and
+        # *self.names* have equal shape.  As a safety measure, we
+        # assert this fact:
+        assert(bc_derivatives.shape == result_derivatives.shape)
+        # With this assertion, we can skip copying *bc_derivatives* by
+        # means of ``numpy.array``, since all elements refer to a
+        # unique memory location.  This does not hold necessarily for
+        # *bc_names*, so we copy *bc_names*.  Copying *bc_names* is a
+        # necessity anyhow to avoid crosstalk.  *result_derivatives*
+        # already satisfies this requirement.
 
         return Dependency(
-                names=(self.names + zeros),
-                derivatives=(self.derivatives * other))
+                names=numpy.array(bc_names),
+                derivatives=bc_derivatives,
+        )
 
     #
     # Reflected arithmetics
