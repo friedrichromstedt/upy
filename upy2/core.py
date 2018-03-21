@@ -301,12 +301,6 @@ class undarray(object):
 
             self.nominal = numpy.asarray(nominal)
 
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
-
-            self.characteristic = upy2.characteristic.Characteristic(
-                shape=self.shape,
-            )
 #X
 #X            # Initialise from list-like structure or scalar number ...
 #X
@@ -366,17 +360,55 @@ class undarray(object):
                 # tuples and lists.  We delegate the job of
                 # interpreting *shape* to ``numpy.zeros``.
 
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
-
-            self.characteristic = upy2.characteristic.Characteristic(
-                shape=self.shape,
-            )
-
         else:
-            
             raise ValueError("Cannot initialise an undarray from the arguments given.")
+
+        self.dtype = self.nominal.dtype
+        self.shape = self.nominal.shape
+        self.ndim = self.nominal.ndim
+
+    def append(self, dependency):
+        assert(self.shape == dependency.shape)
+        self.dependencies.append(dependency)
+
+    def clear(self, key):
+        for dependency in self.dependencies:
+            dependency.clear(key)
+
+    def depend(self, other, multiple=None, key=None):
+        """ *other* is an ``undarray``.  The ``Dependencies`` of
+        *other* will be used multiplied with *multiple*.  *key*
+        indexes *self* and determines the location where the
+        ``Dependencies`` of *other* will be added.
         
+        *multiple* defaults to an integer ``1``.  Without *key*, all
+        of *self* is specified. """
+
+        if multiple is None:
+            multiple = 1
+
+        for source in other.dependencies:
+            # First, everything is left:
+            source_remnant = source * multiple
+
+            for target in self.dependencies:
+                # Attempt to add on same name or to fill empty space:
+                source_remnant = target.add(source_remnant, key)
+                if source_remnant.is_empty():
+                    # This source has been exhausted.
+                    break
+
+            if source_remnant.is_nonempty():
+                # Append the *source_remnant* added to an new empty
+                # Dependency of self's shape.
+                broadcasted_source_remnant = \
+                    upy2.dependency.Dependency(
+                        shape=self.shape,
+                        dtype=self.dtype,
+                    )
+                broadcasted_source_remnant.add(source_remnant, key)
+                self.append(broadcasted_source_remnant)
+
     #
     # Properties ...
     #
@@ -403,7 +435,7 @@ class undarray(object):
 
     @property
     def variance(self):
-        """Returns the variance array, i.e., stddev ** 2."""
+        """ Returns the variance array, i.e., stddev ** 2. """
 
         result = numpy.zeros(shape=self.shape, dtype=self.dtype)
         for dependency in self.dependencies:
@@ -412,7 +444,7 @@ class undarray(object):
     
     @property
     def stddev(self):
-        """Returns the standard deviation."""
+        """ Returns the standard deviation. """
         
         return numpy.sqrt(self.variance)
             # In case of complex dependencies, retrieving
@@ -707,108 +739,41 @@ class undarray(object):
     #
     
     def __getitem__(self, key):
-        """Returns the given subset of the undarray array, by applying
-        *key* both to the nominal value as well as to the
-        Characteristic. """
+        """Returns the given subset of the undarray, by applying *key*
+        both to the nominal value as well as to the Dependencies. """
 
-        return undarray(
-            nominal=self.nominal[key],
-            characteristic = self.characteristic[key],
-        )
+        result = undarray(nominal=self.nominal[key])
+        for dependency in self.dependencies:
+            result.append(dependency[key])
 
     def __setitem__(self, key, value):
-        """ Updates the given subset of the undarray, by replacing the
-        subset of the nominal value and the Characteristic's subset
-        indexed by *key*.  *value* can be an ``undarray`` instance; if
-        it isn't it will be passed through ``numpy.asarray``. """
+        """ Replace the portion of *self* indexed by *key* by *value*.
 
-#XX        # Handle scalar indices ...
-#XX        if key is None:
-#XX            key = ()
-#XX        elif not isinstance(key, tuple):
-#XX                # If *key* is None, it shall stay None.  *None* is a
-#XX                # special key to :meth:`Dependency.add` resulting in
-#XX                # indexing the whole object (``key = ()``).
-#XX            key = (key,)
+        If *value* is not an undarray, it will be converted to an
+        ``undarray`` without uncertainty.
+
+        *value* might be broadcast to fit the portion of *self*
+        indexed by *key*. """
 
         if isinstance(value, undarray):
-            # Update with a undarray subset ...
-
-            # The possibility of broadcasting *value* is a feature.
-            # The code performing the broadcast for
-            # ``self.characteristic`` is in dependency.py,
-            # :meth:`Dependency.add`.
-
-            # Possibly "upgrade" ``self.value``\ 's dtype  ...
-            if self.nominal.dtype != value.nominal.dtype:
-                self.nominal = self.nominal + numpy.zeros([],
-                    dtype=value.nominal.dtype)
-                    # cf. dependency.py: Dependency.add().
-            # From now on, the dtype of ``self.nominal`` is large enough
-            # to hold the *value*\ 's nominal value.
-
-            # Update the respective subsets ...
-
-            self.nominal = numpy.asarray(self.nominal)
-                # Turn "true" scalars into scalar ndarrays prior to
-                # item assignment.
-            self.nominal[key] = value.nominal
-            self.characteristic[key] = value.characteristic
-
-#XX        elif isinstance(value, numpy.ndarray):
+            uvalue = value
         else:
-            value = numpy.asarray(value)
+            uvalue = undarray(nominal=value)
                 # We do not copy because the *value* isn't stored
                 # anywhere inside this ``undarray`` instance; it is
                 # used in a key assignment below.
-            # Set errorless values from the ndarray *value* ...
 
-            # The ability to broadcast *value* is a feature; in that
-            # case *value*\ 's shape differs from ``self.shape``.  We
-            # do not apply any check as numpy will complain itself
-            # when the shape of *value* is too large.  Since we use
-            # key assignment, the shape of ``self.nominal`` and of
-            # ``self.characteristic`` cannot grow during the
-            # operation.
+        self.clear(key)
 
-            if self.nominal.dtype != value.dtype:
-                self.nominal = self.nominal + numpy.zeros([],
-                    dtype=value.dtype)
-            self.characteristic.clear(key)
-            self.nominal = numpy.asarray(self.nominal)
-                # Turn "true" scalars into scalar ndarrays prior to
-                # item assignment.
-            self.nominal[key] = value
-#XX        
-#XX        else:
-#XX            # Update in mixed-mode ...
-#XX
-#XX            if len(key) == self.ndim:
-#XX
-#XX                # We have reached the innermost level, set the values ...
-#XX                #
-#XX                # VALUE is definitely not an undarray.
-#XX                value = numpy.asarray(value)
-#XX                self[key] = value
-#XX                    # With *value* now being an instance of
-#XX                    # ``numpy.ndarray``, the corresponding branch
-#XX                    # above is used.
-#XX
-#XX            else:
-#XX                    
-#XX                # VALUE is definitely not an undarray.
-#XX
-#XX                # Iterate through VALUE ...
-#XX
-#XX                # Check length.
-#XX                if len(value) != self.shape[len(key)]:
-#XX                    raise ValueError('Shape mismatch.')
-#XX
-#XX                # Iterate.
-#XX                for idx in xrange(0, len(value)):
-#XX                    subkey = tuple(list(key) + [idx])
-#XX                    self[subkey] = value[idx]
-        
+        self.nominal = numpy.asarray(self.nominal)
+            # Turn "true" scalars into scalar ndarrays prior to item
+            # assignment.
+        self.nominal[key] = uvalue.nominal
+            # Since we use key assignment, the shape of
+            # ``self.nominal`` cannot grow.
+
+        self.depend(other=uvalue, key=key)
+
     def __len__(self):
         return len(self.nominal)
 
@@ -1123,17 +1088,19 @@ class Binary(uufunc):
         else:
             y2 = x2
 
-        if isinstance(x1, undarray):
-            derivatives.append((x1, self._derivative1(y1, y2)))
-        if isinstance(x2, undarray):
-            derivatives.append((x2, self._derivative2(y1, y2)))
-
         yout = self.ufunc(y1, y2)
-
-        return undarray(
-            nominal=yout,
-            derivatives=derivatives,
-        )
+        result = undarray(nominal=yout)
+        if isinstance(x1, undarray):
+            result.depend(
+                other=x1,
+                multiple=self._derivative1(y1, y2),
+            )
+        if isinstance(x2, undarray):
+            result.depend(
+                other=x2,
+                multiple=self._derivative2(y1, y2),
+            )
+        return result
 
 
 class Add(Binary):
@@ -1141,10 +1108,10 @@ class Add(Binary):
         Binary.__init__(self, numpy.add)
 
     def _derivative1(self, y1, y2):
-        return 1.0
+        return 1
 
     def _derivative2(self, y1, y2):
-        return 1.0
+        return 1
 
 
 # The actual uufuncs ...
