@@ -65,9 +65,39 @@ UH = absolute(uh)
 # This yields RuntimeWarnings.  The following then fails:
 # print "absolute(0 +- 1), real and imag ="
 # print UH.real, UH.imag
-print "nominal and stddev of absolute(0 +- 1) ="
+print "nominal and stddev of absolute(0 +- 1).real ="
 print UH.real.nominal, UH.real.stddev
     # The stddev is nan
 
 print "absolute(1j) =", absolute(1j)
 print "absolute(1) =", absolute(1)
+
+ui = 0.001 +- u(1)
+UI = absolute(ui)
+print "absolute(0.001 +- 1), real and imag ="
+print UI.real, UI.imag
+
+def absolute2(x):
+    return x ** 0.5 * x.conjugate() ** 0.5
+
+uj = 1 +- u(0.1)
+UJ = absolute2(uj)
+print "absolute2(1 +- 0.1), real and imag ="
+print UJ.real, UJ.imag
+
+uk = 10 +- u(0.1)
+UK = absolute2(uk)
+print "absolute2(10 +- 0.1), real and imag ="
+print UK.real, UK.imag
+
+uk = zr() +- u(zr()) +- u(zr())
+UK = absolute2(uk) 
+print "absolute2(zrandom +- zrandom +- zrandom), real and imag ="
+print UK.real, UK.imag
+
+ul = 0 +- u(1)
+UL = absolute2(ul)
+print "nominal and stddev of absolute2(0 +- 1).real ="
+print UL.real.nominal, UL.real.stddev
+print "nominal and stddev of absolute2(0 +- 1).imag ="
+print UL.imag.nominal, UL.imag.stddev

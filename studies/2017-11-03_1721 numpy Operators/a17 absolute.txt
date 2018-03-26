@@ -1,0 +1,193 @@
+.. vim: syntax=rst
+
+Die Operation ``absolute`` soll implementiert werden durch::
+
+    absolute(ua) = numpy.sqrt(ua * ua.conjugate()).real
+
+bzw.::
+
+    absolute(ua) = ((ua * ua.conjugate()) ** 0.5).real
+
+Der Test ``[/tests/ad-hoc/2018-05-09_1108.py]`` legt die Vermutung nahe, dass der Imaginaerteil von ``numpy.sqrt(ua * ua.conjugate())`` *stets* verschwindet.  Bewiesen ist dies allerdings noch nicht.
+
+Es gibt bei dieser Implementierung aber ein Problem: **Unsichere Nullen werden nicht korrekt verarbeitet.**
+
+Es ergibt sich, dass bei ``ua = 0 +- <...>`` das Ergebnis fuer ``abs(ua)`` als ``0 +- nan`` berechnet wird.
+
+Schuld daran ist die Wurzel in der Berechnung:
+
+-   Sei ``ux = x +- <...>`` und ``uy = sqrt(ux)``, d.h. ``uy = ux ^ 0.5``.
+
+-   Dann ist ``d(uy)/d(ux) = 0.5 . x ^ -0.5 = 0.5 1/sqrt(x)``.  Mit ``x`` gegen Null divergiert dies.  
+
+Da ein derartiger Differentialquotient als Koeffizient fuer die Propagierung des Fehlers von ``ua * ua.conjugate()`` hin zu dem von ``abs(ua)`` Verwendung findet, kann das Ergebnis ``abs(ua)`` nicht als reelle Zahl dargestellt werden.
+
+Eine alternative Berechnungsvorschrift waere::
+
+    absolute(ua) = sqrt(ua) * sqrt(ua.conjugate())
+
+aber hier tritt das Problem schlicht schon frueher auf, da ``ua`` und ``ua.conjugate()`` ebenfalls *unsichere Nullen* sind.
+
+Fuer Werte ``ua = a +- <...>`` mit ``a != 0`` wird die Berechnung des Absolutwerts *korrekt ausgefuehrt*, auch fuer sehr *kleine* ``a``.
+
+
+.. rubric:: Freitag, d. 25. Mai 2018, 7:29 Uhr in KH
+
+
+Vollstaendigere Untersuchung
+============================
+
+Berechnung von ``squ = ua * ua.conjugate()``
+--------------------------------------------
+
+Wir behandeln hier beispielhaft eine einzelne *Abhaengigkeit* eines undarrays ``ua`` mit einer beliebigen komplexen Abhaengigkeit ``u`` und Nennwert ``a``, notiert als::
+
+    ua = a +- u
+
+Dann gilt::
+
+    ua.conj() = a.conj() +- u.conj()
+
+Die Instruktionen bei Berechnung von ``squ = ua * ua.conj()`` in :meth:`Binary.__call__` sind dann:
+    
+1.  ``x1 = ua`` und ``x2 = ua.conj()``.  ``y1 = a``, ``y2 = a.conj()``.  ``result = undarray(y1 * y2) = undarray(a * a.conj())``.
+
+2.  ``result.depend(other=ua, derivative=a.conj())``:
+
+    a.  ``source = ua.dependencies[0]``, ``source.derivatives == u``.
+
+        Notiere ``Dependency(derivative=d)`` als ``{d}``.  ``source == {u}``.
+
+    b.  ``source_remnant = source * derivative = {u} * a.conj() = {u * a.conj()}``.
+
+    c.  Unter Vernachlaessigung des Broadcastings auf den *shape* von ``result`` wird ``source_remnant`` zu der Liste der Abhaengigkeiten von ``result`` hinzugefuegt::
+
+            result.append({u * a.conj()})
+
+3.  ``result.depend(other=ua.conj(), derivative=a)``:
+
+    a.  ``source = (ua.conj()).dependencies[0] == {u.conj()}``.
+
+    b.  ``source_remnant = source * derivative = {u.conj()} * a = {u.conj() * a}``.
+
+    c.  ``source_remnant`` wird zur in (2.) erzeugten ``Dependency`` von ``result`` *addiert*, im Wesentlichen::
+
+            result.dependencies[0].add(source_remnant)
+
+        Sodass sich ``result.dependencies[0]`` darstellt als::
+
+            result.dependencies[0] == {u * a.conj() + u.conj() * a}
+
+Insgesamt ergibt sich so::
+
+    squ = ua * ua.conj() == [a * a.conj()] +- [u * a.conj() + u.conj() * a]
+
+Dabei ist ``a * a.conj()`` das Betragsquadrat von ``a``::
+
+    a * a.conj() == |a| ^ 2
+
+und fuer die Abhaengigkeit gilt::
+
+    u * a.conj() + u.conj() * a
+    == [u * a.conj()] + [u * a.conj()].conj() == 2 Re{u * a.conj()}
+    == [u.conj() * a].conj() + [u.conj() * a] == 2 Re{u.conj() * a}
+
+Der Imaginaerteil von ``squ`` verschwindet also.
+
+Schreibt man::
+
+    a = A exp(i phia)
+    u = U exp(i phiu)
+
+mit rellen ``A`` und ``U``, so gilt weiter::
+
+    a * u.conj() + a.conj() * u
+    == 2 Re{A U exp(phia) exp(phiu).conj()}
+    == 2 Re{A U exp(phia - phiu)}
+    == 2 A U cos(phia - phiu)
+
+Bei in der komplexen Ebene orthogonalen ``a`` und ``u`` resultiert also ``+- 0``, bei gleichgerichteten ``a`` und ``u`` gilt (``phia == phiu``)::
+
+    2 A U cos(phia - phiu) == 2 A U
+
+Insgesamt ergibt sich mit der Benennung ``mu = cos(phia - phiu)``::
+
+    squ = ua * ua.conj() == |a| ^ 2 +- 2 mu A U
+
+Bei ``A == 0`` ergibt sich *stets* ``0 +- 0``.
+
+Beispiele:
+
+#.  ``A = 10``, ``U = 2``, ``mu = 1.0``::
+
+        squ = 100 +- 40
+
+#.  ``X exp(i phix)`` bleibt sich gleich, wenn das Vorzeichen von ``X`` umgekehrt wird und zu ``phix`` ein Summand ``pi`` oder ``-pi`` hinzutritt.  Wendet man dies auf ``u`` and ergibt sich: ``A = 10``, ``U = -2``, ``mu = -1.0`` und das Ergebnis bleibt ungeaendert::
+
+        squ = 100 +- 40
+
+    denn ``a`` und ``u`` bleiben sich gleich.
+
+#.  Invertiert man nur bspw. ``U`` *ohne* Umkehrung der Richtung ``phiu``, so ergibt sich nun mit ``A = 10``, ``U = -2``, ``mu = 1.0``::
+
+        squ = 100 +- -40
+
+
+Berechnung von ``uabs = squ ** 0.5``
+------------------------------------
+
+Es sei ``squ`` wie oben gegeben::
+
+    squ = |a| ^ 2 +- 2 mu A U
+
+und es wird berechnet::
+
+    uabs = squ ** 0.5
+
+Instruktionen in ``Binary.__call__``:
+
+1.  ``x1 = squ`` und ``x2 = 0.5``.  ``y1 = squ.nominal == |a| ^ 2`` und ``y2 = 0.5``.  ``result = undarray(y1 ** y2) = undarray(|a|)``.
+
+2.  Es wird nur bzgl. ``x1`` ein ``.depend``-Aufruf durchgefuehrt.  Dabei ist die Ableitung::
+
+        ``y2 * (y1 ** (y2 - 1))``
+        == 0.5 * y1 ** -0.5
+        == 0.5 / |a|
+
+    Dann wird ausgefuehrt::
+
+        result.depend(other=squ, derivative=(0.5 / |a|))
+
+    Im ``.depend``-Aufruf gilt dann:
+
+    a.  ``source = squ.dependencies[0] = {2 mu A U}``.
+
+    b.  ``source_remnant = source * derivative == {2 mu A U} * (0.5 / |a|) == {mu A U / |a|} = {mu U sign(A)}``
+    
+    c.  ``result.append(source_remnant)`` (unter Vernachlaessigung des Broadcastings von ``source_remnant`` auf den *shape* von ``result``).
+
+Es ergibt sich insgesamt::
+
+    uabs = |a| +- (mu U sign(A))
+
+sodass sich als ``uabs.stddev`` ergibt::
+
+    uabs.stddev == |mu U|
+
+Deutung des Terms ``(mu U sign(A))``:
+
+-   ``mu`` *projiziert* die komplexe Unsicherheit ``U exp(i phiu)`` auf den komplexen Nennwert ``A exp(i phia)``.  Wenn ``U`` positiv ist, ist auch die *Projektion* positiv, wenn ``U`` negativ ist, ist die Projektion negativ.
+
+-   Wenn ``A > 0``, ist ``sign(A) == +1``.  Bei ``U > 0`` weisen ``a`` und ``mu U exp(i phia)`` in *dieselbe Richtung*; der Unsicherheitsterm des Betrags ``uabs`` weist nach *rechts* zu positiven Werten.  Entsprechend weist der Unsicherheitsterm von ``uabs`` nach *links* wenn ``U < 0`` ist.
+
+-   Wenn jedoch ``A < 0`` ist, kehrt sich die relative Richtung von ``mu U exp(i phia)`` und ``a`` um; der Unsicherherheitsterm von ``uabs`` weist bei ``U > 0`` nach *links* und bei ``U < 0`` nach *rechts*.
+
+
+Probiere eine klarere Deutung
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Die Darstellung einer komplexen Zahl ``z`` als ``z = Z exp(i phiz)`` mit *reellen* ``Z`` und ``phiz`` ist nicht eindeutig: ``Z exp(i phiz) == (-Z) exp(i [phiz + pi])``, d.h. bei Parametrisierung mit ``Z`` und ``phiz`` ist auch die Parametrisierung mit ``-Z`` und ``phiz + pi`` richtig.  Die Parametrisierung wird eindeutig wenn man ``Z > 0`` fordert.  Bei ``Z == 0`` wird auch der Winkel uneindeutig.
+
+Fordert man ``A > 0`` und ``U > 0``, so gilt::
+
+    uabs = A +- (mu U)
