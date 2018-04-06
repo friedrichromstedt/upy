@@ -375,21 +375,21 @@ class undarray(object):
         for dependency in self.dependencies:
             dependency.clear(key)
 
-    def depend(self, other, multiple=None, key=None):
+    def depend(self, other, derivative=None, key=None):
         """ *other* is an ``undarray``.  The ``Dependencies`` of
-        *other* will be used multiplied with *multiple*.  *key*
+        *other* will be used multiplied by *derivative*.  *key*
         indexes *self* and determines the location where the
         ``Dependencies`` of *other* will be added.
         
-        *multiple* defaults to an integer ``1``.  Without *key*, all
+        *derivative* defaults to an integer ``1``.  Without *key*, all
         of *self* is specified. """
 
-        if multiple is None:
-            multiple = 1
+        if derivative is None:
+            derivative = 1
 
         for source in other.dependencies:
             # First, everything is left:
-            source_remnant = source * multiple
+            source_remnant = source * derivative
 
             for target in self.dependencies:
                 # Attempt to add on same name or to fill empty space:
@@ -1093,12 +1093,12 @@ class Binary(uufunc):
         if isinstance(x1, undarray):
             result.depend(
                 other=x1,
-                multiple=self._derivative1(y1, y2),
+                derivative=self._derivative1(y1, y2),
             )
         if isinstance(x2, undarray):
             result.depend(
                 other=x2,
-                multiple=self._derivative2(y1, y2),
+                derivative=self._derivative2(y1, y2),
             )
         return result
 
