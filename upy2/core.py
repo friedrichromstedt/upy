@@ -749,30 +749,25 @@ class undarray(object):
     def __setitem__(self, key, value):
         """ Replace the portion of *self* indexed by *key* by *value*.
 
-        If *value* is not an undarray, it will be converted to an
-        ``undarray`` without uncertainty.
+        If *value* is not an ``undarray``, it will be treated as the
+        replacement for the specified portion of self's nominal value.
 
         *value* might be broadcast to fit the portion of *self*
         indexed by *key*. """
-
-        if isinstance(value, undarray):
-            uvalue = value
-        else:
-            uvalue = undarray(nominal=value)
-                # We do not copy because the *value* isn't stored
-                # anywhere inside this ``undarray`` instance; it is
-                # used in a key assignment below.
 
         self.clear(key)
 
         self.nominal = numpy.asarray(self.nominal)
             # Turn "true" scalars into scalar ndarrays prior to item
             # assignment.
-        self.nominal[key] = uvalue.nominal
-            # Since we use key assignment, the shape of
-            # ``self.nominal`` cannot grow.
 
-        self.depend(other=uvalue, key=key)
+        if isinstance(value, undarray):
+            self.nominal[key] = value.nominal
+                # Since we use key assignment, the shape of
+                # ``self.nominal`` cannot grow.
+            self.depend(other=value, key=key)
+        else:
+            self.nominal[key] = value
 
     def __len__(self):
         return len(self.nominal)
