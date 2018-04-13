@@ -654,9 +654,7 @@ class undarray(object):
         return self
 
     def __neg__(self):
-        return undarray(
-            nominal=(-self.nominal),
-            derivatives=[(self, -1)])
+        return unegative(self)
 
     def __abs__(self):
         absolute_value = numpy.abs(self.nominal)
@@ -1071,6 +1069,23 @@ class uufunc(object):
         return "<upy %r uufunc>" % self.ufunc
 
 
+class Unary(uufunc):
+    def __call__(self, x):
+        if isinstance(x, undarray):
+            y = x.nominal
+        else:
+            y = x
+
+        yout = self.ufunc(y)
+        result = undarray(nominal=yout)
+        if isinstance(x, undarray):
+            result.depend(
+                    other=x,
+                    derivative=self._derivative(y),
+            )
+        return result
+
+
 class Binary(uufunc):
     """The base class for binary uufuncs.  Derive binary uufunc classes
     from this class and define:
@@ -1091,8 +1106,6 @@ class Binary(uufunc):
 
     def __call__(self, x1, x2):
         """ Performs the operation on operands *x1* and *x2*. """
-
-        derivatives = []
 
         if isinstance(x1, undarray):
             y1 = x1.nominal
@@ -1118,6 +1131,15 @@ class Binary(uufunc):
             )
         return result
 
+# Protocol (Unary and Binary) implementations ...
+
+class Negative(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.negative)
+
+    def _derivative(self, y):
+        return -1
+
 
 class Add(Binary):
     def __init__(self):
@@ -1129,7 +1151,7 @@ class Add(Binary):
     def _derivative2(self, y1, y2):
         return 1
 
-
 # The actual uufuncs ...
 
+unegative = Negative()
 uadd = Add()

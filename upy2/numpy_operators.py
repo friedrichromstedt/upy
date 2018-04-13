@@ -1,5 +1,29 @@
 import numpy
-from upy2.core import undarray, uadd
+from upy2.core import undarray, \
+    unegative, uadd
+
+
+class UnaryOperator(object):
+    def __init__(self, ufunc, uufunc):
+        self.ufunc = ufunc
+        self.uufunc = uufunc
+
+    def __call__(self, x, *args, **kwargs):
+        if not isinstance(x, undarray):
+            return self.ufunc(x, *args, **kwargs)
+        else:
+            return self.uufunc(x)
+
+    def __getattr__(self, name):
+        return getattr(self.ufunc, name)
+
+    def __str__(self):
+        return "<upy Unary operator for numpy %s and upy %s>" % \
+            (self.ufunc, self.uufunc)
+
+    def __repr__(self):
+        return "<UnaryOperator(ufunc=%r, uufunc=%r)>" % \
+            (self.ufunc, self.uufunc)
 
 
 class BinaryOperator(object):
@@ -34,8 +58,15 @@ class BinaryOperator(object):
 def install_numpy_operators():
     numpy_ops = numpy.set_numeric_ops()
 
-    add = BinaryOperator(ufunc=numpy_ops['add'], uufunc=uadd)
+    negative = UnaryOperator(
+            ufunc=numpy_ops['negative'],
+            uufunc=unegative)
+
+    add = BinaryOperator(
+            ufunc=numpy_ops['add'],
+            uufunc=uadd)
 
     numpy.set_numeric_ops(
         add=add,
+        negative=negative,
     )
