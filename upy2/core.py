@@ -392,14 +392,14 @@ class undarray(object):
             source_remnant = source * derivative
 
             for target in self.dependencies:
-                # Attempt to add on same name or to fill empty space:
-                source_remnant = target.add(source_remnant, key)
                 if source_remnant.is_empty():
                     # This source has been exhausted.
                     break
+                # Attempt to add on same name or to fill empty space:
+                source_remnant = target.add(source_remnant, key)
 
             if source_remnant.is_nonempty():
-                # Append the *source_remnant* added to an new empty
+                # Append the *source_remnant* added to a new empty
                 # Dependency of self's shape.
                 broadcasted_source_remnant = \
                     upy2.dependency.Dependency(
