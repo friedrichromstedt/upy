@@ -387,6 +387,21 @@ class undarray(object):
         if derivative is None:
             derivative = 1
 
+        # Check dtype compatibility ...
+
+        derivative_dtype = numpy.result_type(derivative)
+        dependency_type = numpy.result_type(
+                other.dtype,
+                derivative_dtype,
+        )
+        if not numpy.can_cast(dependency_type, self.dtype):
+            raise ValueError(
+                    'Cannot make a %s-dtype undarray depend on a '
+                    '%s-dtype undarray with a derivative of dtype %s.'
+                    % (self.dtype, other.dtype, derivative_dtype))
+
+        # Make *self* depend on *other* with *derivative* ...
+
         for source in other.dependencies:
             # First, everything is left:
             source_remnant = source * derivative
