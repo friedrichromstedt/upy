@@ -139,16 +139,22 @@ class U(upy2.context.Protocol):
         self.stddevs = stddevs
 
     def provide(self, error):
-        """ Provides an undarray with zero nominal value and a
-        dispersion based on *error*.  *error* is interpreted as a
+        """ Provides an undarray with zero nominal value and with
+        uncertainty based on *error*.  *error* is interpreted as a
         multiple of the standard deviation as defined on
         initialisation time. """
 
         stddev = numpy.asarray(error) / self.stddevs
-        return undarray(
-            nominal=numpy.zeros_like(stddev),
-            stddev=stddev,
+        shape = stddev.shape
+        result = undarray(shape=shape)
+
+        dependency = upy2.dependency.Dependency(
+                names=upy2.id_generator.get_idarray(shape=shape),
+                derivatives=stddev,
         )
+        result.append(dependency)
+
+        return result
 
     def __call__(self, error):
         """ Convenience method to provide a short-hand for
