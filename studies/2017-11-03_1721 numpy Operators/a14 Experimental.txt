@@ -26,3 +26,11 @@ Gesichtspunkte:
         Ausserdem steht noch :func:`result_type` zur Verfuegung.
 
     Die Form von *out*-Parametern kann *groesser* als die des direkten Ergebnisses sein, wenn letzteres auf die Form des *out*-Parameters per broadcasting erweitert werden kann.
+
+
+.. rubric:: Samstag, d. 14. April 2018, 16:47 Uhr in KH
+
+
+2.  ``shape`` und ``dtype`` des Ergebnisses koennen aus der Anwendung der Operationen auf die nominellen Operanden ermittelt werden.  ``undarray`` kann seine Form und seinen ``dtype`` aus diesem nominalen Wert, welcher dem Konstruktor uebergeben wird, ermitteln.  Die ``uufuncs`` registrieren dann Abhaengigkeiten des erzeugten ``undarrays`` per :meth:`undarray.depend`.
+
+3.  :func:`numpy.result_type` und :func:`numpy.can_cast` werden gegenweartig in :meth:`undarray.depend` zur Pruefung verwendet, ob *self* die neue Abhaengigkeit aufnehmen kann.
