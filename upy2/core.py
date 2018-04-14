@@ -6,7 +6,6 @@
 import numpy
 import upy2
 import upy2.dependency
-import upy2.characteristic
 import upy2.typesetting.protocol
 import upy2.context
 #import upy2.printable
@@ -837,14 +836,15 @@ class undarray(object):
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
 
-        return undarray(
+        result = undarray(
             nominal=self.nominal.compress(
-                *comress_args, **compress_kwargs
-            ),
-            characteristic=self.characteristic.compress(
                 *compress_args, **compress_kwargs
-            ),
-        )
+            ))
+        for dependency in self.dependencies:
+            result.append(dependency.compress(
+                *compress_args, **compress_kwargs
+            ))
+        return result
 
     def copy(self):
         """Returns a copy of the undarray.  Note that only the data is
@@ -858,11 +858,11 @@ class undarray(object):
         decided at this program level which correlation to keep and which
         to "copy", i.e., to replicate with new names."""
 
-        return undarray(
-            nominal=self.nominal.copy(),
-            characteristic=self.characteristic.copy(),
-        )
-            
+        result = undarray(nominal=self.nominal.copy())
+        for dependency in self.dependencies:
+            result.append(dependency.copy())
+        return result
+
 
 # This method is deprecated, because its implementation is too rough.
 # I feel it is better to _not_ provide an implementation when it
@@ -921,50 +921,54 @@ class undarray(object):
     def flatten(self, *flatten_args, **flatten_kwargs):
         """Returns a copy with flatten()'ed arrays."""
 
-        return undarray(
+        result = undarray(
             nominal=self.nominal.flatten(
                 *flatten_args, **flatten_kwargs
-            ),
-            characteristic=self.characteristic.flatten(
+            ))
+        for dependency in self.dependencies:
+            result.append(dependency.compress(
                 *flatten_args, **flatten_kwargs
-            ),
-        )
+            ))
+        return result
 
     def repeat(self, *repeat_args, **repeat_kwargs):
         """Returns a copy with repeat()'ed arrays."""
 
-        return undarray(
+        result = undarray(
             nominal=self.nominal.repeat(
                 *repeat_args, **repeat_kwargs
-            ),
-            characteristic=self.characteristic.repeat(
-                *repeat_args, **repeat_kwargs
-            ),
-        )
+            ))
+        for dependency in self.dependencies:
+            result.appen(dependency.repeat(
+                *repeat_arg, **repeat_kwargs
+            ))
+        return result
 
     def reshape(self, *reshape_args, **reshape_kwargs):
         """Returns a copy with reshape()'ed arrays."""
 
-        return undarray(
+        result = undarray(
             nominal=self.nominal.reshape(
+                *reshape_args, **reshape_kwargs,
+            ))
+        for dependency in self.dependencies:
+            result.append(dependency.reshape(
                 *reshape_args, **reshape_kwargs
-            ),
-            characteristic=self.characteristic.reshape(
-                *reshape_args, **reshape_kwargs
-            ),
-        )
+            ))
+        return result
 
     def transpose(self, *transpose_args, **transpose_kwargs):
         """Returns a copy with transpos()'ed arrays."""
 
-        return undarray(
+        result = undarray(
             nominal=self.nominal.transpose(
                 *transpose_args, **transpose_kwargs
-            ),
-            characteristic=self.characteristic.transpose(
+            ))
+        for dependency in self.dependencies:
+            result.append(dependency.transpose(
                 *transpose_args, **transpose_kwargs
-            ),
-        )
+            ))
+        return result
 
     #
     # String conversion ...
@@ -1025,6 +1029,7 @@ class undarray(object):
 #X         return "<undarray of shape %s>" % (self.shape)
 #X 
 #X     # No sensible repr(), because the object's interior is complex.
+
 
 #
 # uufuncs ...
