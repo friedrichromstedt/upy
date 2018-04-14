@@ -8,7 +8,7 @@ Zu ueberladen
 Mit klarer Funktion
 -------------------
 
-*   add
+*   add -- OK
 *   subtract
 *   multiply
 *   divide
@@ -24,7 +24,7 @@ Mit klarer Funktion
 
 *   absolute
 *   positive
-*   negative
+*   negative -- OK
 *   conjugate
 *   sqrt
 *   power
