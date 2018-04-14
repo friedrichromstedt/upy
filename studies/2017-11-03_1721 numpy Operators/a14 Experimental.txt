@@ -1,0 +1,28 @@
+.. vim: syntax=rst
+
+.. rubric:: Mittwoch, d. 17. Januar 2018, 10:04 Uhr in der Unibibliothek
+
+
+Gesichtspunkte:
+
+1.  Erzeugung eines *out*-undarrays bzw. Nutzung eines uebergebenen *out*-Wertes.
+
+    Ableitung des ``dtypes`` und der Form (``shape``) mittels numpy-Funktionen.
+
+    Auf diese Weise kann das "automatische ``dtype``-Upgrade" vermieden werden.
+
+    Funktionen dazu:
+
+    -   :func:`broadcast` und :func:`broadcast_arrays` zur Ermittlung der Ausgabeform und zur Erstellung der auf gemeinsame Form gebrachten Operanden.
+
+        Ref: *Array objects > Standard array subclasses > broadcast* und *Routines > Array manipulation routines > broadcast_arrays*.
+
+        Sowie :func:`broadcast_to`, *See Also* section of :func:`broadcast`.
+
+        Man kann :func:`broadcast` zur Ermittlung der Ausgabeform verwenden, und die Arrays per :func:`broadcast_to` in diese Form ueberfuehren.
+
+    -   Zur Ermittlung des Ausgabe-dtypes kann :func:`promote_types` verwendet werden.  Diese Funktion kann bspw. auf das Ergebnis von :func:`broadcast_to` angewendet werden.
+
+        Ausserdem steht noch :func:`result_type` zur Verfuegung.
+
+    Die Form von *out*-Parametern kann *groesser* als die des direkten Ergebnisses sein, wenn letzteres auf die Form des *out*-Parameters per broadcasting erweitert werden kann.
