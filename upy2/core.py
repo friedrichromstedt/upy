@@ -12,7 +12,8 @@ import upy2.context
 #import upy2.printable
 #import warnings
 
-__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy', 'uadd']
+__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
+    'unegative', 'uadd']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -1053,7 +1054,9 @@ class undarray(object):
 # uufuncs ...
 #
 
+
 # uufunc classes ...
+
 
 class uufunc(object):
     """ uufuncs augment a numpy ufunc by propagation of
@@ -1131,7 +1134,9 @@ class Binary(uufunc):
             )
         return result
 
+
 # Protocol (Unary and Binary) implementations ...
+
 
 class Negative(Unary):
     def __init__(self):
@@ -1151,7 +1156,9 @@ class Add(Binary):
     def _derivative2(self, y1, y2):
         return 1
 
+
 # The actual uufuncs ...
+
 
 unegative = Negative()
 uadd = Add()
