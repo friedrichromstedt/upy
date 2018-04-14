@@ -13,7 +13,7 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uadd']
+    'unegative', 'uadd', 'usubtract']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -509,28 +509,9 @@ class undarray(object):
 
     def __add__(self, other):
         return uadd(self, other)
-#!        if isinstance(other, undarray):
-#!            return undarray(
-#!                nominal=(self.nominal + other.nominal),
-#!                derivatives=[(self, 1.0), (other, 1.0)],
-#!            )
-#!        else:
-#!            return undarray(
-#!                nominal=(self.nominal + other),
-#!                derivatives=[(self, 1.0)],
-#!            )
 
     def __sub__(self, other):
-        if isinstance(other, undarray):
-            return undarray(
-                nominal=(self.nominal - other.nominal),
-                derivatives=[(self, 1.0), (other, -1.0)],
-            )
-        else:
-            return undarray(
-                nominal=(self.nominal - other),
-                derivatives=[(self, 1.0)],
-            )
+        return usubtract(self, other)
 
     def __mul__(self, other):
         if isinstance(other, undarray):
@@ -605,12 +586,7 @@ class undarray(object):
         )
 
     def __rsub__(self, other):
-        # *other* is not an undarray.
-        other=numpy.asarray(other)
-        return undarray(
-            nominal=(other - self.nominal),
-            derivatives=[(self, -1.0)],
-        )
+        return usubtract(other, self)
 
     def __rmul__(self, other):
         # *other* is not an undarray.
@@ -1157,8 +1133,21 @@ class Add(Binary):
         return 1
 
 
+class Subtract(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.subtract)
+
+    def _derivative1(self, y1, y2):
+        return 1
+
+    def _derivative2(self, y1, y2):
+        return -1
+
+
 # The actual uufuncs ...
 
 
 unegative = Negative()
+
 uadd = Add()
+usubtract = Subtract()

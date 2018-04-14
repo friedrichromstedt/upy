@@ -1,6 +1,6 @@
 import numpy
 from upy2.core import undarray, \
-    unegative, uadd
+    unegative, uadd, usubtract
 
 
 class UnaryOperator(object):
@@ -65,8 +65,12 @@ def install_numpy_operators():
     add = BinaryOperator(
             ufunc=numpy_ops['add'],
             uufunc=uadd)
+    subtract = BinaryOperator(
+            ufunc=numpy_ops['subtract'],
+            uufunc=usubtract)
 
     numpy.set_numeric_ops(
-        add=add,
         negative=negative,
+        add=add,
+        subtract=subtract,
     )
