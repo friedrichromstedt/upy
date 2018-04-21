@@ -12,7 +12,7 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uadd', 'usubtract', 'umultiply']
+    'unegative', 'uadd', 'usubtract', 'umultiply', 'udivide']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -516,11 +516,7 @@ class undarray(object):
         return umultiply(self, other)
 
     def __div__(self, other):
-        if isinstance(other, undarray):
-            return self * (1.0 / other)
-                          # calls other.__rdiv__()
-        else:
-            return self * (1.0 / numpy.asarray(other))
+        return udivide(self, other)
 
     def __pow__(self, other):
         # f = b ^ x         b = self    x = other
@@ -577,17 +573,7 @@ class undarray(object):
         return umultiply(other, self)
 
     def __rdiv__(self, other):
-        # *other* is not an undarray.
-        other=numpy.asarray(other)
-        #
-        # f = other / self = other . self ^ (-1)
-        #
-        # d_self f = other . (-1) . self ^ (-2) 
-        #
-        return undarray(
-            nominal=(other / self.nominal),
-            derivatives=[(self, -other / self.nominal ** 2)],
-        )
+        return udivide(other, self)
 
     def __rpow__(self, other):
         # *other* is not an undarray.
@@ -1141,6 +1127,21 @@ class Multiply(Binary):
         return y1
 
 
+class Divide(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.true_divide)
+
+    def _derivative1(self, y1, y2):
+        return numpy.true_divide(1, y2)
+
+    def _derivative2(self, y1, y2):
+        # f = y1 / y2 = y1 . y2 ^ (-1)
+        #
+        # d_y2 f = y1 . (-1) y2 ^ (-2)
+        #
+        return numpy.true_divide(-y1, y2 ** 2)
+
+
 # The actual uufuncs ...
 
 
@@ -1149,3 +1150,4 @@ unegative = Negative()
 uadd = Add()
 usubtract = Subtract()
 umultiply = Multiply()
+udivide = Divide()
