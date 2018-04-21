@@ -9,7 +9,7 @@ Mit klarer Funktion
 -------------------
 
 *   add -- OK
-*   subtract
+*   subtract -- OK
 *   multiply
 *   divide
 *   true_divide
