@@ -10,7 +10,7 @@ Mit klarer Funktion
 
 *   add -- OK
 *   subtract -- OK
-*   multiply
+*   multiply -- OK
 *   divide
 *   true_divide
 *   floor_divide
