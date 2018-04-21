@@ -1,0 +1,16 @@
+.. vim: syntax=rst
+
+Vergleichsoperatoren
+####################
+
+Gegenwaertig existieren in :mod:`core` zwei Klassen ``Unary`` und ``Binary``, welche unaere und binaere Operationen implementieren.
+
+Beide sind abgeleitet von :class:`uufunc`, welche fuer die Speicherung der enthaltenen numpy ufunc sorgt und eine ``__repr__``-Darstellung liefert.
+
+Die Klasse ``Binary`` geht davon aus, dass es sich um einen funktionellen Zusammenhang handelt, bei welchem *Differentiation* des Ergebnisses bezueglich der Operanden moeglich ist.
+
+Fuer *Vergleichsoperationen* wird schlicht die numpy-Vergleichs-ufunc mit den nominellen Werten der Operanden aufgerufen; das Ergebnis ist nicht fehlerbehaftet.
+
+Die Klasse ``Binary`` ist daher fuer Vergleichsoperationen nicht geeignet.  Man muesste eine *andere* Klasse, bspw. :class:`Comparison` einfuehren, womit einhergeht, dass :class:`Binary` enger gefasst werden muss, moeglicherweise unter dem Namen ``BinaryOperation``.
+
+Wegen all dieser Schwierigkeiten bleiben vorerst die Vergleichsoperationen *unimplementiert*.  Diese Operationen koennen per ``.nominal``-Attribut ausgefuehrt werden.

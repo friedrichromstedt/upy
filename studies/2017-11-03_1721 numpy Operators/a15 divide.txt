@@ -1,0 +1,17 @@
+.. vim: syntax=rst
+
+In der frueheren ``upy``-Implementierung habe ich geschrieben::
+
+    def __div__(self, other):
+        if instance(other, undarray):
+            return self * (1.0 / other)
+        else:
+            return self * (1.0 / numpy.asarray(other))
+
+welches im ersten Ast auf ``undarray.__rdiv__`` zurueckgreift.
+
+``undarray.__rdiv__`` wiederum berechnet den Nennwert als ``other / self.nominal`` und die Ableitung als ``-other / self.nominal ** 2``.
+
+Mithin ist das Verhalten identisch zu dem, bei welchem direkt ``numpy.true_divide`` verwendet wird.
+
+Weder ``upy2.ufloor_divide`` noch ``upy2.utrue_divide`` werden also implementiert, sondern ausschliesslich ``upy2.udivide``, welches sich *stets* wie ``true_divide`` verhaelt (und auch ``numpy.true_divide`` verwendet).
