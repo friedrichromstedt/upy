@@ -12,7 +12,7 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uadd', 'usubtract']
+    'unegative', 'uadd', 'usubtract', 'umultiply']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -513,16 +513,7 @@ class undarray(object):
         return usubtract(self, other)
 
     def __mul__(self, other):
-        if isinstance(other, undarray):
-            return undarray(
-                nominal=(self.nominal * other.nominal),
-                derivatives=[(self, other.nominal), (other, self.nominal)],
-            )
-        else:
-            return undarray(
-                nominal=(self.nominal * other),
-                derivatives=[(self, other)],
-            )
+        return umultiply(self, other)
 
     def __div__(self, other):
         if isinstance(other, undarray):
@@ -577,23 +568,13 @@ class undarray(object):
     #
 
     def __radd__(self, other):
-        # *other* is not an undarray.
-        other=numpy.asarray(other)
-        return undarray(
-            nominal=(other + self.nominal),
-            derivatives=[(self, 1.0)],
-        )
+        return uadd(other, self)
 
     def __rsub__(self, other):
         return usubtract(other, self)
 
     def __rmul__(self, other):
-        # *other* is not an undarray.
-        other=numpy.asarray(other)
-        return undarray(
-            nominal=(other * self.nominal),
-            derivatives=[(self, other)],
-        )
+        return umultiply(other, self)
 
     def __rdiv__(self, other):
         # *other* is not an undarray.
@@ -949,7 +930,7 @@ class undarray(object):
 
         result = undarray(
             nominal=self.nominal.reshape(
-                *reshape_args, **reshape_kwargs,
+                *reshape_args, **reshape_kwargs
             ))
         for dependency in self.dependencies:
             result.append(dependency.reshape(
@@ -1149,6 +1130,17 @@ class Subtract(Binary):
         return -1
 
 
+class Multiply(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.multiply)
+
+    def _derivative1(self, y1, y2):
+        return y2
+
+    def _derivative2(self, y1, y2):
+        return y1
+
+
 # The actual uufuncs ...
 
 
@@ -1156,3 +1148,4 @@ unegative = Negative()
 
 uadd = Add()
 usubtract = Subtract()
+umultiply = Multiply()
