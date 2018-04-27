@@ -144,7 +144,7 @@ class U(upy2.context.Protocol):
         multiple of the standard deviation as defined on
         initialisation time. """
 
-        stddev = numpy.asarray(error) / self.stddevs
+        stddev = numpy.true_divide(error, self.stddevs)
         shape = stddev.shape
         result = undarray(shape=shape, dtype=stddev.dtype)
 
@@ -374,7 +374,14 @@ class undarray(object):
         self.ndim = self.nominal.ndim
 
     def append(self, dependency):
-        assert(self.shape == dependency.shape)
+        if not self.shape == dependency.shape:
+            raise ValueError('Cannot append a Dependency of shape %s '
+                    'to a %s-shaped undarray' %
+                    (dependency.shape, self.shape))
+        if not self.dtype == dependency.dtype:
+            raise ValueError('Cannot append a Dependency of dtype %s '
+                    'to a %s-dtyped undarray' %
+                    (dependency.dtype, self.dtype))
         self.dependencies.append(dependency)
 
     def clear(self, key):
