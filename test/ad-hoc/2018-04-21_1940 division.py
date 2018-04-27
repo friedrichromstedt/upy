@@ -9,6 +9,7 @@ ScientificTypesetter(stddevs=2, precision=2).default()
 
 ua = 10 +- u(2)
 print "ua =", ua
+print "ua.dtype =", ua.dtype
 
 print "Testing uncertainty annihilation:"
 print "(ua / ua).nominal =", (ua / ua).nominal

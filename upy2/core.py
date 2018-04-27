@@ -146,7 +146,7 @@ class U(upy2.context.Protocol):
 
         stddev = numpy.asarray(error) / self.stddevs
         shape = stddev.shape
-        result = undarray(shape=shape)
+        result = undarray(shape=shape, dtype=stddev.dtype)
 
         dependency = upy2.dependency.Dependency(
                 names=upy2.id_generator.get_idarray(shape=shape),
