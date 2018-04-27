@@ -11,8 +11,7 @@ import upy2.context
 #import upy2.printable
 #import warnings
 
-__all__ = ['undarray', 'uzeros', 'asuarray', 'ucopy',
-    'U', 'IntegerU', 'u',
+__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
     'unegative', 'uadd', 'usubtract', 'umultiply', 'udivide']
 
 typesetting_context = upy2.context.byprotocol(
@@ -127,7 +126,7 @@ def ucopy(uarray_like):
 
 # Definition of the "Uncertainty" Protocol:
 
-class UProtocol(upy2.context.Protocol):
+class U(upy2.context.Protocol):
     def __init__(self, stddevs):
         """ "Uncertainty" (``U``) Context Providers provide
         uncertainty *standard deviations* based on *errors*.  The
@@ -145,7 +144,17 @@ class UProtocol(upy2.context.Protocol):
         multiple of the standard deviation as defined on
         initialisation time. """
 
-        raise NotImplementedError("Virtual method called")
+        stddev = numpy.true_divide(error, self.stddevs)
+        shape = stddev.shape
+        result = undarray(shape=shape, dtype=stddev.dtype)
+
+        dependency = upy2.dependency.Dependency(
+                names=upy2.id_generator.get_idarray(shape=shape),
+                derivatives=stddev,
+        )
+        result.append(dependency)
+
+        return result
 
     def __call__(self, error):
         """ Convenience method to provide a short-hand for
@@ -162,57 +171,14 @@ class UProtocol(upy2.context.Protocol):
 
         return self.provide(error)
 
-upy2.context.define(UProtocol)
-
-
-# Protocol Implementations:
-
-
-class U(UProtocol):
-    def provide(self, error):
-        """ Provide floating-point uncertainties. """
-
-        stddev = numpy.true_divide(error, self.stddevs)
-
-        shape = stddev.shape
-        result = undarray(shape=shape, dtype=stddev.dtype)
-        dependency = upy2.dependency.Dependency(
-                names=upy2.id_generator.get_idarray(shape=shape),
-                derivatives=stddev,
-        )
-        result.append(dependency)
-        return result
-
-
-class IntegerU(UProtocol):
-    def provide(self, error):
-        """ Provide integer uncertainties.  The uncertainties will
-        never be shrunken in magnitude. """
-
-        stddev_fp = numpy.true_divide(error, self.stddevs)
-        positive = (stddev_fp > 0)
-        negative = (stddev_fp < 0)
-        plus = numpy.ceil(stddev_fp).astype(numpy.int)
-        minus = numpy.floor(stddev_fp).astype(numpy.int)
-        stddev = plus * positive + minus * negative
-
-        shape = stddev.shape
-        result = undarray(shape=shape, dtype=numpy.int)
-        dependency = upy2.dependency.Dependency(
-                names=upy2.id_generator.get_idarray(shape=shape),
-                derivatives=stddev,
-        )
-        result.append(dependency)
-        return result
-
+upy2.context.define(U)
 
 # Access to the "U" Context:
 
-U_context = upy2.context.byprotocol(UProtocol)
+U_context = upy2.context.byprotocol(U)
 
 def u(error):
     return U_context.current().provide(error)
-
 
 #
 # The central undarray class ...
