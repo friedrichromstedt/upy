@@ -11,7 +11,7 @@ Mit klarer Funktion
 *   add -- OK
 *   subtract -- OK
 *   multiply -- OK
-*   divide
+*   divide -- OK
 *   true_divide
 *   floor_divide
 
