@@ -7,6 +7,9 @@ upy2.install_numpy_operators()
 U(2).default()
 ScientificTypesetter(stddevs=2, precision=2).default()
 
+# This script ceases to produce integer errors since b35d02b77c8.  This
+# is not a bug, but a feature.
+
 ua = u(2)
 print "ua =", ua
 print "ua.nominal =", ua.nominal
