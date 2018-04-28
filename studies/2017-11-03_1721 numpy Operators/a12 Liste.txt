@@ -27,7 +27,7 @@ Mit klarer Funktion
 *   negative -- OK
 *   conjugate
 *   sqrt
-*   power
+*   power -- OK, unverified
 *   floor
 *   ceil
 
