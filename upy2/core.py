@@ -403,11 +403,11 @@ class undarray(object):
         # Check dtype compatibility ...
 
         derivative_dtype = numpy.result_type(derivative)
-        dependency_type = numpy.result_type(
+        dependency_dtype = numpy.result_type(
                 other.dtype,
                 derivative_dtype,
         )
-        if not numpy.can_cast(dependency_type, self.dtype):
+        if not numpy.can_cast(dependency_dtype, self.dtype):
             raise ValueError(
                     'Cannot make a %s-dtype undarray depend on a '
                     '%s-dtype undarray with a derivative of dtype %s.'
