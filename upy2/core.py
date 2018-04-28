@@ -526,45 +526,7 @@ class undarray(object):
         return udivide(self, other)
 
     def __pow__(self, other):
-        # f = b ^ x         b = self    x = other
-        #
-        #
-        # df
-        # -- = d_b (b ^ x)
-        # db
-        #    = d_b (e ^ (ln b . x))
-        #
-        #    =      e ^ (x ln b) . d_b (x ln b)
-        #
-        #    =      b ^ x . (x / b)
-        #
-        #    =      b ^ (x - 1) . x
-        #
-        #
-        # df
-        # -- = d_x (b ^ x)
-        # dx
-        #    = d_x (e ^ (x ln b))
-        #
-        #    =      e ^ (x ln b) . d_x(x ln b)
-        #
-        #    =      b ^ x . (ln b)
-        if isinstance(other, undarray):
-            self_pow_other = self.nominal ** other.nominal
-            return undarray(
-                nominal=self_pow_other,
-                derivatives=\
-                    [(self, self.nominal ** (other.nominal - 1) * \
-                        other.nominal),
-                     (other, self_pow_other * numpy.log(self.nominal))],
-            )
-
-        else:
-            other = numpy.asarray(other)
-            return undarray(
-                nominal=(self.nominal ** other),
-                derivatives=[(self, self.nominal ** (other - 1) * other)],
-            )
+        return upower(self, other)
 
     #
     # Reflected binary arithmetics ...
@@ -583,14 +545,8 @@ class undarray(object):
         return udivide(other, self)
 
     def __rpow__(self, other):
-        # *other* is not an undarray.
-        other=numpy.asarray(other)
-        other_pow_self = other ** self.nominal
-        # See :meth:`__pow__`.
-        return undarray(
-            nominal=other_pow_self,
-            derivatives=[(self, other_pow_self * numpy.log(other))],
-        )
+        # Return: other ** self
+        return upower(other, self)
 
     #
     # Augmented arithmetics will be emulated ...
@@ -1149,6 +1105,45 @@ class Divide(Binary):
         return numpy.true_divide(-y1, y2 ** 2)
 
 
+class Power(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.power)
+
+    def _derivative1(self, y1, y2):
+        # f = b ^ x
+        #
+        # Return: d_b (b ^ x) = d_y1 (y1 ^ y2)
+        #
+        #
+        # df
+        # -- = d_b (b ^ x)
+        # db
+        #    = d_b (e ^ (ln b . x))
+        #
+        #    =      e ^ (x ln b) . d_b (x ln b)
+        #
+        #    =      b ^ x . (x / b)
+        #
+        #    =      b ^ (x - 1) . x
+        return y2 * (y1 ** (y2 - 1))
+
+    def _derivative2(self, y1, y2):
+        # f = b ^ x
+        #
+        # Return: d_x (b ^ x) = d_y2 (y1 ^ y2)
+        #
+        #
+        # df
+        # -- = d_x (b ^ x)
+        # dx
+        #    = d_x (e ^ (x ln b))
+        #
+        #    =      e ^ (x ln b) . d_x(x ln b)
+        #
+        #    =      b ^ x . (ln b)
+        return (y1 ** y2) * numpy.log(y1)
+
+
 # The actual uufuncs ...
 
 
@@ -1158,3 +1153,5 @@ uadd = Add()
 usubtract = Subtract()
 umultiply = Multiply()
 udivide = Divide()
+
+upower = Power()
