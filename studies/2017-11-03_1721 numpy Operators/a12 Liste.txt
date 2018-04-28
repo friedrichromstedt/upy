@@ -31,6 +31,17 @@ Mit klarer Funktion
 *   floor
 *   ceil
 
+Moeglicherweise zu definierende Methoden:
+
+*   cos, arccos
+*   sin, arcsin
+*   tan, arctan
+*   cot, arccot
+*   sqrt
+*   log
+*   log2
+*   conjugate
+
 
 Mit noch unklarer Funktion
 --------------------------
