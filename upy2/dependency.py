@@ -98,7 +98,7 @@ class Dependency:
         return (self.names != 0) * self.derivatives ** 2
 
     #
-    # Selecting real or imaginary part ...
+    # Complex numbers ...
     #
     
     @property
@@ -124,6 +124,15 @@ class Dependency:
         return Dependency(
             names=self.names.copy(),
             derivatives=self.derivatives.imag.copy(),
+        )
+
+    def conj(self):
+        """ Returns the complex conjugate. """
+
+        return Dependency(
+            names=self.names.copy(),
+            derivatives=self.derivatives.conj(),
+                # This copies the real component.
         )
 
     #

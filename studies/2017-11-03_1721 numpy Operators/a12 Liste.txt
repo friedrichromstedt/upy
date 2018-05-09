@@ -22,7 +22,7 @@ Mit klarer Funktion
 *   less
 *   less_equal
 
-*   absolute -- OK, implemented by :meth:`undarray.__abs__`
+*   absolute -- OK, implemented by :meth:`undarray.__abs__`, unverified
 *   positive
 *   negative -- OK
 *   conjugate

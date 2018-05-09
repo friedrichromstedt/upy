@@ -440,7 +440,7 @@ class undarray(object):
                 self.append(broadcasted_source_remnant)
 
     #
-    # Properties ...
+    # Complex numbers ...
     #
 
     @property
@@ -462,6 +462,18 @@ class undarray(object):
         for dependency in self.dependencies:
             result.append(dependency.imag)
         return result
+
+    def conj(self):
+        """ Returns the conjugate of *self*. """
+
+        result = undarray(self.nominal.conj())
+        for dependency in self.dependencies:
+            result.append(dependency.conj())
+        return result
+
+    #
+    # Uncertainty properties ...
+    #
 
     @property
     def variance(self):
@@ -565,46 +577,7 @@ class undarray(object):
         return unegative(self)
 
     def __abs__(self):
-        absolute_value = numpy.abs(self.nominal)
-        nominal_prepared = self.nominal + (self.nominal == 0)
-        normalisation_factor = absolute_value / nominal_prepared
-            # Consider *self.nominal* as 0 + 1j.  Then the absolute
-            # value (1.0) results from multiplying *self.nominal* with
-            # 0 - 1j.  Hence the normalised undarray depends on the
-            # previous *self.nominal* with a derivative of this 0 - 1j
-            # figure.  This value is precisely the
-            # *normalisation_factor* defined above: absolute value
-            # divided by *self.nominal*.
-            #
-            # The reader might want to verify this finding by more
-            # examples: 1 + 1j, 5j, -5, ...
-            #
-            # When an element of self.nominal is zero, its absolute
-            # value is zero as well, and the 1.0 introduced in
-            # ``nominal_prepared`` is effectless:  The normalisation
-            # factor turns out as zero.
-        return undarray(
-            nominal=absolute_value,
-            derivatives=[(self, normalisation_factor)],
-                # Notice that *normalisation_factor* is not a scalar.
-        )
-            # Another notation for the same outcome would be::
-            #
-            #   return (self * normalisation_factor).real
-            #
-            # with the ``.real`` statement to ignore the negligible
-            # imaginary components of the product.
-            #
-        # For complex undarrays, the ``absolute_value`` is guaranteed
-        # to be real-valued.  However, the dependencies might turn out
-        # complex, when their phase differs from the phase of
-        # ``self.nominal``.
-        #
-        #    Even in case the phases match, the resulting Dependency
-        # derivatives turn out complex, although with very small
-        # imaginary component.  In such a case, the user might
-        # request the ``.real`` property of ``self``.
-
+        return uabsolute(self)
 #X?        """This works for real-valued undarrays."""
 #X?        
 #X?        # Calculate an inversion mask ...
@@ -982,7 +955,7 @@ class uufunc(object):
         self.ufunc = ufunc
 
     def __repr__(self):
-        return "<upy %r uufunc>" % self.ufunc
+        return "<%r uufunc>" % self.ufunc
 
 
 class Unary(uufunc):
@@ -1049,6 +1022,72 @@ class Binary(uufunc):
 
 
 # Protocol (Unary and Binary) implementations ...
+
+
+def myabs(y):
+    """ This function calculates the absolute value, and returns:
+
+    *   A complex ndarray with negligible imaginary component for
+        complex input;
+    *   A float ndarray also for integer input.
+
+    The second property is an (unwanted) side-effect. """
+
+    ya = numpy.asarray(y)
+    return numpy.sqrt(ya * ya.conj())
+
+class Absolute(Unary):
+    """ This implementation is probably flawed.  It shouldn't return
+    Dependencies with non-zero imaginary components, as the absolute
+    value is constrained to real numbers, and changing the input in
+    any way never breaks this constraint. """
+
+    def __init__(self):
+        Unary.__init__(self, myabs)
+            # We use :func:`myabs` because it returns complex-valued
+            # ndarrays on complex-valued inputs.  This is necessary to
+            # make sure the resulting undarray can hold the complex
+            # Dependencies (undarray derives its dtype from the
+            # nominal value).
+
+    def _derivative(self, y):
+        absolute_value = numpy.abs(y)
+        absolute_prepared = absolute_value + (absolute_value == 0)
+        nominal_prepared = y + (y == 0)
+        normalisation_factor = absolute_prepared / nominal_prepared
+            # For zero-valued input, the normalisation factor turns
+            # out as 1.  This is important to make sure that the
+            # dependencies are propagated without change.  For
+            # non-zero input, the normalisation factor is always a
+            # (possibly complex) number of unit magnitude.
+            #
+            # For example, consider *y* as ``0 + 2j``.  Then the
+            # absolute value (2.0) results from multiplying *y* with
+            # ``0 - 1j``.  Hence the normalised undarray depends on
+            # the operand with a derivative of this ``0 - 1j`` figure.
+            # This value is precisely the *normalisation_factor*
+            # defined above: absolute value divided by *y*
+            # (essentially).
+            #
+            # The reader might want to examine some more examples: ``1
+            # + 1j``, ``5j``, ``-5``, ...
+        return normalisation_factor
+            # Another notation for the same outcome would be::
+            #
+            #   return (self * normalisation_factor).real
+            #
+            # with the ``.real`` statement to ignore the negligible
+            # imaginary components of the product.
+            #
+        # For complex undarrays, the ``absolute_value`` is guaranteed
+        # to be real-valued.  However, the dependencies might turn out
+        # complex, when their phases differ from the phase of
+        # ``self.nominal``.
+        #
+        #    Even in case the phases match, the resulting Dependency
+        # derivatives turn out complex, although with very small
+        # imaginary component.  In such a case, the user might
+        # request the ``.real`` property of ``self``.
 
 
 class Negative(Unary):
@@ -1150,6 +1189,7 @@ class Power(Binary):
 
 
 unegative = Negative()
+uabsolute = Absolute()
 
 uadd = Add()
 usubtract = Subtract()
