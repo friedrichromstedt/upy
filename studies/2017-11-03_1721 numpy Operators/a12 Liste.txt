@@ -12,7 +12,7 @@ Mit klarer Funktion
 *   subtract -- OK
 *   multiply -- OK
 *   divide -- OK
-*   true_divide
+*   true_divide -- OK, uses udivide
 *   floor_divide
 
 *   equal
@@ -22,7 +22,7 @@ Mit klarer Funktion
 *   less
 *   less_equal
 
-*   absolute
+*   absolute -- OK, implemented by :meth:`undarray.__abs__`
 *   positive
 *   negative -- OK
 *   conjugate

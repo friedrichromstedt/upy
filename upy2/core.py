@@ -12,7 +12,9 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uadd', 'usubtract', 'umultiply', 'udivide']
+    'unegative',
+    'uadd', 'usubtract', 'umultiply', 'udivide',
+    'upower']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
