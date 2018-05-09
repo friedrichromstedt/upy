@@ -11,7 +11,7 @@ Mit klarer Funktion
 *   add -- OK
 *   subtract -- OK
 *   multiply -- OK
-*   divide -- OK
+*   divide -- OK; udivide always performs true division
 *   true_divide -- OK, uses udivide
 *   floor_divide
 
