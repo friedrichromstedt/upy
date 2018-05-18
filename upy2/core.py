@@ -463,13 +463,18 @@ class undarray(object):
             result.append(dependency.imag)
         return result
 
-    def conj(self):
+    def conjugate(self):
         """ Returns the conjugate of *self*. """
 
         result = undarray(self.nominal.conj())
         for dependency in self.dependencies:
             result.append(dependency.conj())
         return result
+
+    def conj(self):
+        """ Short-hand for ``self.conjugate()``. """
+
+        return self.conjugate()
 
     #
     # Uncertainty properties ...

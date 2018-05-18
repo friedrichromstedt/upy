@@ -8,7 +8,9 @@ U(2).default()
 ScientificTypesetter(stddevs=2, precision=2).default()
 
 def absolute(x):
-    return (x * x.conj()) ** 0.5
+    return (x * x.conjugate()) ** 0.5
+        # This is possibly complex (but the imaginary component
+        # vanishes in all cases covered by this test).
 
 print "absolute(1 +- u(0.2)) ="
 print absolute(1 +- u(0.2))
@@ -37,3 +39,35 @@ print "absolute(1 + 1j +- u(0.2), real and imag ="
 print UD1.real, UD1.imag
 print "absolute(1 + 1j +- u(0.2j), real and imag ="
 print UD2.real, UD2.imag
+
+numpy.random.seed(0)
+def r():
+    """ Return a random number from (-1, +1). """
+    return(numpy.random.random() - numpy.random.random())
+def zr():
+    """ Return a complex number with real and imag given by ``r()``. """
+    return(r() + 1j * r())
+ue = zr() +- u(zr())
+UE = absolute(ue)
+print "absolute(zrandom +- zrandom), real and imag ="
+print UE.real, UE.imag
+uf = zr() +- u(zr()) +- u(zr())
+UF = absolute(uf)
+print "absolute(zrandom +- zrandom +- zrandom), real and imag ="
+print UF.real, UF.imag
+ug = zr() +- u(zr()) +- u(zr()) +- u(zr())
+UG = absolute(ug)
+print "absolute(zrandom +- zrandom +- zrandom +- zrandom), real and imag ="
+print UG.real, UG.imag
+
+uh = u(1)
+UH = absolute(uh)
+# This yields RuntimeWarnings.  The following then fails:
+# print "absolute(0 +- 1), real and imag ="
+# print UH.real, UH.imag
+print "nominal and stddev of absolute(0 +- 1) ="
+print UH.real.nominal, UH.real.stddev
+    # The stddev is nan
+
+print "absolute(1j) =", absolute(1j)
+print "absolute(1) =", absolute(1)
