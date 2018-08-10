@@ -207,7 +207,7 @@ Erneute Berechnung von ``uabs = squ ** 0.5``
 Verschwinden des Imaginaerteils von ``uabs``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Wir fordern o.B.d.A. ``A, U > 0``.
+Wir fordern ``A > 0`` und ``U >= 0``.
 
 In [:115] hat sich ergeben::
 
@@ -221,7 +221,7 @@ Wir berechnen::
 
     uabs = squ ** 0.5
 
-Die Instruktionne in ``Binary.__call__`` sind:
+Die Instruktionen in ``Binary.__call__`` sind:
 
 1.  ``x1 = squ`` und ``x2 = 0.5``, also ``y1 = squ.nominal = A ^ 2`` und ``y2 = 0.5``.  ``result = undarray(y1 ** y2) = undarray(A)``.
 
@@ -237,9 +237,9 @@ Die Instruktionne in ``Binary.__call__`` sind:
 
     a.  ``source = squ.dependencies[0] == {2 mu A U)``.
 
-    b.  ``source_remnant = source * derivative == {2 my A U} * (0.5 / A) == {my A U / A} = {mu U}``.
+    b.  ``source_remnant = source * derivative == {2 mu A U} * (0.5 / A) == {my A U / A} = {mu U}``.
 
-    c.  ``result.append(source_remnant)`` (wenn man dsa Broadcasting von ``source_remnant`` auf den *shape* von ``result`` vernachlaessigt).
+    c.  ``result.append(source_remnant)`` (wenn man das Broadcasting von ``source_remnant`` auf den *shape* von ``result`` vernachlaessigt).
 
 Es ergibt sich also insgesamt::
 
@@ -249,7 +249,7 @@ Da ``A``, ``mu`` und ``U`` allesamt reelle Zahlen sind, kann eine Varianz und ei
 
     Var(uabs) = (mu U) ^ 2
 
-und fuer die Standardabweichung (man beachte dass ``U > 0`` vorausgesetzt wurde)::
+und fuer die Standardabweichung (man beachte dass ``U >= 0`` vorausgesetzt wurde)::
 
     uabs.stddev = |mu| U
 
@@ -269,13 +269,9 @@ projiziert dann fuer die *Abhaengigkeit* von ``uabs`` den Vektor von ``u`` in de
 
     uabs = A +- (mu U)
 
-Die Vektoren von ``u`` und ``a`` weisen in der komplexen Zahlenebene stets in dieselbe Richtung wie ``exp(i phiu)`` und ``exp(i phia)``, da ``A, U > 0`` vorausgesetzt wurde.
+Die Vektoren von ``u`` und ``a`` weisen in der komplexen Zahlenebene stets in dieselbe Richtung wie ``exp(i phiu)`` und ``exp(i phia)``, wenn ``A > 0`` bzw. ``U > 0`` gilt.
 
-
-Implikation auf den Fall ``A = 0``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Falls ``A == 0`` gilt, kann ``phia`` beliebige Werte annehmen.  Die *Abhaengigkeit* von ``uabs`` ist damit ebenso nicht laenger eindeutig bestimmt.  Das Fehlgehen des Algorithmus zur Berechnung der Unsicherheit von ``uabs`` ist mit dieser Beobachtung in Einklang: Der Algorithmus *kann* gar nicht ein richtiges Ergebnis liefern, *weil es kein solches gibt*!
+Falls ``A == 0`` gilt, kann ``phia`` beliebige Werte annehmen.  Die *Abhaengigkeit* von ``uabs`` ist damit ebenso nicht laenger eindeutig bestimmt.  Das Fehlgehen des Algorithmus zur Berechnung der Unsicherheit von ``uabs`` ist mit der Beliebigkeit von ``phia`` in Einklang: Der Algorithmus *kann* gar nicht ein richtiges Ergebnis liefern, *weil es kein solches gibt*!
 
 Falls ``U == 0``, kann analog ``phiu`` beliebige Werte annehmen; auch in diesem Fall ist ``mu`` nicht laenger bestimmt.  Da ``U == 0`` angenommen wurde, ist die Projektion in diesem Fall stets null, sodass die Unsicherheit von ``uabs`` trotzdem als Null bestimmt werden kann (``mu U == 0`` fuer beliebige ``mu``, wenn ``U == 0`` gilt).
 
@@ -301,4 +297,10 @@ Im Falle dass ``A < 0``, ergibt sich::
 
 Auch dies stellt dann die Projektion auf ``a`` dar, dessen Richtung in der komplexen Zahlenebene der von ``exp(i phia)`` entgegengesetzt ist.
 
-In allen Faellen stellt also der Term [:284] die Projektion des Vektors von ``u`` in der komplexen Zahlenebene auf den von ``a`` dar.
+In allen Faellen stellt also der Term [:286] die Projektion des Vektors von ``u`` in der komplexen Zahlenebene auf den von ``a`` dar.
+
+..  Todo:
+
+    1.  "Richtung" und "Projektion" sollten besser gefasst werden, denn der *Winkel* ist nur bis auf Vielfache von ``2 pi`` bestimmt.  Vielleicht kann man statt des Winkels ``exp(i phi)`` heranziehen.
+
+    2.  Die Randfaelle ``U == 0`` und ``A == 0`` sollten klarer behandelt werden.
