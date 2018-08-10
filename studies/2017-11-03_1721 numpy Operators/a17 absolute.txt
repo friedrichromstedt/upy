@@ -112,7 +112,7 @@ Bei in der komplexen Ebene orthogonalen ``a`` und ``u`` resultiert also ``+- 0``
 
 Insgesamt ergibt sich mit der Benennung ``mu = cos(phia - phiu)``::
 
-    squ = ua * ua.conj() == |a| ^ 2 +- 2 mu A U
+   squ = ua * ua.conj() == |a| ^ 2 +- 2 mu A U
 
 Bei ``A == 0`` ergibt sich *stets* ``0 +- 0``.
 
@@ -122,7 +122,7 @@ Beispiele:
 
         squ = 100 +- 40
 
-#.  ``X exp(i phix)`` bleibt sich gleich, wenn das Vorzeichen von ``X`` umgekehrt wird und zu ``phix`` ein Summand ``pi`` oder ``-pi`` hinzutritt.  Wendet man dies auf ``u`` and ergibt sich: ``A = 10``, ``U = -2``, ``mu = -1.0`` und das Ergebnis bleibt ungeaendert::
+#.  ``X exp(i phix)`` bleibt sich gleich, wenn das Vorzeichen von ``X`` umgekehrt wird und zu ``phix`` ein Summand ``pi`` oder ``-pi`` hinzutritt.  Wendet man dies auf ``u`` an ergibt sich: ``A = 10``, ``U = -2``, ``mu = -1.0`` und das Ergebnis bleibt ungeaendert::
 
         squ = 100 +- 40
 
@@ -191,3 +191,114 @@ Die Darstellung einer komplexen Zahl ``z`` als ``z = Z exp(i phiz)`` mit *reelle
 Fordert man ``A > 0`` und ``U > 0``, so gilt::
 
     uabs = A +- (mu U)
+
+
+.. rubric:: Freitag, d. 10. August 2018, 17:06 Uhr in KH
+
+
+1.  Neudurchrechnung mit ``A, U > 0``
+
+2.  Inbezugsetzung zum Ergebnis *ohne* ``A, U > 0``
+
+
+Erneute Berechnung von ``uabs = squ ** 0.5``
+--------------------------------------------
+
+Verschwinden des Imaginaerteils von ``uabs``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Wir fordern o.B.d.A. ``A, U > 0``.
+
+In [:115] hat sich ergeben::
+
+    squ == |a| ^ 2 +- 2 mu A U
+
+Also auch::
+
+    squ == A ^ 2 +- 2 mu A U
+
+Wir berechnen::
+
+    uabs = squ ** 0.5
+
+Die Instruktionne in ``Binary.__call__`` sind:
+
+1.  ``x1 = squ`` und ``x2 = 0.5``, also ``y1 = squ.nominal = A ^ 2`` und ``y2 = 0.5``.  ``result = undarray(y1 ** y2) = undarray(A)``.
+
+2.  Es wird nur bzgl. ``x1`` ein ``.depend``-Aufruf durchgefuehrt.  Dabei ist die Ableitung::
+
+        y2 * (y1 ** (y2 - 1)) == 0.5 * y1 ** -0.5 == 0.5 / A
+
+    Dann wird ausgefuehrt::
+
+        result.depend(other=squ, derivative=(0.5 / A))
+
+    Im ``.depend``-Aufurf gilt dann:
+
+    a.  ``source = squ.dependencies[0] == {2 mu A U)``.
+
+    b.  ``source_remnant = source * derivative == {2 my A U} * (0.5 / A) == {my A U / A} = {mu U}``.
+
+    c.  ``result.append(source_remnant)`` (wenn man dsa Broadcasting von ``source_remnant`` auf den *shape* von ``result`` vernachlaessigt).
+
+Es ergibt sich also insgesamt::
+
+    uabs = A +- (mu U)
+
+Da ``A``, ``mu`` und ``U`` allesamt reelle Zahlen sind, kann eine Varianz und eine Standardabweichung von ``uabs`` berechnet werden.  Es ergibt sich fuer die Varianz::
+
+    Var(uabs) = (mu U) ^ 2
+
+und fuer die Standardabweichung (man beachte dass ``U > 0`` vorausgesetzt wurde)::
+
+    uabs.stddev = |mu| U
+
+
+Interpretation des Terms ``(mu U)`` in [:246]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Es wurde am Anfang gesetzt::
+
+    a = A exp(i phia)
+
+mit ``A > 0``.  ``A`` ist stets eindeutig bestimmt.  Fuer ``A > 0`` ist auch ``phia`` bis auf ein Vielfaches von ``2 pi`` eindeutig bestimmt.  Die Berechnung von ``mu`` (siehe oben [:113])::
+
+    mu = cos(phia - phiu)
+
+projiziert dann fuer die *Abhaengigkeit* von ``uabs`` den Vektor von ``u`` in der komplexen Ebene auf die Richtung des Vektors von ``a`` in der komplexen Zahlenebene::
+
+    uabs = A +- (mu U)
+
+Die Vektoren von ``u`` und ``a`` weisen in der komplexen Zahlenebene stets in dieselbe Richtung wie ``exp(i phiu)`` und ``exp(i phia)``, da ``A, U > 0`` vorausgesetzt wurde.
+
+
+Implikation auf den Fall ``A = 0``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Falls ``A == 0`` gilt, kann ``phia`` beliebige Werte annehmen.  Die *Abhaengigkeit* von ``uabs`` ist damit ebenso nicht laenger eindeutig bestimmt.  Das Fehlgehen des Algorithmus zur Berechnung der Unsicherheit von ``uabs`` ist mit dieser Beobachtung in Einklang: Der Algorithmus *kann* gar nicht ein richtiges Ergebnis liefern, *weil es kein solches gibt*!
+
+Falls ``U == 0``, kann analog ``phiu`` beliebige Werte annehmen; auch in diesem Fall ist ``mu`` nicht laenger bestimmt.  Da ``U == 0`` angenommen wurde, ist die Projektion in diesem Fall stets null, sodass die Unsicherheit von ``uabs`` trotzdem als Null bestimmt werden kann (``mu U == 0`` fuer beliebige ``mu``, wenn ``U == 0`` gilt).
+
+Fuer den Nominalwert ``A`` von ``uabs`` ist die Unsicherheit ``u`` generell irrelevant.
+
+
+Inbezugsetzung zum Ergebnis [:171] *ohne* ``U, A > 0``
+------------------------------------------------------
+
+In [:171] wurde angegeben::
+
+    uabs = |a| +- (mu U sign(A))
+
+Wenn ``A > 0``, ist dies von der Form::
+
+    uabs = |a| +- (mu U)
+
+und stellt die Projektion von ``u`` auf ``a`` dar.  Das *Vorzeichen* von ``U`` wird in das Vorzeichen der Projektion *vererbt*.  Die Richtungsumkehr von ``u`` in der komplexen Zahlenebene bei Vorzeichenumkehr von ``U`` fuehrt zum Vorzeichenumkehr der Projektion von ``u`` auf ``a``.
+
+Im Falle dass ``A < 0``, ergibt sich::
+
+    uabs = |a| +- (-mu U A)
+
+Auch dies stellt dann die Projektion auf ``a`` dar, dessen Richtung in der komplexen Zahlenebene der von ``exp(i phia)`` entgegengesetzt ist.
+
+In allen Faellen stellt also der Term [:284] die Projektion des Vektors von ``u`` in der komplexen Zahlenebene auf den von ``a`` dar.
