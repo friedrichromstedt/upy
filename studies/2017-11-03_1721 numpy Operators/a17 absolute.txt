@@ -233,11 +233,11 @@ Die Instruktionen in ``Binary.__call__`` sind:
 
         result.depend(other=squ, derivative=(0.5 / A))
 
-    Im ``.depend``-Aufurf gilt dann:
+    Im ``.depend``-Aufruf gilt dann:
 
-    a.  ``source = squ.dependencies[0] == {2 mu A U)``.
+    a.  ``source = squ.dependencies[0] == {2 mu A U}``.
 
-    b.  ``source_remnant = source * derivative == {2 mu A U} * (0.5 / A) == {my A U / A} = {mu U}``.
+    b.  ``source_remnant = source * derivative == {2 mu A U} * (0.5 / A) == {mu A U / A} = {mu U}``.
 
     c.  ``result.append(source_remnant)`` (wenn man das Broadcasting von ``source_remnant`` auf den *shape* von ``result`` vernachlaessigt).
 
