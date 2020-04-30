@@ -4,22 +4,18 @@ long_description = \
 r"""Physical measurements are precise only up to a certain
 *uncertainty*.  Measurement results are thus called *uncertain
 quantities*.
-
-When performing calculations with uncertain quantities, the outcomes
+ When performing calculations with uncertain quantities, the outcomes
 of the calculations will feature a certain uncertainty as well.  The
 uncertainty of the results can be expressed in terms of the
 uncertainties of the operands involved.
-
-The quantification of uncertainties resulting from a mathematical
+ The quantification of uncertainties resulting from a mathematical
 operation involving uncertain operands is called *uncertainty
 propagation*.
-
-Here I am proposing a Python package to define uncertain
+ Here I am proposing a Python package to define uncertain
 operands, to carry out calculations using such operands *with
 uncertainty propagation*, and to provide string representations of
 uncertain quantities involved.
-
-Complex uncertain values are supported; net uncertainties can be given
+ Complex uncertain values are supported; net uncertainties can be given
 for real-valued quantities.  Uncertain values can be arrays; each of
 the elements is independent of the other elements in an array.  When
 requesting string representations of uncertain quantities, the typeset
@@ -27,14 +23,12 @@ results can be influenced by the number of standard deviations to use
 and by the precision of the decimal fractions with respect to the
 uncertainty; when typesetting arrays with uncertainty, the decimal
 fractions are aligned to improve readability of the results.
-
-``upy`` uses *Algorithmic Differentiation* (also known as *Automatic
+ ``upy`` uses *Algorithmic Differentiation* (also known as *Automatic
 Differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
 uncertain values or any numeric Python or ``numpy`` objects.  A broad
 range of mathematical operations is supported.
-
-``upy`` provides several syntactic conventions appropriate to the
+ ``upy`` provides several syntactic conventions appropriate to the
 subject.  For instance, defining uncertain quantities is possible by
 writing:
 
