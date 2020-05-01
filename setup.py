@@ -10,8 +10,8 @@ uncertainty of a result depends on the uncertainties of the operands
 involved.  The quantification of uncertainties resulting from a
 mathematical operation involving uncertain operands is called
 *uncertainty propagation*.
- From a programmer's viewpoint, uncertainties might be associated with
-the respective nominal values, such that the propagation of
+ From a programmer's point of view, uncertainties might be associated
+with the respective nominal values, such that the propagation of
 uncertainties happens automatically, and existing algorithms can be
 re-used with the *uncertain quantities* as arguments.
  Here I am proposing a Python package to define uncertain operands, to
