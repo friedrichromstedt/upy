@@ -2,27 +2,32 @@ from setuptools import setup
 
 long_description = \
 r"""Physical measurements are precise only up to a certain
-*uncertainty*.  Measurement results are thus called *uncertain
+*uncertainty*.  Such measurement results are thus called *uncertain
 quantities*.
  When performing calculations with uncertain quantities, the outcomes
 of the calculations will feature a certain uncertainty as well.  The
-uncertainty of the results can be expressed in terms of the
-uncertainties of the operands involved.
- The quantification of uncertainties resulting from a mathematical
-operation involving uncertain operands is called *uncertainty
-propagation*.
- Here I am proposing a Python package to define uncertain
-operands, to carry out calculations using such operands *with
-uncertainty propagation*, and to provide string representations of
-uncertain quantities involved.
- Complex uncertain values are supported; net uncertainties can be given
-for real-valued quantities.  Uncertain values can be arrays; each of
-the elements is independent of the other elements in an array.  When
-requesting string representations of uncertain quantities, the typeset
-results can be influenced by the number of standard deviations to use
-and by the precision of the decimal fractions with respect to the
-uncertainty; when typesetting arrays with uncertainty, the decimal
-fractions are aligned to improve readability of the results.
+uncertainty of a result depends on the uncertainties of the operands
+involved.  The quantification of uncertainties resulting from a
+mathematical operation involving uncertain operands is called
+*uncertainty propagation*.
+ From a programmer's viewpoint, uncertainties might be associated with
+the respective nominal values, such that the propagation of
+uncertainties happens automatically, and existing algorithms can be
+re-used with the *uncertain quantities* as arguments.
+ Here I am proposing a Python package to define uncertain operands, to
+carry out calculations using such operands *with uncertainty
+propagation*, and to provide string representations of uncertain
+quantities involved.
+ Complex uncertain values are supported; net uncertainties can be
+given for real-valued quantities.  The objects holding uncertain
+values have array properties, though scalar arrays can be used;
+elements of an array behave as if they were uncertain quantities on
+their own.  When requesting a string representation of an uncertain
+quantity, the typeset result can be influenced by the number of
+standard deviations to use and by the precision of the decimal
+fractions with respect to the uncertainty; when typesetting arrays
+with uncertainty, the decimal fractions are aligned to improve
+readability of the results.
  ``upy`` uses *Algorithmic Differentiation* (also known as *Automatic
 Differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
@@ -36,9 +41,12 @@ writing:
 
     uvalue = nominal +- u(uncertainty)
 
-All functionality is thread safe, and suited both for use in the
-interactive Python shell as well as in programs for numerical
-analysis. """
+Uncertain values constructed in this way will be independent of each
+other with respect to their uncertainties; ``upy`` will keep track of
+the correlations arising from combination of uncertain quantities in
+mathematical operations.  All functionality is thread safe, and suited
+both for use in the interactive Python shell as well as in programs
+for numerical analysis. """
 
 setup(
     name='upy',
