@@ -1,9 +1,8 @@
 from setuptools import setup
 
 long_description = \
-r"""Physical measurements are precise only up to a certain
-*uncertainty*.  Such measurement results are thus called *uncertain
-quantities*.
+r"""Measurements are precise only up to a certain *uncertainty*.  Such
+measurement results are thus called *uncertain quantities*.
  When performing calculations with uncertain quantities, the 
 uncertainties of the results depend on the uncertainties of the
 operands involved.  The quantification of uncertainties resulting from

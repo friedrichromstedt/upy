@@ -1,15 +1,13 @@
-Physical measurements are precise only up to a certain *uncertainty*.
-Such measurement results are thus called *uncertain quantities*.  When
+Measurements are precise only up to a certain *uncertainty*.  Such
+measurement results are thus called *uncertain quantities*.  When
 performing calculations with uncertain quantities, the uncertainties
 of the results depend on the uncertainties of the operands involved.
 The quantification of uncertainties resulting from a mathematical
 operation involving uncertain operands is called *uncertainty
-propagation*.  The quantification of uncertainties resulting from a
-mathematical operation involving uncertain operands is called
-*uncertainty propagation*.  From a programmer's point of view,
-uncertainties might be associated with the respective nominal values,
-such that the propagation of uncertainties happens automatically, and
-existing algorithms can be re-used with the *uncertain quantities* as
+propagation*.  From a programmer's point of view, uncertainties might
+be associated with the respective nominal values, such that the
+propagation of uncertainties happens automatically, and existing
+algorithms can be re-used with the *uncertain quantities* as
 arguments.  Here I am proposing a Python package to define uncertain
 operands, to carry out calculations using such operands *with
 uncertainty propagation*, and to provide string representations of
