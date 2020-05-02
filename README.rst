@@ -1,9 +1,10 @@
 Physical measurements are precise only up to a certain *uncertainty*.
 Such measurement results are thus called *uncertain quantities*.  When
-performing calculations with uncertain quantities, the outcomes of the
-calculations will feature certain uncertainties as well.  The
-uncertainty of a result depends on the uncertainties of the operands
-involved.  The quantification of uncertainties resulting from a
+performing calculations with uncertain quantities, the uncertainties
+of the results depend on the uncertainties of the operands involved.
+The quantification of uncertainties resulting from a mathematical
+operation involving uncertain operands is called *uncertainty
+propagation*.  The quantification of uncertainties resulting from a
 mathematical operation involving uncertain operands is called
 *uncertainty propagation*.  From a programmer's point of view,
 uncertainties might be associated with the respective nominal values,
