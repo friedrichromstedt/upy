@@ -1,4 +1,4 @@
-Measurements are precise only up to a certain *uncertainty*.  Such
+Measurements are precise only up to a particular *uncertainty*.  Such
 measurement results are thus called *uncertain quantities*.  When
 performing calculations with uncertain quantities, the uncertainties
 of the results depend on the uncertainties of the operands involved.
@@ -14,8 +14,8 @@ uncertainty propagation*, and to provide string representations of
 uncertain quantities involved.  Complex uncertain values are
 supported; net uncertainties can be given for real-valued quantities.
 The objects holding uncertain values have array properties, though
-scalar arrays can be used; elements of an array behave as if they were
-uncertain quantities on their own.  When requesting a string
+scalar arrays can be used; elements of an uncertain array behave as if
+they were uncertain quantities on their own.  When requesting a string
 representation of an uncertain quantity, the typeset result can be
 influenced by the number of standard deviations to use and by the
 precision of the decimal fractions with respect to the uncertainty;
