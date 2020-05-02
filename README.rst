@@ -1,45 +1,43 @@
-upy Tutorial
-============
+Physical measurements are precise only up to a certain *uncertainty*.
+Such measurement results are thus called *uncertain quantities*.  When
+performing calculations with uncertain quantities, the outcomes of the
+calculations will feature certain uncertainties as well.  The
+uncertainty of a result depends on the uncertainties of the operands
+involved.  The quantification of uncertainties resulting from a
+mathematical operation involving uncertain operands is called
+*uncertainty propagation*.  From a programmer's point of view,
+uncertainties might be associated with the respective nominal values,
+such that the propagation of uncertainties happens automatically, and
+existing algorithms can be re-used with the *uncertain quantities* as
+arguments.  Here I am proposing a Python package to define uncertain
+operands, to carry out calculations using such operands *with
+uncertainty propagation*, and to provide string representations of
+uncertain quantities involved.  Complex uncertain values are
+supported; net uncertainties can be given for real-valued quantities.
+The objects holding uncertain values have array properties, though
+scalar arrays can be used; elements of an array behave as if they were
+uncertain quantities on their own.  When requesting a string
+representation of an uncertain quantity, the typeset result can be
+influenced by the number of standard deviations to use and by the
+precision of the decimal fractions with respect to the uncertainty;
+when typesetting multidimensional arrays with uncertainty, the decimal
+fractions are aligned to improve readability of the results.  ``upy``
+uses *Algorithmic Differentiation* (also known as *Automatic
+Differentation*) to track uncertainties through the operations.
+Uncertain values might be used in calculations together with other
+uncertain values as well as with any numeric Python or ``numpy``
+objects.  A range of mathematical operations is supported.  ``upy``
+provides several syntactic conventions appropriate to the subject.
+For instance, defining uncertain quantities is possible by writing:
 
+.. code:: python
 
-Webcast
--------
+    uvalue = nominal +- u(uncertainty)
 
-There is a webcast on the `sourceforge page <http://upy.sourceforge.net/>`_,
-presenting a talk on ``upy`` by me.  Its auditory should match you, although 
-I'm not sure how well I matched the auditory :-).
-
-
-Example Python Session
-----------------------
-
-Here is a small Python shell session::
-
-    Python 2.6.5 (r265:79063, Jul 18 2010, 12:14:53) 
-    [GCC 4.2.1 (Apple Inc. build 5659)] on darwin
-    Type "help", "copyright", "credits" or "license" for more information.
-
-    >>> import upy
-    >>> ua = upy.undarray(2, 0.1)
-    >>> ub = upy.undarray(10, 0.05)
-    >>> print ua, ub
-    (2.00 +- 0.10) 10^0  (1.0000 +- 0.0051) 10^1 
-    >>> print ub.printable(format='float')
-    10.000 +- 0.050 
-    >>> print ua * ub
-    (2.00 +- 0.11) 10^1 
-    >>> print upy.cos(ua * ub) + ub
-    (1.041 +- 0.092) 10^1 
-
-    >>> uc = upy.undarray([[1, 2], [3, 4]], [[0.1, 0.5], [0.7, 2]])
-    >>> print uc
-    [[(1.00 +- 0.10) 10^0  (2.00 +- 0.50) 10^0 ]
-     [(3.00 +- 0.70) 10^0  (4.0  +- 2.0 ) 10^0 ]]
-
-    >>> ^D
-    Python-32(3414) malloc: *** error for object 0x239670: incorrect checksum 
-    for freed object - object was probably modified after being freed.
-    *** set a breakpoint in malloc_error_break to debug
-
-Notice the nice error in the end.  Can you reproduce this (on your machine)?
-It is related to numpy.
+where ``u`` is a function provided by ``upy``.  Uncertain values
+constructed in this way will be independent of each other with respect
+to their uncertainties; ``upy`` will keep track of the correlations
+arising from combination of uncertain quantities in mathematical
+operations.  All functionality is thread safe, and suited both for use
+in the interactive Python shell as well as in programs for numerical
+analysis.
