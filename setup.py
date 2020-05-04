@@ -63,14 +63,15 @@ setup(
     install_requires=[
         'numpy',
     ],
-    classifiers=\
-        ['Development Status :: 3 - Alpha',
-         'Environment :: Console',
-         'Intended Audience :: Science/Research',
-         'License :: OSI Approved :: MIT License',
-         'Natural Language :: English',
-         'Operating System :: OS Independent',
-         'Programming Language :: Python :: 2',
-         'Topic :: Scientific/Engineering :: Information Analysis',
-         'Topic :: Scientific/Engineering :: Mathematics'],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Topic :: Scientific/Engineering :: Information Analysis',
+        'Topic :: Scientific/Engineering :: Mathematics',
+    ],
 )
