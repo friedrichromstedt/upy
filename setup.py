@@ -51,7 +51,7 @@ analysis. """
 setup(
     name='upy',
     version='2.0.1a4',
-    description='Python Uncertainties',
+    description='A Package for Uncertainty Propagation',
     long_description=long_description,
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
