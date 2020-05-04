@@ -30,7 +30,8 @@ aligned to improve readability of the results.
 Differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
 uncertain values as well as with any numeric Python or ``numpy``
-objects.  A range of mathematical operations is supported.
+objects.  A range of mathematical operations is planned to be
+supported.
  ``upy`` provides several syntactic conventions appropriate to the
 subject.  For instance, defining uncertain quantities is possible by
 writing:
