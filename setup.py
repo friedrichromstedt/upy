@@ -1,13 +1,13 @@
 from setuptools import setup
 
 long_description = \
-r"""Measurements are precise only up to a particular *uncertainty*.
-Such measurement results are thus called *uncertain quantities*.
- When performing calculations with uncertain quantities, the 
-uncertainties of the results depend on the uncertainties of the
-operands involved.  The quantification of uncertainties resulting from
-a mathematical operation involving uncertain operands is called
-*uncertainty propagation*.
+r"""Measurements are precise only up to a certain *uncertainty*.  Such
+measurement results are thus called *uncertain quantities*.  When
+performing calculations with uncertain quantities, the uncertainties
+of the results depend on the uncertainties of the operands involved.
+The quantification of uncertainties resulting from a mathematical
+operation involving uncertain operands is called *uncertainty
+propagation*.
  From a programmer's point of view, uncertainties might be associated
 with the respective nominal values, such that the propagation of
 uncertainties happens automatically, and existing algorithms can be

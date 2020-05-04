@@ -1,4 +1,4 @@
-Measurements are precise only up to a particular *uncertainty*.  Such
+Measurements are precise only up to a certain *uncertainty*.  Such
 measurement results are thus called *uncertain quantities*.  When
 performing calculations with uncertain quantities, the uncertainties
 of the results depend on the uncertainties of the operands involved.
