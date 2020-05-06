@@ -54,6 +54,7 @@ setup(
     version='2.0.1a4',
     description='A Package for Uncertainty Propagation',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
     #url='http://friedrichromstedt.github.com/upy/',
