@@ -16,22 +16,23 @@ re-used with the *uncertain quantities* as arguments.
 carry out calculations using such operands *with uncertainty
 propagation*, and to provide string representations of uncertain
 quantities involved.
- Complex uncertain values are supported; net uncertainties can be
-given for real-valued quantities.  The objects holding uncertain
-values have array properties, though scalar arrays can be used;
-elements of an uncertain array behave as if they were uncertain
-quantities on their own.  When requesting a string representation of
-an uncertain quantity, the typeset result can be influenced by the
-number of standard deviations to use and by the precision of the
-decimal fractions with respect to the uncertainty; when typesetting
-multidimensional arrays with uncertainty, the decimal fractions are
-aligned to improve readability of the results.
+ Complex numbers can be used to define uncertain quantities; for such
+complex-valued uncertainties no net uncertainty can be calculated.
+The objects holding uncertain values have array properties, though
+scalar arrays can be used; elements of an uncertain array behave as if
+they were uncertain quantities on their own.  When requesting a string
+representation of an uncertain quantity, the typeset result can be
+influenced by giving the number of standard deviations to use and by
+choosing the precision of the decimal fractions with respect to the
+uncertainty; when typesetting multidimensional arrays with
+uncertainty, the decimal fractions are aligned to improve readability
+of the results.
  ``upy`` uses *Algorithmic Differentiation* (also known as *Automatic
 Differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
 uncertain values as well as with any numeric Python or ``numpy``
-objects.  A range of mathematical operations is planned to be
-supported.
+objects.  I'm planning to support a sufficiently large range of
+mathematical functions.
  ``upy`` provides several syntactic conventions appropriate to the
 subject.  For instance, defining uncertain quantities is possible by
 writing:
