@@ -17,9 +17,9 @@ uncertainty can be calculated.  The objects holding uncertain values
 have array properties, though scalar arrays can be used; elements of
 an uncertain array behave as if they were uncertain quantities on
 their own.  When requesting a string representation of an uncertain
-quantity, the typeset result can be influenced by giving the number of
-standard deviations to use and by choosing the precision of the
-decimal fractions with respect to the uncertainty; when typesetting
+quantity, the typeset result depends on the number of standard
+deviations to use and the chosen precision, given by the number of
+digits with respect to the uncertainty.  Furthermore, when typesetting
 multidimensional arrays with uncertainty, the decimal fractions are
 aligned to improve readability of the results.  ``upy`` uses
 *Algorithmic Differentiation* (also known as *Automatic
