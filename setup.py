@@ -22,7 +22,7 @@ The objects holding uncertain values have array properties, though
 scalar arrays can be used; elements of an uncertain array behave as if
 they were uncertain quantities on their own.  When requesting a string
 representation of an uncertain quantity, the typeset result depends on
-the number of standard deviations to use and the chosen precision,
+the number of standard deviations to use and on the chosen precision,
 given by the number of digits with respect to the uncertainty.
 Furthermore, when typesetting multidimensional arrays with
 uncertainty, the decimal fractions are aligned to improve readability
