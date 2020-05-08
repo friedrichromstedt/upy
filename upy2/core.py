@@ -19,68 +19,6 @@ typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
 
 #
-# Internal helper function(s) ...
-#
-
-#   This method has been superseded by :func:`find_common_dtype`.
-#
-#X def _ravel(object):
-#X     """Ravel a mixed-mode initialisation argument.  undarray instances
-#X     contained will ravel to their raveled .values."""
-#X 
-#X     if isinstance(object, undarray):
-#X         
-#X         # Return the raveled version of object.value ...
-#X         #
-#X         # This is done beause *all* elements of object.value may contribute
-#X         # to the dtype.  E.g., when dtype = numpy.object, this may occur 
-#X         # because the first element is an non-numeric type, or the second, ...
-#X 
-#X         return object.value.flatten().tolist()
-#X 
-#X     elif numpy.isscalar(object) or \
-#X             (isinstance(object, numpy.ndarray) and \
-#X              object.shape == ()):
-#X 
-#X         # Scalars are already raveled ...
-#X 
-#X         return [object]
-#X 
-#X     else:
-#X 
-#X         # Sequence objects must be recursed ...
-#X 
-#X         raveled = []
-#X 
-#X         for element in object:
-#X             raveled.extend(_ravel(element))
-#X 
-#X         return raveled
-
-# This method has been deprectated before it came to use.  It is no
-# longer necessary since the implementation of __setitem__ is able to
-# upgrade the dtype of self.value.
-#
-#X def find_common_dtype(object):
-#X     """ Calculates the least dtype to store the nominal value taken
-#X     from the given *object*. """
-#X     
-#X     if isinstance(object, undarray):
-#X         return object.value.dtype
-#X 
-#X     elif numpy.isscalar(object) or (isinstance(object, numpy.ndarray)
-#X             and object.shape == ()):
-#X         return numpy.asarray(object).dtype
-#X 
-#X     else:
-#X         dtypes = [find_common_dtype(element) for element in object]
-#X         zeros = [numpy.zero(shape=[], dtype=dtype) for dtype in
-#X             dtypes]
-#X         return numpy.asarray(zeros).dtype
-#X             # When *zeros* == [], numpy.asarray([]) returns
-#X             # ``array([], dtype=float64)``.
-
-#
 # Some convenience functions ...
 #
 
@@ -90,16 +28,6 @@ def uzeros(shape, dtype=None):
     ``numpy.zeros()`` will work. """
 
     return undarray(shape=shape, dtype=dtype)
-
-#? def zeros(shape):
-#?     """Equivalent to :func:`uzeros`.
-#?     
-#?     This method will be deprecated in v0.5.  Use :func:`uzeros` instead."""
-#? 
-#?     warnings.warn(DeprecationWarning('zeros() will be deprecated in v0.5, '
-#?         'use uzeros() instead')
-#? 
-#?     return uzeros(shape)
 
 def asuarray(uarray_like):
     """ If *uarray_like* is *not* an :class:`undarray`, it will be fed
@@ -388,6 +316,21 @@ class undarray(object):
     def clear(self, key):
         for dependency in self.dependencies:
             dependency.clear(key)
+
+    def scaled(self, factor):
+        """ This method implements the operation ``ua * factor``,
+        where *factor* isn't another undarray.  This is used to
+        implement multiplication within :class:`Multiply`. """
+
+        factor_dtype = numpy.result_type(factor)
+        result_dtype = numpy.result_type(factor_dtype, self.dtype)
+
+        result = undarray(nominal=(self.nominal * factor))
+
+        for dependency in self.dependencies:
+            result.append(dependency * factor)
+
+        return result
 
     def copy_dependencies(self, source, key=None):
         """ *source* is an ``undarray`` whose ``Dependencies`` will be
@@ -1073,10 +1016,11 @@ class Multiply(Binary):
         Binary.__init__(self, numpy.multiply)
 
     def _source1(self, x1, y2):
-        return x1 * y2
+        return x1.scaled(y2)
+            # Writing ``x1 * y2`` would lead to infinite recursion.
 
     def _source2(self, y1, x2):
-        return y1 * x2
+        return x2.scaled(y1)
 
 
 class Divide(Binary):
