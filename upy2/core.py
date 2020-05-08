@@ -12,9 +12,8 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative',
-    'uadd', 'usubtract', 'umultiply', 'udivide',
-    'upower']
+    'unegative', 'uabsolute',
+    'uadd', 'usubtract', 'umultiply', 'udivide', 'upower']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -1155,5 +1154,4 @@ uadd = Add()
 usubtract = Subtract()
 umultiply = Multiply()
 udivide = Divide()
-
 upower = Power()
