@@ -112,7 +112,7 @@ Bei in der komplexen Ebene orthogonalen ``a`` und ``u`` resultiert also ``+- 0``
 
 Insgesamt ergibt sich mit der Benennung ``mu = cos(phia - phiu)``::
 
-   squ = ua * ua.conj() == |a| ^ 2 +- 2 mu A U
+    squ = ua * ua.conj() == |a| ^ 2 +- 2 mu A U
 
 Bei ``A == 0`` ergibt sich *stets* ``0 +- 0``.
 
@@ -304,3 +304,110 @@ In allen Faellen stellt also der Term [:286] die Projektion des Vektors von ``u`
     1.  "Richtung" und "Projektion" sollten besser gefasst werden, denn der *Winkel* ist nur bis auf Vielfache von ``2 pi`` bestimmt.  Vielleicht kann man statt des Winkels ``exp(i phi)`` heranziehen.
 
     2.  Die Randfaelle ``U == 0`` und ``A == 0`` sollten klarer behandelt werden.
+
+
+.. rubric:: Donnerstag, d. 7. Mai 2020, 18:07 Uhr und Freitag, d. 8. Mai 2020, ca. 13:45 Uhr
+
+
+Analytische Berechnung der Ableitung des Absolutwerts bzgl. komplexer Argumente
+-------------------------------------------------------------------------------
+
+In [:83] hat sich ergeben::
+
+    squ = [a * a.conj()] +- [u * a.conj() + u.conj() * a] = vsqu +- usqu
+
+Wir bilden nun die Wurzel dieses Ausdrucks, in der allgemeinen Form wie es hier gegeben ist.  Der Ausdruck sei wie folgt notiert::
+
+    abs = vabs +- uabs
+
+Er wird berechnet als::
+
+    abs = squ ** 0.5
+
+Der Nennwert ``vabs`` ist schlicht::
+
+    vabs = sqrt(a * a.conj())
+
+Dieser Wert kann ohne Weiteres gebildet werden, weil ``a * a.conj()`` reell und positiv definit ist.
+
+Im Folgenden betrachten wir die instruktionen in ``Binary.__call__(squ, 0.5)``.  Nur bzgl. ``squ`` wird ein ``.depend``-Aufruf durchgefuehrt.  Dabei ist die Ableitung von ``abs`` bzgl. ``squ`` [:153 ff.]::
+
+    0.5 * squ ** (-0.5) = 0.5 / sqrt(a * a.conj())
+
+Es wird dann ausgefuehrt [:157 ff.]::
+
+    result.depend(other=squ, derivative=(0.5 / sqrt(a * a.conj())))
+
+also::
+
+    source = {squ} = (u * a.conj() + u.conj() * a)
+
+und weiter::
+
+    source_remnant = source * derivative = (u * a.conj() + u.conj() * a) * 0.5 / sqrt(a * a.conj())
+
+Dieser kann in zwei Richtungen weiterentwickelt werden::
+
+    source * derivative = Re(u * a.conj()) / sqrt(a * a.conj())
+
+oder::
+
+    source * derivative = 0.5 * ( (u * sqrt(a.conj() / a)) + (u.conj() * sqrt(a / a.conj())) )
+
+Mit::
+
+    p = a / a.conj()
+
+ergibt sich also::
+
+    source * derivative = 0.5 * (u * sqrt(1/p) + u.conj() * sqrt(p))
+
+Setzen wir::
+
+    a = a_mag * exp(1j * a_ang)
+
+so ergibt sich::
+
+    a.conj() = a_mag * exp(1j * -a_ang)
+    1 / a.conj() = 1/a_mag * exp(1j * a_ang)
+
+also::
+
+    p = exp(1j * 2 a_ang)
+    1/p = exp(1j * -2 a_ang)
+
+mithin::
+
+    sqrt(p) = exp(1j * a_ang)
+    sqrt(1/p) = exp(1j * -a_ang)
+
+Es gilt also::
+
+    1/p = p.conj()
+
+Also weiter in [:363]::
+
+    source * derivative
+    = 0.5 * (u * sqrt(p.conj()) + u.conj() * sqrt(p))
+    = 0.5 * (u * sqrt(p).conj() + u.conj() * sqrt(p))
+    = Re(u * sqrt(p).conj())
+
+woraus sich per [:359] ergibt::
+
+    source * derivative = Re(u * sqrt(a.conj() / a))
+
+bzw.::
+
+    source * derivative = Re(u * exp(1j * -a_ang))
+
+Man beachte dass die Magnitude dieser Abhaengigkeit *ausschliesslich* von der Magnitude von *u* abhaengt, und unabhaengig von der Magnitude von *a* ist.  Lediglich der *Winkel* von *a* in der komplexen Zahlenebene hat Eingang.  Der Ausdruck laesst sich mit::
+
+    u = u_mag * exp(1j * u_ang)
+
+weiterentwickeln zu::
+
+    source * derivative = Re(u_mag * exp(1j * u_ang) * exp(1j * -a_ang)) = Re(u_mag * exp(1j * [u_ang - a_ang]))
+
+Dies bestaetigt die fruehere Beobachtung, dass die Abheangigkeit von ``abs(a +- u)`` genau die Projektion von ``u`` auf die Richtung von ``a`` ist.  Wenn ``u`` und ``a`` in dieselbe Richtung weisen, d.h. wenn ``u_ang = a_ang`` gilt, ergibt sich genau ``u_mag`` fuer ``source * derivative``.  Sind sie orthogonal zueinander, so gilt ``source * derivative = 0``.  Sind sie antiparallel ausgerichtet, ergibt sich ``source * derivative = -u_mag``.
+
+Fuer die algorithmische Umsetzung ist sicherlich [:397] am besten verwendbar.

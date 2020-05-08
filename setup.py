@@ -57,7 +57,7 @@ setup(
     long_description_content_type='text/x-rst',
     author='Friedrich Romstedt',
     author_email='friedrichromstedt@gmail.com',
-    #url='http://friedrichromstedt.github.com/upy/',
+    url='http://github.com/friedrichromstedt/upy/',
     packages=[
         'upy2',
         'upy2.typesetting',
@@ -70,7 +70,6 @@ setup(
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2',
         'Topic :: Scientific/Engineering :: Information Analysis',

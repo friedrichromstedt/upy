@@ -390,54 +390,43 @@ class undarray(object):
         for dependency in self.dependencies:
             dependency.clear(key)
 
-    def depend(self, other, derivative=None, key=None):
-        """ *other* is an ``undarray``.  The ``Dependencies`` of
-        *other* will be used multiplied by *derivative*.  *key*
-        indexes *self* and determines the location where the
-        ``Dependencies`` of *other* will be added.
-        
-        *derivative* defaults to an integer ``1``.  Without *key*, all
-        of *self* is specified. """
-
-        if derivative is None:
-            derivative = 1
+    def copy_dependencies(self, source, key=None):
+        """ *source* is an ``undarray`` whose ``Dependencies`` will be
+        incorporated into *self*.  *key* indexes *self* and determines
+        the location where the ``Dependencies`` of *source* will be
+        added. """
 
         # Check dtype compatibility ...
 
-        derivative_dtype = numpy.result_type(derivative)
-        dependency_dtype = numpy.result_type(
-                other.dtype,
-                derivative_dtype,
-        )
-        if not numpy.can_cast(dependency_dtype, self.dtype):
+        if not numpy.can_cast(source.dtype, self.dtype):
             raise ValueError(
-                    'Cannot make a %s-dtype undarray depend on a '
-                    '%s-dtype undarray with a derivative of dtype %s.'
-                    % (self.dtype, other.dtype, derivative_dtype))
+                    ('Cannot incorporate the dependencies of an '
+                     '{0}-dtype undarray into an {1}-dtype undarray')\
+                             .format(source.dtype, self.dtype))
 
-        # Make *self* depend on *other* with *derivative* ...
+        # Incorporate the Dependecies of *source* ...
 
-        for source in other.dependencies:
+        for dependency in source.dependencies:
             # First, everything is left:
-            source_remnant = source * derivative
+            remnant = dependency
 
             for target in self.dependencies:
-                if source_remnant.is_empty():
+                if remnant.is_empty():
                     # This source has been exhausted.
                     break
                 # Attempt to add on same name or to fill empty space:
-                source_remnant = target.add(source_remnant, key)
+                remnant = target.add(remnant, key)
 
-            if source_remnant.is_nonempty():
-                # Append the *source_remnant* added to a new empty
-                # Dependency of self's shape.
-                broadcasted_source_remnant = \
+            if remnant.is_nonempty():
+                # Append the *remnant* to a new empty Dependency of
+                # self's shape.
+                broadcasted_remnant = \
                     upy2.dependency.Dependency(
                         shape=self.shape,
                         dtype=self.dtype,
                     )
-                broadcasted_source_remnant.add(source_remnant, key)
-                self.append(broadcasted_source_remnant)
+                broadcasted_remnant.add(remnant, key)
+                self.append(broadcasted_remnant)
 
     #
     # Complex numbers ...
@@ -973,11 +962,15 @@ class Unary(uufunc):
         yout = self.ufunc(y)
         result = undarray(nominal=yout)
         if isinstance(x, undarray):
-            result.depend(
-                    other=x,
-                    derivative=self._derivative(y),
-            )
+            result.copy_dependencies(self._source(x))
         return result
+
+    def _source(self, x):
+        """ Derive the source of uncertainties of the nominal value
+        based on the operand *x* of the operation.  *x* is an
+        ``undarray``. """
+
+        raise NotImplementedError('Virtual method called')
 
 
 class Binary(uufunc):
@@ -1014,148 +1007,106 @@ class Binary(uufunc):
         yout = self.ufunc(y1, y2)
         result = undarray(nominal=yout)
         if isinstance(x1, undarray):
-            result.depend(
-                other=x1,
-                derivative=self._derivative1(y1, y2),
-            )
+            result.copy_dependencies(self._source1(x1, y2))
         if isinstance(x2, undarray):
-            result.depend(
-                other=x2,
-                derivative=self._derivative2(y1, y2),
-            )
+            result.copy_dependencies(self._source2(y1, x2))
         return result
+
+    def _source1(self, x1, y2):
+        """ Return the uncertainty source arising from the first
+        operand *x1* given the nominal value *y2* of the second
+        operand.  *x1* is guaranteed to be an ``undarray``. """
+
+        raise NotImplementedError('Virtual method called')
+
+    def _source2(self, y1, x2):
+        """ Return the uncertainty source arising from the second
+        operand *x2* given the nominal value *y1* of the first
+        operand.  *x2* is guaranteed to be an ``undarray``. """
+
+        raise NotImplementedError('Virtual method called')
 
 
 # Protocol (Unary and Binary) implementations ...
 
 
-def myabs(y):
-    """ This function calculates the absolute value, and returns:
-
-    *   A complex ndarray with negligible imaginary component for
-        complex input;
-    *   A float ndarray also for integer input.
-
-    The second property is an (unwanted) side-effect. """
-
-    ya = numpy.asarray(y)
-    return numpy.sqrt(ya * ya.conj())
-
 class Absolute(Unary):
-    """ This implementation is probably flawed.  It shouldn't return
-    Dependencies with non-zero imaginary components, as the absolute
-    value is constrained to real numbers, and changing the input in
-    any way never breaks this constraint. """
-
     def __init__(self):
-        Unary.__init__(self, myabs)
-            # We use :func:`myabs` because it returns complex-valued
-            # ndarrays on complex-valued inputs.  This is necessary to
-            # make sure the resulting undarray can hold the complex
-            # Dependencies (undarray derives its dtype from the
-            # nominal value).
+        Unary.__init__(self, numpy.abs)
 
-    def _derivative(self, y):
-        absolute_value = numpy.abs(y)
-        absolute_prepared = absolute_value + (absolute_value == 0)
-        nominal_prepared = y + (y == 0)
-        normalisation_factor = absolute_prepared / nominal_prepared
-            # For zero-valued input, the normalisation factor turns
-            # out as 1.  This is important to make sure that the
-            # dependencies are propagated without change.  For
-            # non-zero input, the normalisation factor is always a
-            # (possibly complex) number of unit magnitude.
-            #
-            # For example, consider *y* as ``0 + 2j``.  Then the
-            # absolute value (2.0) results from multiplying *y* with
-            # ``0 - 1j``.  Hence the normalised undarray depends on
-            # the operand with a derivative of this ``0 - 1j`` figure.
-            # This value is precisely the *normalisation_factor*
-            # defined above: absolute value divided by *y*
-            # (essentially).
-            #
-            # The reader might want to examine some more examples: ``1
-            # + 1j``, ``5j``, ``-5``, ...
-        return normalisation_factor
-            # Another notation for the same outcome would be::
-            #
-            #   return (self * normalisation_factor).real
-            #
-            # with the ``.real`` statement to ignore the negligible
-            # imaginary components of the product.
-            #
-        # For complex undarrays, the ``absolute_value`` is guaranteed
-        # to be real-valued.  However, the dependencies might turn out
-        # complex, when their phases differ from the phase of
-        # ``self.nominal``.
-        #
-        #    Even in case the phases match, the resulting Dependency
-        # derivatives turn out complex, although with very small
-        # imaginary component.  In such a case, the user might
-        # request the ``.real`` property of ``self``.
+    def _source(self, x):
+        y = x.nominal
+        return (x * numpy.sqrt(y.conj() / y)).real
 
 
 class Negative(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.negative)
 
-    def _derivative(self, y):
-        return -1
+    def _source(self, x):
+        return -x
 
 
 class Add(Binary):
     def __init__(self):
         Binary.__init__(self, numpy.add)
 
-    def _derivative1(self, y1, y2):
-        return 1
+    def _source1(self, x1, y2):
+        return x1
 
-    def _derivative2(self, y1, y2):
-        return 1
+    def _source2(self, y1, x2):
+        return x2
 
 
 class Subtract(Binary):
     def __init__(self):
         Binary.__init__(self, numpy.subtract)
 
-    def _derivative1(self, y1, y2):
-        return 1
+    def _source1(self, x1, y2):
+        return x1
 
-    def _derivative2(self, y1, y2):
-        return -1
+    def _source2(self, y1, x2):
+        return -x2
 
 
 class Multiply(Binary):
     def __init__(self):
         Binary.__init__(self, numpy.multiply)
 
-    def _derivative1(self, y1, y2):
-        return y2
+    def _source1(self, x1, y2):
+        return x1 * y2
 
-    def _derivative2(self, y1, y2):
-        return y1
+    def _source2(self, y1, x2):
+        return y1 * x2
 
 
 class Divide(Binary):
     def __init__(self):
         Binary.__init__(self, numpy.true_divide)
 
-    def _derivative1(self, y1, y2):
-        return numpy.true_divide(1, y2)
+    def _source1(self, x1, y2):
+        # f = y1 / y2
+        #
+        # d_y2 f = 1 / y2
+        #
+        return x1 * (1/y2)
+            # Writing ``x1 / y2`` would result in an infinite
+            # recursion.
 
-    def _derivative2(self, y1, y2):
+    def _source2(self, y1, x2):
         # f = y1 / y2 = y1 . y2 ^ (-1)
         #
         # d_y2 f = y1 . (-1) y2 ^ (-2)
         #
-        return numpy.true_divide(-y1, y2 ** 2)
+        y2 = x2.nominal
+        return x2 * numpy.true_divide(-y1, y2 ** 2)
 
 
 class Power(Binary):
     def __init__(self):
         Binary.__init__(self, numpy.power)
 
-    def _derivative1(self, y1, y2):
+    def _source1(self, x1, y2):
         # f = b ^ x
         #
         # Return: d_b (b ^ x) = d_y1 (y1 ^ y2)
@@ -1171,9 +1122,11 @@ class Power(Binary):
         #    =      b ^ x . (x / b)
         #
         #    =      b ^ (x - 1) . x
-        return y2 * (y1 ** (y2 - 1))
 
-    def _derivative2(self, y1, y2):
+        y1 = x1.nominal
+        return x1 * y2 * (y1 ** (y2 - 1))
+
+    def _source2(self, y1, x2):
         # f = b ^ x
         #
         # Return: d_x (b ^ x) = d_y2 (y1 ^ y2)
@@ -1187,7 +1140,9 @@ class Power(Binary):
         #    =      e ^ (x ln b) . d_x(x ln b)
         #
         #    =      b ^ x . (ln b)
-        return (y1 ** y2) * numpy.log(y1)
+
+        y2 = x2.nominal
+        return x2 * (y1 ** y2) * numpy.log(y1)
 
 
 # The actual uufuncs ...
