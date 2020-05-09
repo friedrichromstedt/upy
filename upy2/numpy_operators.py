@@ -1,6 +1,6 @@
 import numpy
 from upy2.core import undarray, \
-    unegative, \
+    unegative, uabsolute, \
     uadd, usubtract, umultiply, udivide, \
     upower
 
@@ -63,6 +63,9 @@ def install_numpy_operators():
     negative = UnaryOperator(
             ufunc=numpy_ops['negative'],
             uufunc=unegative)
+    absolute = UnaryOperator(
+            ufunc=numpy_ops['abcolute'],
+            uufunc=uabsolute)
 
     add = BinaryOperator(
             ufunc=numpy_ops['add'],
@@ -79,13 +82,13 @@ def install_numpy_operators():
     true_divide = BinaryOperator(
             ufunc=numpy_ops['true_divide'],
             uufunc=udivide)
-
     power = BinaryOperator(
             ufunc=numpy_ops['power'],
             uufunc=upower)
 
     numpy.set_numeric_ops(
         negative=negative,
+        absolute=absolute,
         add=add,
         subtract=subtract,
         multiply=multiply,

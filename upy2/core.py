@@ -525,6 +525,15 @@ class undarray(object):
 #X?        # of this values on the error source ...
 #X?
 #X?        return self * inversion_mask
+
+    def sqrt(self):
+        return usqrt(self)
+
+    def sin(self):
+        return usin(self)
+
+    def cos(self):
+        return ucos(self)
     
     #
     # Casts to int, float, ... are impossible, because we have ndarray values.
@@ -972,6 +981,14 @@ class Binary(uufunc):
 # Protocol (Unary and Binary) implementations ...
 
 
+class Negative(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.negative)
+
+    def _source(self, x):
+        return -x
+
+
 class Absolute(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.abs)
@@ -981,12 +998,30 @@ class Absolute(Unary):
         return (x * numpy.sqrt(y.conj() / y)).real
 
 
-class Negative(Unary):
+class Sqrt(Unary):
     def __init__(self):
-        Unary.__init__(self, numpy.negative)
+        Unary.__init__(self, numpy.sqrt)
 
     def _source(self, x):
-        return -x
+        y = x.nominal
+        return x * (0.5 / numpy.sqrt(y))
+
+class Sin(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.sin)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * numpy.cos(y)
+
+
+class Cos(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.cos)
+
+    def _soruce(self, x):
+        y = x.nominal
+        return x * (-numpy.sin(y))
 
 
 class Add(Binary):
@@ -1093,6 +1128,8 @@ class Power(Binary):
 
 unegative = Negative()
 uabsolute = Absolute()
+usin = Sin()
+ucos = Cos()
 
 uadd = Add()
 usubtract = Subtract()
