@@ -1,5 +1,6 @@
 import unittest
 
-import test
+from test import Test
+
 
 unittest.main()
