@@ -1,6 +1,6 @@
 import unittest
 
-class Test(unittest.TestCase):
+class XYZ(unittest.TestCase):
 
     def test(self):
         self.assertEqual(2 + 2, 4)

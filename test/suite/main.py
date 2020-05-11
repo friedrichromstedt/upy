@@ -1,6 +1,6 @@
 import unittest
 
-from test import Test
+from test import XYZ
 
 
 unittest.main()
