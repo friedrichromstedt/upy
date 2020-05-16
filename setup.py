@@ -50,7 +50,7 @@ in the interactive Python shell as well as in programs for numerical
 analysis. """
 
 setup(
-    name='upy',
+    name='upy2',
     version='2.0.1a4',
     description='A Package for Uncertainty Propagation',
     long_description=long_description,

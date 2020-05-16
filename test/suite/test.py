@@ -1,6 +1,7 @@
 # Developed since: Sep 2015
 
 import unittest
+import numpy
 from upy2.typesetting.numbers import get_position_of_leftmost_digit
 from upy2.typesetting.numbers import NumberTypesetter
 from upy2.typesetting.rules import LeftRule, RightRule, CentreRule
@@ -8,6 +9,7 @@ from upy2.typesetting.scientific import \
     TypesetNumberRule, ScientificRule
 from upy2.typesetting.scientific import \
     ScientificElement, ScientificTypesetter
+from upy2 import u, U, undarray
 
 
 class Test_TypesettersNumbers(unittest.TestCase):
@@ -310,17 +312,21 @@ class Test_TypesettersScientific(unittest.TestCase):
 
     # XXX THe following two tests are heritage and need to be pruned.
 
-    def xtest_ScientificRule(self):
-        return;
-
+    def test_ScientificRule(self):
         rule = ScientificRule()
         ts = NumberTypesetter()
 
-        nom1, unc1, exp1 = ts.typeset(1.00, 2), ts.typeset(0.10, 2), '1'
-        nom2, unc2, exp2 = ts.typeset(1.000, 3), ts.typeset(0.010, 3), '-1'
-        nom3, unc3, exp3 = ts.typeset(1.00, 2), ts.typeset(0.10, 2), '12'
-        nom4, unc4, exp4 = ts.typeset(1, 0), ts.typeset(10, 0), '1'
-        nom5, unc5, exp5 = ts.typeset(1, -1), ts.typeset(100, -1), '1'
+        nom1, unc1, exp1 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), '1'
+        nom2, unc2, exp2 = ts.typesetfp(1.000, 3), ts.typesetfp(0.010, 3), '-1'
+        nom3, unc3, exp3 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), '12'
+        nom4, unc4, exp4 = ts.typesetfp(1, 0), ts.typesetfp(10, 0), '1'
+        nom5, unc5, exp5 = ts.typesetfp(1, -1), ts.typesetfp(100, -1), '1'
+
+        rule.apply(nom1, unc1, exp1)
+        rule.apply(nom2, unc2, exp2)
+        rule.apply(nom3, unc3, exp3)
+        rule.apply(nom4, unc4, exp4)
+        rule.apply(nom5, unc5, exp5)
 
         s1 = rule.apply(nom1, unc1, exp1)
         s2 = rule.apply(nom2, unc2, exp2)
@@ -328,18 +334,16 @@ class Test_TypesettersScientific(unittest.TestCase):
         s4 = rule.apply(nom4, unc4, exp4)
         s5 = rule.apply(nom5, unc5, exp5)
 
-        self.assertEqual(s1.adjust(), '( 1.00  +-   0.10 ) 10^ 1')
-        self.assertEqual(s2.adjust(), '( 1.000 +-   0.010) 10^-1')
-        self.assertEqual(s3.adjust(), '( 1.00  +-   0.10 ) 10^12')
-        self.assertEqual(s4.adjust(), '( 1     +-  10    ) 10^ 1')
-        self.assertEqual(s5.adjust(), '(00     +- 100    ) 10^ 1')
+        self.assertEqual(s1, '( 1.00  +-   0.10 ) 10^ 1 ')
+        self.assertEqual(s2, '( 1.000 +-   0.010) 10^-1 ')
+        self.assertEqual(s3, '( 1.00  +-   0.10 ) 10^12 ')
+        self.assertEqual(s4, '( 1     +-  10    ) 10^ 1 ')
+        self.assertEqual(s5, '(00     +- 100    ) 10^ 1 ')
     
-    def xtest_ScientificTypesetter(self):
-        return;
-
+    def test_ScientificTypesetter(self):
         sts = ScientificTypesetter(
             stddevs=2,
-            relative_precision=2,
+            precision=2,
         )
         rule = ScientificRule()
 
@@ -349,7 +353,41 @@ class Test_TypesettersScientific(unittest.TestCase):
         el4 = ScientificElement(10, 100, sts, rule)
         el5 = ScientificElement(10, 1000, sts, rule)
 
-        self.assertEqual(str(el1).adjust(), '( 1.00  +-  0.10 ) 10^1')
+        str(el1); str(el2); str(el3); str(el4); str(el5)
+
+        self.assertEqual(str(el1), '( 1.00  +-   0.10 ) 10^1 ')
+        self.assertEqual(str(el2), '( 1.000 +-   0.010) 10^2 ')
+        self.assertEqual(str(el3), '( 1.00  +-   0.10 ) 10^2 ')
+        self.assertEqual(str(el4), '( 1     +-  10    ) 10^1 ')
+        self.assertEqual(str(el5), '(00     +- 100    ) 10^1 ')
+
+        with U(2), sts:
+            a = numpy.asarray([[1, 2], [42, 10]])
+            stddev = numpy.asarray([[0.1, 0.1], [10, 1]]) / 2
+            ua = a +- u(2 * stddev)
+            self.assertEqual(str(ua),
+                    '[[(1.00 +- 0.10) 10^0  (2.00 +- 0.10) 10^0 ]\n'
+                    ' [(4.2  +- 1.0 ) 10^1  (1.00 +- 0.10) 10^1 ]]'
+            )  # ua.nominal is laid out in C order.
+
+            b = numpy.asarray([[1, 42], [2, 10]]).T
+                # .T will swap the strides.
+            self.assertEqual(str(b),
+                    '[[ 1  2]\n'
+                    ' [42 10]]')
+            ub = undarray(
+                    nominal=b.astype(numpy.float),
+                        # .astype preserves the strides.
+                    stddev=stddev,
+            )
+            self.assertEqual(str(ub),
+                    '[[(1.00 +- 0.10) 10^0  (2.00 +- 0.10) 10^0 ]\n'
+                    ' [(4.2  +- 1.0 ) 10^1  (1.00 +- 0.10) 10^1 ]]'
+            )  # ub.nominal is laid out in F order.
+
+            # I do not verify the swapped strides of ub.nominal w.r.t.
+            # ua.nominal since these figures can depend on
+            # architecture.
 
 
 if __name__ == '__main__':

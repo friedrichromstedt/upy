@@ -120,8 +120,8 @@ class undarray(object):
     def __init__(self,
             nominal=None,
             stddev=None,
-            derivatives=None,
-            characteristic=None,
+#            derivatives=None,
+#            characteristic=None,
             dtype=None,
             shape=None):
         """ If *stddev* and *nominal* aren't None, *nominal* and
@@ -166,7 +166,31 @@ class undarray(object):
         # - self.shape
         # - self.ndim
 
+        if nominal is None and shape is not None:
+            nominal = numpy.zeros(shape=shape, dtype=dtype)
+
+        if nominal is None:
+            raise ValueError("Missing nominal value specification")
+
         self.dependencies = []
+        self.nominal = numpy.asarray(nominal, dtype=dtype)
+        self.shape = self.nominal.shape
+        self.dtype = self.nominal.dtype
+        self.ndim = self.nominal.ndim
+
+        if stddev is not None:
+            # Create a Dependendy instance from scratch.
+            dependency = upy2.dependency.Dependency(
+                    names=upy2.id_generator.get_idarray(
+                        shape=self.shape),
+                    derivatives=stddev,
+            )   # The Dependency constructor doesn't copy the data
+                # given.
+            self.append(dependency)
+
+        return
+
+        # ------
 
         if stddev is not None and nominal is not None:
             
@@ -188,47 +212,48 @@ class undarray(object):
             # Create a Dependency instance from scratch.
             dependency = upy2.dependency.Dependency(
                 names=upy2.id_generator.get_idarray(
-                    shape=self.shape),
+                    shape=self.nominal.shape),
                 derivatives=stddev,
             )   # The Dependency constructor doesn't copy the data
                 # given.
+            self.append(dependency)
 
-            self.characteristic = upy2.characteristic.Characteristic(
-                shape=self.shape,
-            )
-            self.characteristic.append(dependency)
-
-        elif derivatives is not None and nominal is not None:
-
-            # Derive the new undarray from known ones ...
-
-            self.nominal = numpy.asarray(nominal)
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
-
-            # Create a new, empty Characteristic where we can fill in
-            # the dependencies introduced by *derivatives*.
-            self.characteristic = upy2.characteristic.Characteristic(
-                    shape=self.shape)
-
-            # Fill in the dependencies.
-            for (instance, derivative) in derivatives:
-                self.characteristic += \
-                        instance.characteristic * derivative
-
-        elif characteristic is not None and nominal is not None:
-
-            nominal = numpy.asarray(nominal)
-            if characteristic.shape != nominal.shape:
-                raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
-
-            # Take over the characteristic ...
-
-            self.nominal = nominal
-            self.characteristic = characteristic
-
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
+#            self.characteristic = upy2.characteristic.Characteristic(
+#                shape=self.shape,
+#            )
+#            self.characteristic.append(dependency)
+#
+#        elif derivatives is not None and nominal is not None:
+#
+#            # Derive the new undarray from known ones ...
+#
+#            self.nominal = numpy.asarray(nominal)
+#            self.shape = self.nominal.shape
+#            self.ndim = self.nominal.ndim
+#
+#            # Create a new, empty Characteristic where we can fill in
+#            # the dependencies introduced by *derivatives*.
+#            self.characteristic = upy2.characteristic.Characteristic(
+#                    shape=self.shape)
+#
+#            # Fill in the dependencies.
+#            for (instance, derivative) in derivatives:
+#                self.characteristic += \
+#                        instance.characteristic * derivative
+#
+#        elif characteristic is not None and nominal is not None:
+#
+#            nominal = numpy.asarray(nominal)
+#            if characteristic.shape != nominal.shape:
+#                raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
+#
+#            # Take over the characteristic ...
+#
+#            self.nominal = nominal
+#            self.characteristic = characteristic
+#
+#            self.shape = self.nominal.shape
+#            self.ndim = self.nominal.ndim
 
         elif nominal is not None:
 
@@ -986,7 +1011,7 @@ class Negative(Unary):
         Unary.__init__(self, numpy.negative)
 
     def _source(self, x):
-        return -x
+        return x.scaled(-1)
 
 
 class Absolute(Unary):

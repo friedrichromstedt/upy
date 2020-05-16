@@ -64,7 +64,7 @@ def install_numpy_operators():
             ufunc=numpy_ops['negative'],
             uufunc=unegative)
     absolute = UnaryOperator(
-            ufunc=numpy_ops['abcolute'],
+            ufunc=numpy_ops['absolute'],
             uufunc=uabsolute)
 
     add = BinaryOperator(

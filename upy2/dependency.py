@@ -43,11 +43,7 @@ class Dependency:
                     % (names.shape, derivatives.shape))
             
             self.names = names
-            self.derivatives = derivatives
-
-            self.shape = self.names.shape
-            self.dtype = self.derivatives.dtype
-            self.ndim = self.names.ndim
+            self.derivatives = numpy.asarray(derivatives, dtype=dtype)
 
         elif shape is not None:
 
@@ -56,15 +52,13 @@ class Dependency:
                 # leaving *dtype* ``None`` leads to a derivatives
                 # ndarray with "standard" dtype (``numpy.float``).
 
-            self.shape = shape
-            self.dtype = self.derivatives.dtype
-                # When *dtype* is None, ``self.derivatives.dtype``
-                # will differ from *dtype*.
-            self.ndim = len(self.shape)
-
         else:
             raise ValueError("Dependency: Unable to initialise from"
                 " the arguments provided")
+
+        self.shape = self.derivatives.shape
+        self.dtype = self.derivatives.dtype
+        self.ndim = self.derivatives.ndim
 
 #X    def copy_names(self):
 #X        """Return a new Dependency with copied .names."""

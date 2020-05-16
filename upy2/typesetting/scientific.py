@@ -261,20 +261,37 @@ class ScientificTypesetter(Typesetter):
         """ Typeset ``undarray`` instance *uarray* using the options
         handed over on initialisation time. """
 
-        nominal = uarray.nominal.flatten()
-        uncertainty = self.stddevs * uarray.stddev.flatten()
-        N = len(nominal)
-
+        scientific_elements = numpy.zeros(
+                uarray.shape,
+                dtype=numpy.object)
         scientific_rule = ScientificRule()
+        iterator = numpy.nditer([uarray.nominal, uarray.stddev],
+                flags=['multi_index'])
+        for nominal, stddev in iterator:
+            scientific_elements[iterator.multi_index] = \
+                    ScientificElement(
+                            nominal=nominal,
+                            uncertainty=(self.stddevs * stddev),
+                            typesetter=self,
+                            rule=scientific_rule,
+                    )
 
-        scientific_elements = numpy.zeros(N, dtype=numpy.object)
-        for index in xrange(0, N):
-            scientific_elements[index] = ScientificElement(
-                nominal=nominal[index],
-                uncertainty=uncertainty[index],
-                typesetter=self,
-                rule=scientific_rule,
-            )
+        str(scientific_elements); return str(scientific_elements)
 
-        ready = scientific_elements.reshape(uarray.shape)
-        str(ready); return str(ready)
+#        nominal = uarray.nominal.flatten()
+#        uncertainty = self.stddevs * uarray.stddev.flatten()
+#        N = len(nominal)
+#
+#        scientific_rule = ScientificRule()
+#
+#        scientific_elements = numpy.zeros(N, dtype=numpy.object)
+#        for index in xrange(0, N):
+#            scientific_elements[index] = ScientificElement(
+#                nominal=nominal[index],
+#                uncertainty=uncertainty[index],
+#                typesetter=self,
+#                rule=scientific_rule,
+#            )
+#
+#        ready = scientific_elements.reshape(uarray.shape)
+#        str(ready); return str(ready)
