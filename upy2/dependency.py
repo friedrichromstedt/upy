@@ -26,27 +26,37 @@ class Dependency:
     def __init__(self,
             names=None, derivatives=None,
             shape=None, dtype=None):
-        """Initialise the dependency on error sources *names* of unity 
-        variances with derivatives *derivatives*.  Both are supposed to be
-        ndarrays of equal shape.
+        """ A ``Dependency`` can be initialised in two ways:
 
-        Alternatively, *shape* and *dtype* can be specified.  In this
-        case, an empty Dependency with a derivatives array of dtype
-        *dtype* will be constructed. """
+        1.  Providing its *shape*; or
+        2.  specifying *names* and *derivatives*.
+
+        When both *names* as well as *derivatives* aren't ``None``,
+        they will both be transformed into ndarrays, where *dtype* is
+        used for the derivatives ndarray.  When their shapes are
+        different, a ``ValueError`` will be raised.  If *dtype* is
+        ``None``, the dtype of the derivatives ndarray won't be
+        overridden.  The dtype of the *names* array *never* will be
+        overridden.
+
+        Otherwise, *shape* will be used to provide an empty Dependency
+        of the given *dtype* (with all names set to zero and with zero
+        derivatives).  In this case, the *names* will have dtype
+        ``numpy.int``.
+
+        In all other cases, the Dependency cannot be initialised
+        and ``ValueError`` will be raised. """
 
         if names is not None and derivatives is not None:
-
-            if names.shape != derivatives.shape:
+            self.names = numpy.asarray(names)
+            self.derivatives = numpy.asarray(derivatives, dtype=dtype)
+            if self.names.shape != self.derivatives.shape:
                 raise ValueError("Shape mismatch in initialising a"
                     " Dependency:"
                     " names.shape = %s, derivatives.shape = %s"
                     % (names.shape, derivatives.shape))
-            
-            self.names = names
-            self.derivatives = numpy.asarray(derivatives, dtype=dtype)
 
         elif shape is not None:
-
             self.names = numpy.zeros(shape, dtype=numpy.int)
             self.derivatives = numpy.zeros(shape, dtype=dtype)
                 # leaving *dtype* ``None`` leads to a derivatives

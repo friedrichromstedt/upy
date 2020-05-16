@@ -120,51 +120,28 @@ class undarray(object):
     def __init__(self,
             nominal=None,
             stddev=None,
-#            derivatives=None,
-#            characteristic=None,
             dtype=None,
             shape=None):
-        """ If *stddev* and *nominal* aren't None, *nominal* and
-        *stddev* will be converted to numpy.ndarrays by
-        ``numpy.asarray``.  The initial Characteristic will reflect
-        the single dependency expressed by *stddev*.
+        """ To initialise an :class:`undarray` instance, a
+        specification of the nominal value is required.  This can be
+        given in two ways:
 
-        If *derivatives* and *nominal* are not None, *derivatives*
-        must be a list ``[(undarray instance, derivative), ...]``,
-        giving the derivatives with that the new undarray depends on
-        the given undarrays.  *nominal* will be converted to a
-        ``numpy.ndarray``.
+        1.  By providing *nominal*; or
+        2.  by providing *shape*.
 
-        If *characteristic* and *nominal* are not None, *nominal* is
-        converted to a ``numpy.ndarray`` by means of ``numpy.asarray``
-        and the *characteristic* is taken over *without copying it*.
+        In either way, the ``dtype`` of the resulting ``undarray`` can
+        be overridded by *dtype*.  Providing *shape* and leaving
+        *nominal* ``None`` will create a zero-filled nominal value.
+        *shape* is ignored when *nominal* is given.  The shape of the
+        nominal value ndarray will serve as the shape of the
+        ``undarray``.
 
-        If otherwise *nominal* is given, it will be converted by
-        ``numpy.asarray`` and the ``undarray`` instance will carry an
-        empty Characteristic.
-        
-        If *nominal* is None, *shape* is taken into account, to create
-        a new, zero-valued undarray of dtype *dtype* (giving ``None``
-        as *dtype* results in ``numpy.float`` used as dtype).  As the
-        Characteristic is empty in this case, and only the
-        Dependencies carry a dtype, the *dtype* given pertains to the
-        ``nominal`` attribute alone.
-        
-        If none of these branches matches, ValueError will be raised.
-
-        *nominal* and *stddev* will be used as returned from
-        ``numpy.asarray``.  They won't be copied explicitly.  The
-        ``Characterstic`` instances of the ``undarray`` instances in
-        ``derivatives`` *will* be copied during the initialisation.
-        """
-        
-        # Attributes to initialise:
-        #
-        # - self.nominal
-        # - self.dependencies
-        # - self.dtype
-        # - self.shape
-        # - self.ndim
+        Optionally, *stddev* can be provided to define initial
+        uncertainties of the new ``undarray``.  There will be no
+        correlation of the uncertainties created this way, neither
+        within in new ``undarray`` nor with elements of other
+        ``undarray`` instances.  The shape of *stddev* needs to
+        coincide with the shape of the ``undarray`` created. """
 
         if nominal is None and shape is not None:
             nominal = numpy.zeros(shape=shape, dtype=dtype)
@@ -187,145 +164,6 @@ class undarray(object):
             )   # The Dependency constructor doesn't copy the data
                 # given.
             self.append(dependency)
-
-        return
-
-        # ------
-
-        if stddev is not None and nominal is not None:
-            
-            # Constuct a new undarray ...
-
-            # Convert to ndarrays.
-            nominal = numpy.asarray(nominal)
-            stddev = numpy.asarray(stddev)
-
-            # Check shape.
-            if nominal.shape != stddev.shape:
-                raise ValueError("Shape mismatch between *nominal* (shape %s) and *stddev* (shape %s)" % (nominal.shape, stddev.shape))
-
-            self.nominal = nominal
-
-            self.shape = self.nominal.shape
-            self.ndim = self.nominal.ndim
-            
-            # Create a Dependency instance from scratch.
-            dependency = upy2.dependency.Dependency(
-                names=upy2.id_generator.get_idarray(
-                    shape=self.nominal.shape),
-                derivatives=stddev,
-            )   # The Dependency constructor doesn't copy the data
-                # given.
-            self.append(dependency)
-
-#            self.characteristic = upy2.characteristic.Characteristic(
-#                shape=self.shape,
-#            )
-#            self.characteristic.append(dependency)
-#
-#        elif derivatives is not None and nominal is not None:
-#
-#            # Derive the new undarray from known ones ...
-#
-#            self.nominal = numpy.asarray(nominal)
-#            self.shape = self.nominal.shape
-#            self.ndim = self.nominal.ndim
-#
-#            # Create a new, empty Characteristic where we can fill in
-#            # the dependencies introduced by *derivatives*.
-#            self.characteristic = upy2.characteristic.Characteristic(
-#                    shape=self.shape)
-#
-#            # Fill in the dependencies.
-#            for (instance, derivative) in derivatives:
-#                self.characteristic += \
-#                        instance.characteristic * derivative
-#
-#        elif characteristic is not None and nominal is not None:
-#
-#            nominal = numpy.asarray(nominal)
-#            if characteristic.shape != nominal.shape:
-#                raise ValueError("Shape mismatch between *nominal* (shape %s) and *characteristic* (shape %s)" % (nominal.shape, characteristic.shape))
-#
-#            # Take over the characteristic ...
-#
-#            self.nominal = nominal
-#            self.characteristic = characteristic
-#
-#            self.shape = self.nominal.shape
-#            self.ndim = self.nominal.ndim
-
-        elif nominal is not None:
-
-            # Construct a new undarray with an empty Characteristic.
-
-            self.nominal = numpy.asarray(nominal)
-
-#X
-#X            # Initialise from list-like structure or scalar number ...
-#X
-#X            # Determine the shape.
-#X            shapeobject = object
-#X            shape = []
-#X            # Index the shapeobject until a scalar or an undarray is
-#X            # reached:
-#X            while True:
-#X                if isinstance(shapeobject, undarray):
-#X                    # Finish shape:
-#X                    shape += list(shapeobject.shape)
-#X                    break
-#X                elif numpy.isscalar(shapeobject):
-#X                    # We reached the scalar level.  Shape finished.
-#X                    break
-#X                else:
-#X                    # Test for scalar array.
-#X                    if isinstance(shapeobject, numpy.ndarray) and \
-#X                            shapeobject.shape == ():
-#X                        # In fact, it's scalar:
-#X                        break
-#X                    else:
-#X                        # It's not a scalar array, indexing is
-#X                        # possible:
-#X                        shape.append(len(shapeobject))
-#X                        shapeobject = shapeobject[0]
-#X
-#X            # Initialise the attributes.
-#X
-#X            # Initialise .value and .characteristic:
-#X            self.value = numpy.zeros(shape, dtype=dtype)
-#X            self.characteristic = upy.characteristic.Characteristic(
-#X                    shape = tuple(shape))
-#X
-#X            # Provide .shape and .ndim, because __setitem__() needs it.
-#X            self.shape = shape
-#X            self.ndim = len(shape)
-#X
-#X            # Fill in the given values.
-#X            # 
-#X            # This will recurse into the OBJECT.
-#X            self[()] = object
-
-        elif shape is not None:
-
-            # Construct an empty undarray ...
-
-#X            if not isinstance(shape, tuple):
-#X                raise ValueError("Cannot construct undarray: *shape* must be a tuple")
-#X
-#X            self.shape = shape
-#X            self.ndim = len(shape)
-
-            self.nominal = numpy.zeros(shape, dtype=dtype)
-                # This accepts a scalar *shape* argument as well as
-                # tuples and lists.  We delegate the job of
-                # interpreting *shape* to ``numpy.zeros``.
-
-        else:
-            raise ValueError("Cannot initialise an undarray from the arguments given.")
-
-        self.dtype = self.nominal.dtype
-        self.shape = self.nominal.shape
-        self.ndim = self.nominal.ndim
 
     def append(self, dependency):
         if not self.shape == dependency.shape:
