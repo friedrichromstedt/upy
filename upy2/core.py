@@ -293,35 +293,6 @@ class undarray(object):
             # the :class:`Dependency` instance exhibiting complex
             # derivatives.
 
-#?    def uncertainty(self, sigmas):
-#?        """Returns ``sigmas * self.stddev``.
-#?        
-#?        This method will be deprecated by v0.5, please use explicit
-#?        multiplication instead."""
-#?
-#?        warnings.warn(DeprecationWarning('undarray.uncertainty() will be '
-#?            'deprecated by v0.5, please use explicit multiplication instead')
-#?
-#?        return sigmas * self.stddev
-#?
-#?    def weight(self):
-#?        """Returns a numpy.ndarray suitable for weighting this undarray.
-#?        The weights are 1.0 / .variance().  When a variance element is
-#?        zero, the used variance is 1.0.
-#?        
-#?        This method will be deprecated in v0.5, use ``1 / ua.variance()``
-#?        directly."""
-#?        
-#?        warnings.warn(DeprecationWarning('undarray.weight() will be '
-#?            'deprecated in v0.5, use 1 / ua.variance() instead')
-#?        
-#?        # Calculate the variance used.
-#?        used_variance = self.variance()
-#?        used_variance += 1.0 * (used_variance == 0.0)
-#?
-#?        # Calculate the weight from the variance.
-#?        return 1.0 / used_variance
-
     #
     # Binary arithmetics ...
     #
@@ -377,17 +348,6 @@ class undarray(object):
 
     def __abs__(self):
         return uabsolute(self)
-#X?        """This works for real-valued undarrays."""
-#X?        
-#X?        # Calculate an inversion mask ...
-#X?
-#X?        inversion_mask = numpy.ones(shape = self.nominal.shape)
-#X?        inversion_mask -= 2 * (self.nominal < 0)
-#X?
-#X?        # Invert values which must be inverted, and invert also the dependency
-#X?        # of this values on the error source ...
-#X?
-#X?        return self * inversion_mask
 
     def sqrt(self):
         return usqrt(self)
@@ -399,7 +359,8 @@ class undarray(object):
         return ucos(self)
     
     #
-    # Casts to int, float, ... are impossible, because we have ndarray values.
+    # Casts to int, float, ... are impossible, because we have ndarray
+    # values.
     #
 
     #
