@@ -309,6 +309,9 @@ class undarray(object):
     def __div__(self, other):
         return udivide(self, other)
 
+    def __truediv__(self, other):
+        return udivide(self, other)
+
     def __pow__(self, other):
         return upower(self, other)
 
@@ -326,6 +329,9 @@ class undarray(object):
         return umultiply(other, self)
 
     def __rdiv__(self, other):
+        return udivide(other, self)
+
+    def __rtruediv__(self, other):
         return udivide(other, self)
 
     def __rpow__(self, other):
@@ -357,6 +363,18 @@ class undarray(object):
 
     def cos(self):
         return ucos(self)
+
+    def exp(self):
+        return uexp(self)
+
+    def log(self):
+        return ulog(self)
+
+    def log2(self):
+        return ulog2(self)
+
+    def log10(self):
+        return ulog10(self)
     
     #
     # Casts to int, float, ... are impossible, because we have ndarray
@@ -830,6 +848,7 @@ class Sqrt(Unary):
         y = x.nominal
         return x * (0.5 / numpy.sqrt(y))
 
+
 class Sin(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.sin)
@@ -843,9 +862,53 @@ class Cos(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.cos)
 
-    def _soruce(self, x):
+    def _source(self, x):
         y = x.nominal
         return x * (-numpy.sin(y))
+
+
+class Exp(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.exp)
+
+    def _source(self, x):
+        # f = exp(x)
+        # d_x f = exp(x)
+        y = x.nominal
+        return x * numpy.exp(y)
+
+
+class Log(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.log)
+
+    def _source(self, x):
+        # f = ln x
+        # d_x f = 1 / x
+        y = x.nominal
+        return x / y
+
+
+class Log2(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.log2)
+
+    def _source(self, x):
+        # f = ln_2 x = ln x / ln 2
+        # d_x f = 1 / (x * ln 2)
+        y = x.nominal
+        return x / (y * numpy.log(2))
+
+
+class Log10(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.log10)
+
+    def _source(self, x):
+        # f = ln_10 x = ln x / ln 10
+        # d_x f = 1 / (x * ln 10)
+        y = x.nominal
+        return x / (y * numpy.log(10))
 
 
 class Add(Binary):
@@ -889,9 +952,9 @@ class Divide(Binary):
     def _source1(self, x1, y2):
         # f = y1 / y2
         #
-        # d_y2 f = 1 / y2
+        # d_y1 f = 1 / y2
         #
-        return x1 * (1/y2)
+        return x1 * (1.0/y2)
             # Writing ``x1 / y2`` would result in an infinite
             # recursion.
 
@@ -954,6 +1017,10 @@ unegative = Negative()
 uabsolute = Absolute()
 usin = Sin()
 ucos = Cos()
+uexp = Exp()
+ulog = Log()
+ulog2 = Log2()
+ulog10 = Log10()
 
 uadd = Add()
 usubtract = Subtract()
