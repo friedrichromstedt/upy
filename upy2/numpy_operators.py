@@ -1,6 +1,7 @@
 import numpy
 from upy2.core import undarray, \
-    unegative, uabsolute, \
+    upositive, unegative, uabsolute, \
+    usqrt, usquare, \
     uadd, usubtract, umultiply, udivide, \
     upower
 
@@ -60,12 +61,22 @@ class BinaryOperator(object):
 def install_numpy_operators():
     numpy_ops = numpy.set_numeric_ops()
 
+    positive = UnaryOperator(
+            ufunc=numpy_ops['positive'],
+            uufunc=upositive)
     negative = UnaryOperator(
             ufunc=numpy_ops['negative'],
             uufunc=unegative)
     absolute = UnaryOperator(
             ufunc=numpy_ops['absolute'],
             uufunc=uabsolute)
+
+    sqrt = UnaryOperator(
+            ufunc=numpy_ops['sqrt'],
+            uufunc=usqrt)
+    square = UnaryOperator(
+            ufunc=numpy_ops['square'],
+            uufunc=usquare)
 
     add = BinaryOperator(
             ufunc=numpy_ops['add'],
@@ -87,8 +98,11 @@ def install_numpy_operators():
             uufunc=upower)
 
     numpy.set_numeric_ops(
+        positive=positive,
         negative=negative,
         absolute=absolute,
+        sqrt=sqrt,
+        square=square,
         add=add,
         subtract=subtract,
         multiply=multiply,

@@ -355,8 +355,20 @@ class undarray(object):
     def __abs__(self):
         return uabsolute(self)
 
+    def positive(self):
+        return upositive(self)
+
+    def negative(self):
+        return unegative(self)
+
+    def absolute(self):
+        return uabsolute(self)
+
     def sqrt(self):
         return usqrt(self)
+
+    def square(self):
+        return self ** 2
 
     def sin(self):
         return usin(self)
@@ -364,8 +376,41 @@ class undarray(object):
     def cos(self):
         return ucos(self)
 
+    def tan(self):
+        return utan(self)
+
+    def arcsin(self):
+        return uarcsin(self)
+
+    def arccos(self):
+        return uarccos(self)
+
+    def arctan(self):
+        return uarctan(self)
+
+    def sinh(self):
+        return usinh(self)
+
+    def cosh(self):
+        return ucosh(self)
+
+    def tanh(self):
+        return utanh(self)
+
+    def arcsinh(self):
+        return uarcsinh(self)
+
+    def arccosh(self):
+        return uarccosh(self)
+
+    def arctanh(self):
+        return uarctanh(self)
+
     def exp(self):
         return uexp(self)
+
+    def exp2(self):
+        return uexp2(self)
 
     def log(self):
         return ulog(self)
@@ -823,6 +868,14 @@ class Binary(uufunc):
 # Protocol (Unary and Binary) implementations ...
 
 
+class Positive(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.positive)
+
+    def _source(self, x):
+        return x
+
+
 class Negative(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.negative)
@@ -849,6 +902,15 @@ class Sqrt(Unary):
         return x * (0.5 / numpy.sqrt(y))
 
 
+class Square(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.square)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * (2 * y)
+
+
 class Sin(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.sin)
@@ -867,6 +929,111 @@ class Cos(Unary):
         return x * (-numpy.sin(y))
 
 
+class Tan(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.tan)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * (1 + numpy.tan(y) ** 2)
+
+
+# numpy does not support the cotangens ``cot``.
+
+
+class Arcsin(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arcsin)
+
+    def _source(self, x):
+        y = x.nominal
+        return x / numpy.sqrt(1 - y ** 2)
+
+
+class Arccos(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arccos)
+
+    def _source(self, x):
+        y = x.nominal
+        return x / (-numpy.sqrt(1 - y ** 2))
+
+
+class Arctan(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arctan)
+
+    def _source(self, x):
+        y = x.nominal
+        return x / (1 + y ** 2)
+
+
+class Arctan2(Binary):
+    def __init__(self):
+        Binary.__init__(self, numpy.arctan2)
+
+    def _source1(self, x1, y2):
+        y1 = x1.nominal
+        return x1 * (-y2 / (y1 ** 2 + y2 ** 2))
+
+    def _source2(self, y1, x2):
+        y2 = x2.nominal
+        return x2 * (y1 / (y1 ** 2 + y2 ** 2))
+
+
+class Sinh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.sinh)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * numpy.cosh(y)
+
+
+class Cosh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.cosh)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * (-numpy.sinh(y))
+
+
+class Tanh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.tanh)
+
+    def _source(self, x):
+        y = x.nominal
+        return x * (numpy.tanh(y) ** 2 + 1)
+
+
+class Arcsinh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arcsinh)
+
+    def _souce(self, x):
+        y = x.nominal
+        return x / numpy.sqrt(y ** 2 + 1)
+
+
+class Arccosh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arccosh)
+
+    def _source(self, x):
+        y = x.nominal
+        return x / (-numpy.sqrt(y ** 2 - 1))
+
+
+class Arctanh(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.arctanh)
+
+    def _source(self, x):
+        return x / (y ** 2 + 1)
+
+
 class Exp(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.exp)
@@ -876,6 +1043,19 @@ class Exp(Unary):
         # d_x f = exp(x)
         y = x.nominal
         return x * numpy.exp(y)
+
+
+class Exp2(Unary):
+    def __init__(self):
+        Unary.__init__(self, numpy.exp2)
+
+    def _source(self, x):
+        # f = 2^x
+        # d_x f = d_x exp(log(2) x)
+        #   = log 2 2^x
+        #   = log 2 f
+        y = x.nominal
+        return x * (numpy.log(2) * numpy.exp2(y))
 
 
 class Log(Unary):
@@ -989,7 +1169,7 @@ class Power(Binary):
         #    =      b ^ (x - 1) . x
 
         y1 = x1.nominal
-        return x1 * y2 * (y1 ** (y2 - 1))
+        return x1 * (y2 * (y1 ** (y2 - 1)))
 
     def _source2(self, y1, x2):
         # f = b ^ x
@@ -1007,17 +1187,31 @@ class Power(Binary):
         #    =      b ^ x . (ln b)
 
         y2 = x2.nominal
-        return x2 * (y1 ** y2) * numpy.log(y1)
+        return x2 * ((y1 ** y2) * numpy.log(y1))
 
 
 # The actual uufuncs ...
 
 
+upositive = Positive()
 unegative = Negative()
 uabsolute = Absolute()
+usqrt = Sqrt()
+usquare = Square()
 usin = Sin()
 ucos = Cos()
+utan = Tan()
+uarcsin = Arcsin()
+uarccos = Arccos()
+uarctan = Arctan()
+usinh = Sinh()
+ucosh = Cosh()
+utanh = Tanh()
+uarcsinh = Arcsinh()
+uarccosh = Arccosh()
+uarctanh = Arctanh()
 uexp = Exp()
+uexp2 = Exp2()
 ulog = Log()
 ulog2 = Log2()
 ulog10 = Log10()
@@ -1027,3 +1221,4 @@ usubtract = Subtract()
 umultiply = Multiply()
 udivide = Divide()
 upower = Power()
+uarctan2 = Arctan2()
