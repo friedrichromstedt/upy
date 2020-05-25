@@ -12,8 +12,12 @@ import upy2.context
 #import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uabsolute',
-    'uadd', 'usubtract', 'umultiply', 'udivide', 'upower']
+    'unegative', 'uabsolute', 'usqrt', 'usquare',
+    'usin', 'ucos', 'utan', 'uarcsin', 'uarccos', 'uarctan',
+    'usinh', 'ucosh', 'utanh', 'uarcsinh', 'uarccosh', 'uarctanh',
+    'uexp', 'uexp2', 'ulog', 'ulog2', 'ulog10',
+    'uadd', 'usubtract', 'umultiply', 'udivide', 'upower',
+    'uarctan2']
 
 typesetting_context = upy2.context.byprotocol(
     upy2.typesetting.protocol.Typesetter)
@@ -1005,14 +1009,14 @@ class Tanh(Unary):
 
     def _source(self, x):
         y = x.nominal
-        return x * (numpy.tanh(y) ** 2 + 1)
+        return x * (1 - numpy.tanh(y) ** 2)
 
 
 class Arcsinh(Unary):
     def __init__(self):
         Unary.__init__(self, numpy.arcsinh)
 
-    def _souce(self, x):
+    def _source(self, x):
         y = x.nominal
         return x / numpy.sqrt(y ** 2 + 1)
 
@@ -1031,7 +1035,8 @@ class Arctanh(Unary):
         Unary.__init__(self, numpy.arctanh)
 
     def _source(self, x):
-        return x / (y ** 2 + 1)
+        y = x.nominal
+        return x / (1 - y ** 2)
 
 
 class Exp(Unary):

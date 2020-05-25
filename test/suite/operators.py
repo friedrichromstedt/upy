@@ -3,6 +3,7 @@
 import random
 import unittest
 import numpy
+import upy2
 from upy2 import u, U, undarray
 
 
@@ -23,10 +24,46 @@ class TestOperators(unittest.TestCase):
     def expo(self):
         return (random.expovariate(1), random.gauss(0, 1))
 
+    def in01(self):
+        return (random.random(), random.gauss(0, 1))
+
+    def inpm01(self):
+        return (random.choice([-1, 1]) * random.random(), random.gauss(0, 1))
+
+    def above1(self):
+        return (1 + random.expovariate(1), random.gauss(0, 1))
+
 
     def assertClose(self, a, b):
         if not numpy.allclose(a, b):
             raise AssertionError('{} not close to {}'.format(a, b))
+
+
+    def test_construction(self):
+        random.seed( 658)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+
+            ua1 = nom +- u(unc)
+            ua2 = nom + u(unc)
+            ua3 = nom - u(unc)
+            ua4 = undarray(nominal=nom, stddev=unc)
+            ua5 = undarray(nominal=nom, stddev=(-unc))
+
+            self.assertClose(ua1.stddev, abs(unc))
+            self.assertClose(ua2.stddev, abs(unc))
+            self.assertClose(ua3.stddev, abs(unc))
+            self.assertClose(ua4.stddev, abs(unc))
+            self.assertClose(ua5.stddev, abs(unc))
+
+
+    def test_positive(self):
+        random.seed( 646)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = +ua
+            self.assertClose(ub.stddev, abs(unc))
 
     def test_unegative(self):
         random.seed(1)
@@ -48,6 +85,33 @@ class TestOperators(unittest.TestCase):
         ua3 = 1j +- u(0.1j)
         self.assertClose(numpy.abs(ua3).stddev, 0.1)
 
+        ua4 = -1 +- u(0.1 + 0.1j)
+        self.assertClose(abs(ua4).stddev, 0.1)
+
+        ua5 = -1j +- u(0.1 - 0.1j)
+        self.assertClose(abs(ua5).stddev, 0.1)
+
+        ua6 = 1j +- u(0.1)
+        self.assertClose(abs(ua6).stddev, 0)
+
+    def test_sqrt(self):
+        random.seed( 658)
+        for i in xrange(10):
+            nom, unc = self.expo()
+            ua = nom +- u(unc)
+            ub = numpy.sqrt(ua)
+
+            self.assertClose(ub.stddev, abs(unc) * 0.5 * nom ** (-0.5))
+
+    def test_square(self):
+        random.seed( 700)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.square(ua)
+
+            self.assertClose(ub.stddev, abs(unc) * 2 * abs(nom))
+
     def test_sin(self):
         random.seed(2)
         for i in xrange(10):
@@ -66,6 +130,96 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ua2.stddev, abs(-unc * numpy.sin(nom)))
 
+    def test_tan(self):
+        random.seed( 702)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.tan(ua)
+
+            self.assertClose(ub.stddev, abs(unc) * (1 + numpy.tan(nom) ** 2))
+
+    def test_arcsin(self):
+        random.seed( 704)
+        for i in xrange(10):
+            nom, unc = self.inpm01()
+            ua = nom +- u(unc)
+            ub = numpy.arcsin(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
+
+    def test_arccos(self):
+        random.seed( 709)
+        for i in xrange(10):
+            nom, unc = self.inpm01()
+            ua = nom +- u(unc)
+            ub = numpy.arccos(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
+
+    def test_arctan(self):
+        random.seed( 710)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.arctan(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / (1 + nom ** 2))
+
+    def test_sinh(self):
+        random.seed( 712)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.sinh(ua)
+
+            self.assertClose(ub.stddev, abs(unc * numpy.cosh(nom)))
+
+    def test_cosh(self):
+        random.seed( 715)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.cosh(ua)
+
+            self.assertClose(ub.stddev, abs(unc * numpy.sinh(nom)))
+
+    def test_tanh(self):
+        random.seed( 716)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.tanh(ua)
+
+            self.assertClose(ub.stddev, abs(unc) * (1 - numpy.tanh(nom) ** 2))
+
+    def test_arcsinh(self):
+        random.seed( 723)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.arcsinh(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(nom ** 2 + 1))
+
+    def test_arccosh(self):
+        random.seed( 730)
+        for i in xrange(10):
+            nom, unc = self.above1()
+            ua = nom +- u(unc)
+            ub = numpy.arccosh(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(nom ** 2 - 1))
+
+    def test_arctanh(self):
+        random.seed( 734)
+        for i in xrange(10):
+            nom, unc = self.inpm01()
+            ua = nom +- u(unc)
+            ub = numpy.arctanh(ua)
+
+            self.assertClose(ub.stddev, abs(unc) / (1 - nom ** 2))
+
     def test_exp(self):
         random.seed(1638)
         for i in xrange(10):
@@ -81,6 +235,18 @@ class TestOperators(unittest.TestCase):
             # the relative uncertainty of y.
 
             self.assertClose(ua2.stddev / ua2.nominal, abs(unc))
+
+    def test_exp2(self):
+        random.seed( 737)
+        for i in xrange(10):
+            nom, unc = self.gauss()
+            ua = nom +- u(unc)
+            ub = numpy.exp2(ua)
+
+            # y = 2 ** x = e ** (ln 2 * x)
+            # d_x y = ln 2 * 2 ** x
+
+            self.assertClose(ub.stddev, abs(unc) * numpy.log(2) * 2 ** nom)
 
     def test_log(self):
         random.seed(1648)
@@ -234,3 +400,18 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(uy.variance,
                     ua1.variance * d1 ** 2 + ua2.variance * d2 ** 2)
+
+    def test_arctan2(self):
+        random.seed( 740)
+        for i in xrange(10):
+            nomx, uncx = self.gauss()
+            nomy, uncy = self.gauss()
+            ux = nomx +- u(uncx)
+            uy = nomy +- u(uncy)
+
+            ub = upy2.uarctan2(uy, ux)
+
+            dx = -nomy / (nomx ** 2 + nomy ** 2)
+            dy = nomx / (nomx ** 2 + nomy ** 2)
+            self.assertClose(ub.variance,
+                    ux.variance * (dx ** 2) + uy.variance * (dy ** 2))
