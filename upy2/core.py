@@ -392,6 +392,12 @@ class undarray(object):
     def arctan(self):
         return uarctan(self)
 
+    # I am intentionally *not* defining :meth:`arctan2`.  It would
+    # work in ``numpy.arctan2(ua, <...>)`` with an uncertain quantity
+    # ``ua``; however, it would *not* work with ``numpy.arctan2(<...>,
+    # ua)``, most specifically, it won't work in ``numpy.arctan2(b,
+    # ua)`` with an ndarray ``b``.  Use ``upy2.uarctan2`` directly.
+
     def sinh(self):
         return usinh(self)
 
