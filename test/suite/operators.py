@@ -18,6 +18,11 @@ class TestOperators(unittest.TestCase):
     def tearDown(self):
         self.U.unregister()
 
+    # Providers for tuples ``(nominal value, uncertainty)``.  The
+    # ``uncertainty`` is a normally distributed random variable
+    # always; there are several options for the distribution of the
+    # ``nominal value`` ...
+
     def gauss(self):
         return (random.gauss(0, 1), random.gauss(0, 1))
 
@@ -33,11 +38,13 @@ class TestOperators(unittest.TestCase):
     def above1(self):
         return (1 + random.expovariate(1), random.gauss(0, 1))
 
+    # Custom Assertions ...
 
     def assertClose(self, a, b):
         if not numpy.allclose(a, b):
             raise AssertionError('{} not close to {}'.format(a, b))
 
+    # Testing construction ...
 
     def test_construction(self):
         random.seed( 658)
@@ -56,6 +63,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua4.stddev, abs(unc))
             self.assertClose(ua5.stddev, abs(unc))
 
+    # Testing the operators ...
 
     def test_positive(self):
         random.seed( 646)
