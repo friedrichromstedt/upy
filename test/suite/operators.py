@@ -44,6 +44,46 @@ class TestOperators(unittest.TestCase):
         if not numpy.allclose(a, b):
             raise AssertionError('{} not close to {}'.format(a, b))
 
+    def assertDerivative(self, specimen, position, prediction, epsilon):
+        """ *specimen* is the function whose derivative is to be
+        approximated numerically at position *position* using a small
+        displacement *epsilon*.  *prediction* is the prediction of the
+        derivative of *specimen* at *position* using symbolic
+        differentiation. """
+
+        position0 = position
+        position1 = position + epsilon
+        position1j = position + epsilon * 1j
+
+        value0 = specimen(position0)
+        value1 = specimen(position1)
+        value1j = speciman(position1j)
+
+        approximation1 = (value1 - value0) / epsilon
+        approximation1j = -1j * (value1j - value0) / epsilon
+
+        approximation_uncertainty = abs(approximation1j - approximation1)
+        mean_approximation = (approximation1 + approximation1j) / 2
+
+        relative_approximation_uncertainty = \
+                approximation_uncertainty / abs(mean_approximation)
+        if relative_approximation_uncertainty > 0.01:
+            raise AssertionError("The approximation of {specimen}
+                    couln't be approximated successfully at
+                    {position}.".format(specimen=speciment,
+                        position=position))
+
+        difference = numpy.abs(model - mean_approximation)
+        if difference > 2 * approximation_uncertainty:
+            raise AssertionError(('Could not verify the derivative of '
+                '{specimen} at {position}.  Prediction: {prediction}, '
+                'approximation: {approximation} with uncertainty '
+                '{uncertainty}').\
+                format(specimen=specimen, position=position,
+                    prediction=model,
+                    approximation=mean_approximation,
+                    uncertainty=approximation_uncertainty))
+
     # Testing construction ...
 
     def test_construction(self):
