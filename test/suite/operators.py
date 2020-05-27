@@ -55,6 +55,12 @@ class TestOperators(unittest.TestCase):
     def above1(self):
         return (1 + random.expovariate(1), random.gauss(0, 1))
 
+    # Providers for inspection positions during testing
+    # differentiation ...
+
+    def cgauss(self):
+        return random.gauss(0, 1) + 1j * random.gauss(0, 1)
+
     # Custom Assertions ...
 
     def assertClose(self, a, b):
@@ -94,7 +100,7 @@ class TestOperators(unittest.TestCase):
                         rel=relative_approximation_uncertainty)
             )
 
-        difference = numpy.abs(model - mean_approximation)
+        difference = numpy.abs(prediction - mean_approximation)
         if difference > 2 * approximation_uncertainty:
             raise DerivativeVerificationError(
                 ('Could not verify the derivative of '
@@ -102,10 +108,50 @@ class TestOperators(unittest.TestCase):
                  'approximation: {approximation} with uncertainty '
                  '{uncertainty}, Excess: {excess:.2f}').\
                 format(specimen=specimen, position=position,
-                    prediction=model,
+                    prediction=prediction,
                     approximation=mean_approximation,
                     uncertainty=approximation_uncertainty,
                     excess=(difference / approximation_uncertainty))
+            )
+
+    # Testing assertions ...
+
+    def test_assertions(self):
+        with self.assertRaises(NotCloseError):
+            self.assertClose(1, 2)
+
+        with self.assertRaises(DerivativeApproximationError):
+            random.seed(1812)
+            for i in xrange(100):
+                z = self.cgauss()
+                self.assertDerivative(
+                    specimen=(lambda z:
+                        numpy.sin(z.real) + numpy.cos(z.imag)),
+                    position=z,
+                    prediction=42,
+                    epsilon=1e-4,
+                )
+
+        with self.assertRaises(DerivativeVerificationError):
+            random.seed(1815)
+            for i in xrange(100):
+                z = self.cgauss()
+                self.assertDerivative(
+                    specimen=numpy.cos,
+                    position=z,
+                    prediction=42,
+                    epsilon=1e-4,
+                )
+        
+        # Test successful differentiation:
+        random.seed(1819)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                specimen=numpy.cos,
+                position=z,
+                prediction=(-numpy.sin(z)),
+                epsilon=1e-4,
             )
 
     # Testing construction ...
