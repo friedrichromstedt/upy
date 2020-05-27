@@ -7,6 +7,23 @@ import upy2
 from upy2 import u, U, undarray
 
 
+class NotCloseError(AssertionError):
+    """ Some numbers are not close enough to each other. """
+
+    pass
+
+class DerivativeApproximationError(AssertionError):
+    """ Calculating a derivative approximation numerically failed. """
+
+    pass
+
+class DerivativeVerificationError(AssertionError):
+    """ The numerically aproximated derivative did not match the
+    symbolical prediction. """
+
+    pass
+
+
 class TestOperators(unittest.TestCase):
     def __init__(self, name):
         unittest.TestCase.__init__(self, name)
@@ -42,7 +59,7 @@ class TestOperators(unittest.TestCase):
 
     def assertClose(self, a, b):
         if not numpy.allclose(a, b):
-            raise AssertionError('{} not close to {}'.format(a, b))
+            raise NotCloseError('{} not close to {}'.format(a, b))
 
     def assertDerivative(self, specimen, position, prediction, epsilon):
         """ *specimen* is the function whose derivative is to be
@@ -57,7 +74,7 @@ class TestOperators(unittest.TestCase):
 
         value0 = specimen(position0)
         value1 = specimen(position1)
-        value1j = speciman(position1j)
+        value1j = specimen(position1j)
 
         approximation1 = (value1 - value0) / epsilon
         approximation1j = -1j * (value1j - value0) / epsilon
@@ -68,21 +85,28 @@ class TestOperators(unittest.TestCase):
         relative_approximation_uncertainty = \
                 approximation_uncertainty / abs(mean_approximation)
         if relative_approximation_uncertainty > 0.01:
-            raise AssertionError("The approximation of {specimen}
-                    couln't be approximated successfully at
-                    {position}.".format(specimen=speciment,
-                        position=position))
+            raise DerivativeApproximationError(
+                    ("The approximation of {specimen} "
+                     "couln't be approximated successfully at "
+                     "{position}.  Relative approximation uncertainty: "
+                     "{rel:.3f}").\
+                    format(specimen=specimen, position=position,
+                        rel=relative_approximation_uncertainty)
+            )
 
         difference = numpy.abs(model - mean_approximation)
         if difference > 2 * approximation_uncertainty:
-            raise AssertionError(('Could not verify the derivative of '
-                '{specimen} at {position}.  Prediction: {prediction}, '
-                'approximation: {approximation} with uncertainty '
-                '{uncertainty}').\
+            raise DerivativeVerificationError(
+                ('Could not verify the derivative of '
+                 '{specimen} at {position}.  Prediction: {prediction}, '
+                 'approximation: {approximation} with uncertainty '
+                 '{uncertainty}, Excess: {excess:.2f}').\
                 format(specimen=specimen, position=position,
                     prediction=model,
                     approximation=mean_approximation,
-                    uncertainty=approximation_uncertainty))
+                    uncertainty=approximation_uncertainty,
+                    excess=(difference / approximation_uncertainty))
+            )
 
     # Testing construction ...
 
