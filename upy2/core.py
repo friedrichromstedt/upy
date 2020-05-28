@@ -673,7 +673,7 @@ class undarray(object):
                 *flatten_args, **flatten_kwargs
             ))
         for dependency in self.dependencies:
-            result.append(dependency.compress(
+            result.append(dependency.flatten(
                 *flatten_args, **flatten_kwargs
             ))
         return result
