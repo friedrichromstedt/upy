@@ -432,8 +432,7 @@ class undarray(object):
         return ulog10(self)
     
     #
-    # Casts to int, float, ... are impossible, because we have ndarray
-    # values.
+    # Casts to int, float etc. aren't supported.
     #
 
     #
@@ -471,7 +470,7 @@ class undarray(object):
             self.nominal[key] = value.nominal
                 # Since we use key assignment, the shape of
                 # ``self.nominal`` cannot grow.
-            self.depend(other=value, key=key)
+            self.copy_dependencies(source=value, key=key)
         else:
             self.nominal[key] = value
 
