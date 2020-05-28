@@ -437,44 +437,8 @@ class undarray(object):
     #
 
     #
-    # Comparison operators ...
+    # Comparison operators remain unimplemented by intention.
     #
-
-    def __lt__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal < other.nominal
-        else:
-            return self.nominal < numpy.asarray(other)
-
-    def __le__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal <= other.nominal
-        else:
-            return self.nominal <= numpy.asarray(other)
-
-    def __gt__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal > other.nominal
-        else:
-            return self.nominal > numpy.asarray(other)
-
-    def __ge__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal >= other.nominal
-        else:
-            return self.nominal >= numpy.asarray(other)
-
-    def __eq__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal == other.nominal
-        else:
-            return self.nominal == numpy.asarray(other)
-
-    def __ne__(self, other):
-        if isinstance(other, undarray):
-            return self.nominal != other.nominal
-        else:
-            return self.nominal != numpy.asarray(other)
     
     #
     # Keying methods ...
