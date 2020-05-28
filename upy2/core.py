@@ -527,61 +527,6 @@ class undarray(object):
             result.append(dependency.copy())
         return result
 
-
-# This method is deprecated, because its implementation is too rough.
-# I feel it is better to _not_ provide an implementation when it
-# cannot be done elegantly.
-#
-#X    def cumprod(self, axis=None):
-#X        """Calculate the cumulative product along axis AXIS.  If AXIS is not
-#X        given, perform the operation on the flattened array."""
-#X
-#X        if axis is None:
-#X            # Promote the call to the flattened array.
-#X            return self.flatten().cumprod(axis=0)
-#X        
-#X        else:
-#X            # Perform an axis-wise operation ...
-#X
-#X            # Calculate the resulting shape.  Cut out the index at position
-#X            # AXIS from the .shape attribute.
-#X            result_shape = numpy.\
-#X                    concatenate((self.shape[:axis], self.shape[axis + 1:]))
-#X
-#X            # Prepare the result undarray.
-#X            result = uzeros(result_shape)
-#X            
-#X            # Perform the cumulative product calculation.
-#X
-#X            # Calculate the index position prefix:
-#X            index_position_prefix = numpy.zeros(axis)
-#X
-#X            cumprod = 1.0  # Placeholder which will be immediately replaced
-#X            for index in xrange(0, self.shape[axis]):
-#X                # Calculate the index where to take data from and where to
-#X                # put data:
-#X                #
-#X                # This indices are the same.  When AXIS == 0, 
-#X                # *index_position_prefix* == [].  I.e., put data in the first
-#X                # coordinate, and take data from the first coordinate.  When
-#X                # *axis* == 1, *index_position_prefix* == [0].  I.e., put data
-#X                # in the second coordinate, and take data from the second
-#X                # coordinate.
-#X                index_position = numpy.\
-#X                        concatenate((index_position_prefix, [index]))
-#X
-#X                # Retrieve the current element:
-#X                current_element = self[index_position]
-#X
-#X                # Multiply the CUMPROD variable by the current element.
-#X                cumprod *= current_element
-#X
-#X                # Put the newly calculated element:
-#X                result[index_position] = cumprod
-#X
-#X            # We're done!
-#X            return result
-
     def flatten(self, *flatten_args, **flatten_kwargs):
         """Returns a copy with flatten()'ed arrays."""
 
