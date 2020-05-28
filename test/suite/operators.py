@@ -67,26 +67,37 @@ class TestOperators(unittest.TestCase):
         if not numpy.allclose(a, b):
             raise NotCloseError('{} not close to {}'.format(a, b))
 
-    def assertDerivative(self, specimen, position, prediction, epsilon):
+    def assertDerivative(self, specimen, position, prediction,
+            epsilon, epsilonfactor=None):
         """ *specimen* is the function whose derivative is to be
         approximated numerically at position *position* using a small
         displacement *epsilon*.  *prediction* is the prediction of the
         derivative of *specimen* at *position* using symbolic
-        differentiation. """
+        differentiation.  To assess the precision of the numerical
+        differentiation, it is carried out using *two* displacements,
+        (a) with displacement ``epsilon`` and (b) with displacement
+        ``epsilon * epsilonfactor``.  *epsilonfactor* defaults to
+        ``1j``. """
+
+        if epsilonfactor is None:
+            epsilonfactor = 1j
 
         position0 = position
         position1 = position + epsilon
-        position1j = position + epsilon * 1j
+        position1j = position + epsilon * epsilonfactor
 
         value0 = specimen(position0)
         value1 = specimen(position1)
         value1j = specimen(position1j)
 
         approximation1 = (value1 - value0) / epsilon
-        approximation1j = -1j * (value1j - value0) / epsilon
+        approximation1j = (value1j - value0) / (epsilon * epsilonfactor)
 
-        approximation_uncertainty = abs(approximation1j - approximation1)
         mean_approximation = (approximation1 + approximation1j) / 2
+        approximation_uncertainty = abs(approximation1j -
+                approximation1) + 1e-10 * abs(mean_approximation)
+            # The relative uncertainty accounts for the finite
+            # resolution of floating point numbers.
 
         relative_approximation_uncertainty = \
                 approximation_uncertainty / abs(mean_approximation)
@@ -142,7 +153,7 @@ class TestOperators(unittest.TestCase):
                     prediction=42,
                     epsilon=1e-4,
                 )
-        
+
         # Test successful differentiation:
         random.seed(1819)
         for i in xrange(100):
@@ -221,6 +232,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) * 0.5 * nom ** (-0.5))
 
+        random.seed(1953)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.sqrt, position=z,
+                    prediction=(0.5 * z ** (-0.5)),
+                    epsilon=1e-4,
+            )
+
     def test_square(self):
         random.seed( 700)
         for i in xrange(10):
@@ -229,6 +249,15 @@ class TestOperators(unittest.TestCase):
             ub = numpy.square(ua)
 
             self.assertClose(ub.stddev, abs(unc) * 2 * abs(nom))
+
+        random.seed(1955)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.square, position=z,
+                    prediction=(2 * z),
+                    epsilon=1e-4,
+            )
 
     def test_sin(self):
         random.seed(2)
@@ -239,6 +268,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ua2.stddev, abs(unc * numpy.cos(nom)))
 
+        random.seed(1656)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.sin, position=z,
+                    prediction=numpy.cos(z),
+                    epsilon=1e-4,
+            )
+
     def test_cos(self):
         random.seed(1632)
         for i in xrange(10):
@@ -247,6 +285,15 @@ class TestOperators(unittest.TestCase):
             ua2 = numpy.cos(ua1)
 
             self.assertClose(ua2.stddev, abs(-unc * numpy.sin(nom)))
+
+        random.seed(1957)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.cos, position=z,
+                    prediction=(-numpy.sin(z)),
+                    epsilon=1e-4,
+            )
 
     def test_tan(self):
         random.seed( 702)
@@ -257,6 +304,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) * (1 + numpy.tan(nom) ** 2))
 
+        random.seed(1959)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.tan, position=z,
+                    prediction=(1 + numpy.tan(z) ** 2),
+                    epsilon=1e-4,
+            )
+
     def test_arcsin(self):
         random.seed( 704)
         for i in xrange(10):
@@ -265,6 +321,15 @@ class TestOperators(unittest.TestCase):
             ub = numpy.arcsin(ua)
 
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
+
+        random.seed(2001)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arcsin, position=z,
+                    prediction=(1 / numpy.sqrt(1 - z ** 2)),
+                    epsilon=1e-4,
+            )
 
     def test_arccos(self):
         random.seed( 709)
@@ -275,6 +340,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
 
+        random.seed(2002)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arccos, position=z,
+                    prediction=(-1 / numpy.sqrt(1 - z ** 2)),
+                    epsilon=1e-4,
+            )
+
     def test_arctan(self):
         random.seed( 710)
         for i in xrange(10):
@@ -283,6 +357,15 @@ class TestOperators(unittest.TestCase):
             ub = numpy.arctan(ua)
 
             self.assertClose(ub.stddev, abs(unc) / (1 + nom ** 2))
+
+        random.seed(2004)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arctan, position=z,
+                    prediction=(1 / (1 + z ** 2)),
+                    epsilon=1e-4,
+            )
 
     def test_sinh(self):
         random.seed( 712)
@@ -293,6 +376,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc * numpy.cosh(nom)))
 
+        random.seed( 632)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.sinh, position=z,
+                    prediction=numpy.cosh(z),
+                    epsilon=1e-4,
+            )
+
     def test_cosh(self):
         random.seed( 715)
         for i in xrange(10):
@@ -301,6 +393,15 @@ class TestOperators(unittest.TestCase):
             ub = numpy.cosh(ua)
 
             self.assertClose(ub.stddev, abs(unc * numpy.sinh(nom)))
+
+        random.seed( 633)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.cosh, position=z,
+                    prediction=numpy.sinh(z),
+                    epsilon=1e-4,
+            )
 
     def test_tanh(self):
         random.seed( 716)
@@ -311,6 +412,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) * (1 - numpy.tanh(nom) ** 2))
 
+        random.seed( 636)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.tanh, position=z,
+                    prediction=(1 - numpy.tanh(z) ** 2),
+                    epsilon=1e-4,
+            )
+
     def test_arcsinh(self):
         random.seed( 723)
         for i in xrange(10):
@@ -320,6 +430,16 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(nom ** 2 + 1))
 
+        random.seed( 637)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arcsinh, position=z,
+                    prediction=(1 / numpy.sqrt(z ** 2 + 1)),
+                    epsilon=1e-4,
+            )
+
+    @unittest.expectedFailure
     def test_arccosh(self):
         random.seed( 730)
         for i in xrange(10):
@@ -329,6 +449,40 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(nom ** 2 - 1))
 
+        # This succeeds:
+        random.seed( 644)
+        for i in xrange(100):
+            x = 1 + random.expovariate(1)
+            self.assertDerivative(
+                    specimen=numpy.arccosh, position=x,
+                    prediction=(1 / numpy.sqrt(x ** 2 - 1)),
+                    epsilon=1e-4,
+            )
+
+        # This fails:
+        random.seed( 656)
+        for i in xrange(100):
+            x = random.gauss(0, 1) + 0j
+            self.assertDerivative(
+                    specimen=numpy.arccosh, position=x,
+                    prediction=(1 / numpy.sqrt(x ** 2 - 1)),
+                    epsilon=1e-5,  # There is a case with x very close
+                        # to 1.0, requiring this precision.  (With ``+
+                        # 0j`` in the definition of *x*, an assertion
+                        # is violated before reaching this case.)
+            )
+
+        # This fails:
+        random.seed( 640)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arccosh, position=z,
+                    prediction=(1 / numpy.sqrt(z ** 2 - 1)),
+                    #prediction=(1 / (z ** 2 - 1) ** 0.5),
+                    epsilon=1e-4,
+            )
+
     def test_arctanh(self):
         random.seed( 734)
         for i in xrange(10):
@@ -337,6 +491,15 @@ class TestOperators(unittest.TestCase):
             ub = numpy.arctanh(ua)
 
             self.assertClose(ub.stddev, abs(unc) / (1 - nom ** 2))
+
+        random.seed(1346)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.arctanh, position=z,
+                    prediction=(1 / (1 - z **2)),
+                    epsilon=1e-4,
+            )
 
     def test_exp(self):
         random.seed(1638)
@@ -354,6 +517,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ua2.stddev / ua2.nominal, abs(unc))
 
+        random.seed(1348)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.exp, position=z,
+                    prediction=(numpy.e ** z),
+                    epsilon=1e-4,
+            )
+
     def test_exp2(self):
         random.seed( 737)
         for i in xrange(10):
@@ -365,6 +537,15 @@ class TestOperators(unittest.TestCase):
             # d_x y = ln 2 * 2 ** x
 
             self.assertClose(ub.stddev, abs(unc) * numpy.log(2) * 2 ** nom)
+
+        random.seed(1349)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.exp2, position=z,
+                    prediction=(numpy.log(2) * 2 ** z),
+                    epsilon=1e-4,
+            )
 
     def test_log(self):
         random.seed(1648)
@@ -381,6 +562,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ua2.stddev, ua1.stddev / ua1.nominal)
 
+        random.seed(1351)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.log, position=z,
+                    prediction=(1 / z),
+                    epsilon=1e-4,
+            )
+
     def test_log2(self):
         random.seed(1653)
         for i in xrange(10):
@@ -393,6 +583,15 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(ua2.stddev,
                     1/numpy.log(2) * ua1.stddev / ua1.nominal)
+
+        random.seed(1352)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.log2, position=z,
+                    prediction=(1 / numpy.log(2) / z),
+                    epsilon=1e-4,
+            )
 
     def test_log10(self):
         random.seed(1655)
@@ -407,6 +606,15 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua2.stddev,
                     1/numpy.log(10) * ua1.stddev / ua1.nominal)
 
+        random.seed(1354)
+        for i in xrange(100):
+            z = self.cgauss()
+            self.assertDerivative(
+                    specimen=numpy.log10, position=z,
+                    prediction=(1 / numpy.log(10) / z),
+                    epsilon=1e-4,
+            )
+
     def test_add(self):
         random.seed( 707)
         for i in xrange(10):
@@ -419,6 +627,22 @@ class TestOperators(unittest.TestCase):
 
             self.assertClose(uy.variance, ua1.variance + ua2.variance)
 
+        random.seed(1406)
+        for i in xrange(100):
+            z1 = self.cgauss()
+            z2 = self.cgauss()
+
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.add(z, z2)), position=z1,
+                    prediction=1,
+                    epsilon=1e-4,
+            )
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.add(z1, z)), position=z2,
+                    prediction=1,
+                    epsilon=1e-4,
+            )
+
     def test_subtract(self):
         random.seed( 710)
         for i in xrange(10):
@@ -430,6 +654,22 @@ class TestOperators(unittest.TestCase):
             uy = ua1 - ua2
 
             self.assertClose(uy.variance, ua1.variance + ua2.variance)
+
+        random.seed(1409)
+        for i in xrange(100):
+            z1 = self.cgauss()
+            z2 = self.cgauss()
+
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.subtract(z, z2)), position=z1,
+                    prediction=1,
+                    epsilon=1e-4,
+            )
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.subtract(z1, z)), position=z2,
+                    prediction=-1,
+                    epsilon=1e-4,
+            )
 
     def test_multiply(self):
         random.seed( 712)
@@ -465,6 +705,22 @@ class TestOperators(unittest.TestCase):
                         (ua1.stddev / ua1.nominal) ** 2 +
                         (ua2.stddev / ua2.nominal) ** 2)
 
+        random.seed(1402)
+        for i in xrange(100):
+            z1 = self.cgauss()
+            z2 = self.cgauss()
+
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.multiply(z, z2)), position=z1,
+                    prediction=z2,
+                    epsilon=1e-4,
+            )
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.multiply(z1, z)), position=z2,
+                    prediction=z1,
+                    epsilon=1e-4,
+            )
+
     def test_divide(self):
         random.seed( 723)
         for i in xrange(10):
@@ -496,6 +752,22 @@ class TestOperators(unittest.TestCase):
                     ua1.variance / nom1 ** 2 +
                     ua2.variance / nom2 ** 2)
 
+        random.seed(1413)
+        for i in xrange(100):
+            z1 = self.cgauss()
+            z2 = self.cgauss()
+
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.divide(z, z2)), position=z1,
+                    prediction=(1 / z2),
+                    epsilon=1e-4,
+            )
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.divide(z1, z)), position=z2,
+                    prediction=(-z1 / (z2 ** 2)),
+                    epsilon=1e-4,
+            )
+
     def test_power(self):
         random.seed( 742)
         for i in xrange(10):
@@ -519,6 +791,22 @@ class TestOperators(unittest.TestCase):
             self.assertClose(uy.variance,
                     ua1.variance * d1 ** 2 + ua2.variance * d2 ** 2)
 
+        random.seed(1416)
+        for i in xrange(100):
+            z1 = self.cgauss()
+            z2 = self.cgauss()
+
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.power(z, z2)), position=z1,
+                    prediction=(z2 * (z1 ** (z2 - 1))),
+                    epsilon=1e-4,
+            )
+            self.assertDerivative(
+                    specimen=(lambda z: numpy.power(z1, z)), position=z2,
+                    prediction=(numpy.log(z1) * (z1 ** z2)),
+                    epsilon=1e-4,
+            )
+
     def test_arctan2(self):
         random.seed( 740)
         for i in xrange(10):
@@ -533,3 +821,21 @@ class TestOperators(unittest.TestCase):
             dy = nomx / (nomx ** 2 + nomy ** 2)
             self.assertClose(ub.variance,
                     ux.variance * (dx ** 2) + uy.variance * (dy ** 2))
+
+        random.seed(1419)
+        for i in xrange(100):
+            x = random.gauss(0, 1)
+            y = random.gauss(0, 1)
+            # ``numpy.arctan2`` is supported only for real-valued
+            # arguments.
+
+            self.assertDerivative(
+                    specimen=(lambda x: numpy.arctan2(y, x)), position=x,
+                    prediction=(-y / (x ** 2 + y ** 2)),
+                    epsilon=1e-4, epsilonfactor=-1,
+            )
+            self.assertDerivative(
+                    specimen=(lambda y: numpy.arctan2(y, x)), position=y,
+                    prediction=(x / (x ** 2 + y ** 2)),
+                    epsilon=1e-4, epsilonfactor=-1,
+            )
