@@ -497,53 +497,6 @@ class undarray(object):
 
         return self.nominal.argsort(*args, **kwargs)
 
-# It is difficult to match the semantics of ``clip``: What shall be
-# the nominal value and the standard deviation of the result?  *Any
-# possible value* is *probable*.  The implementation below, which
-# sets the errors of clipped values to zero, in not precise by just
-# ignoring the highly asymmetric and constrained pdf of a clipped
-# Gaussian.
-#
-#    def clip(self, a_min, a_max):
-#        """Refer to numpy.clip() for documentation of the functionality.
-#        
-#        The errors of the clipped values will be set to zero and any
-#        dependency stored before in them will be removed.  Thus the clipped
-#        values are then exact.
-#        
-#        Returned is a copy."""
-#
-#        # Retrieve the clipped nominal value.
-#        clipped_nominal = self.nominal.clip(a_min, a_max)
-#
-#        # Retrieve the mask where to set the error to 0.0.
-#        changed_mask = (self.nominal != clipped_nominal)
-#
-#        copied_characteristic = self.characteristic.copy()
-#        copied_characteristic.clear(changed_mask)
-#            # This statement finally boils down in :class:`Dependency`
-#            # to:
-#            #
-#            #   >>> import numpy
-#            #   >>> a = numpy.arange(10).reshape(2, 5)
-#            #   >>> a
-#            #   array([[0, 1, 2, 3, 4],
-#            #          [5, 6, 7, 8, 9]])
-#            #   >>> idx = (a % 2) == 0
-#            #   >>> idx
-#            #   array([[ True, False,  True, False,  True],
-#            #          [False,  True, False,  True, False]], dtype=bool)
-#            #   >>> a[idx]
-#            #   array([0, 2, 4, 6, 8])
-#            #   >>> a[idx] = -1
-#            #   >>> a
-#            #   array([[-1,  1, -1,  3, -1],
-#            #          [ 5, -1,  7, -1,  9]])
-#        return undarray(
-#            nominal=clipped_nominal,
-#            characteristic=copied_characteristic,
-#        )
-
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
 
