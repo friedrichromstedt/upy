@@ -143,7 +143,7 @@ class undarray(object):
         Optionally, *stddev* can be provided to define initial
         uncertainties of the new ``undarray``.  There will be no
         correlation of the uncertainties created this way, neither
-        within in new ``undarray`` nor with elements of other
+        within the new ``undarray`` nor with elements of other
         ``undarray`` instances.  The shape of *stddev* needs to
         coincide with the shape of the ``undarray`` created. """
 
@@ -166,8 +166,8 @@ class undarray(object):
                         shape=self.shape),
                     derivatives=stddev,
                     dtype=dtype,
-            )   # The Dependency constructor doesn't copy the data
-                # given.
+            )   # The Dependency constructor does not necessarily copy
+                # the data given.
             self.append(dependency)
 
     def append(self, dependency):
@@ -189,9 +189,6 @@ class undarray(object):
         """ This method implements the operation ``ua * factor``,
         where *factor* isn't another undarray.  This is used to
         implement multiplication within :class:`Multiply`. """
-
-        factor_dtype = numpy.result_type(factor)
-        result_dtype = numpy.result_type(factor_dtype, self.dtype)
 
         result = undarray(nominal=(self.nominal * factor))
 
