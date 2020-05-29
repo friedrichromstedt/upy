@@ -142,37 +142,9 @@ class Dependency:
             # Index everything.
             key = ()
 
-        # Check if the part of *self* indexed by *key* has the same
-        # shape as *other* does:
-# We leave this alone to allow broadcasting of *other*.
-#X1        indexed_shape = self.derivatives[key].shape
-#X1        if indexed_shape != other.shape:
-#X1            raise ValueError('In Dependency.add:  '
-#X1                'Attempted to add other.shape=%s to indexed shape=%s '
-#X1                'with key=%s (self.shape=%s).'
-#X1                % (other.shape, indexed_shape, key, self.shape)
-#X1            )
-
-#X        # Make sure the dtype of ``self.derivatives`` can
-#X        # hold the dtype of the sum with copy's derivatives.
-#X        #
-#X        # In fact, strictly speaking this is only a problem when the
-#X        # dtype of ``copy.derivatives`` is "larger" than the dtype of
-#X        # ``self.derivatives``.  However, we always replace the dtype
-#X        # of ``self.derivatives`` as soon as the two dtypes differ.
-#X
-#X        if self.derivatives.dtype != other.derivatives.dtype:
-#X            # Possibly "upgrade" ``self.derivatives``.
-#X            self.derivatives = self.derivatives + numpy.zeros([],
-#X                dtype=other.derivatives.dtype)
-#X                # numpy.zeros([]) returns a scalar zero.  Adding this
-#X                # is a no-op on any non-scalar numeric array except
-#X                # for dtype (scalar ndarrays turn into "true"
-#X                # scalars).
-#X        #
-#X        # From now on, we can use ``+=`` on ``self.derivatives`` with
-#X        # (parts of) ``other.derivatives`` without danger of dtype
-#X        # downgrading.
+        # We do not apply shape checking whether the part of *self*
+        # indexed by *key* has the same shape as *other*.  This
+        # permits broadcasting of *other*.
 
         # First, add on same name ...
 
