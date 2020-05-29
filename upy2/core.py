@@ -481,7 +481,8 @@ class undarray(object):
     #
 
     def compress(self, *compress_args, **compress_kwargs):
-        """Refer to numpy.compress() for documentation of the functionality."""
+        """Refer to ``numpy.compress`` for documentation of the
+        functionality."""
 
         result = undarray(
             nominal=self.nominal.compress(
@@ -511,7 +512,7 @@ class undarray(object):
         return result
 
     def flatten(self, *flatten_args, **flatten_kwargs):
-        """Returns a copy with flatten()'ed arrays."""
+        """Returns a copy with flatten()'ed ndarrays."""
 
         result = undarray(
             nominal=self.nominal.flatten(
@@ -524,7 +525,7 @@ class undarray(object):
         return result
 
     def repeat(self, *repeat_args, **repeat_kwargs):
-        """Returns a copy with repeat()'ed arrays."""
+        """Returns a copy with repeat()'ed ndarrays."""
 
         result = undarray(
             nominal=self.nominal.repeat(
@@ -537,7 +538,7 @@ class undarray(object):
         return result
 
     def reshape(self, *reshape_args, **reshape_kwargs):
-        """Returns a copy with reshape()'ed arrays."""
+        """Returns a copy with reshape()'ed ndarrays."""
 
         result = undarray(
             nominal=self.nominal.reshape(
@@ -550,7 +551,7 @@ class undarray(object):
         return result
 
     def transpose(self, *transpose_args, **transpose_kwargs):
-        """Returns a copy with transpos()'ed arrays."""
+        """Returns a copy with transpos()'ed ndarrays."""
 
         result = undarray(
             nominal=self.nominal.transpose(

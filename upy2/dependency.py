@@ -19,10 +19,6 @@ class Dependency:
     The variance is ``derivative ** 2`` if ``derivative`` is not
     complex; otherwise the variance is undefined."""
 
-    #
-    # Initialisation methods ...
-    #
-
     def __init__(self,
             names=None, derivatives=None,
             shape=None, dtype=None):
@@ -70,13 +66,6 @@ class Dependency:
         self.dtype = self.derivatives.dtype
         self.ndim = self.derivatives.ndim
 
-#X    def copy_names(self):
-#X        """Return a new Dependency with copied .names."""
-#X
-#X        return Dependency(
-#X                names = self.names.copy(),
-#X                derivatives = self.derivatives)
-    
     def is_empty(self):
         """Return True if this Dependency can be discarded."""
 
@@ -140,7 +129,7 @@ class Dependency:
         )
 
     #
-    # Arithmetics:  Binary arithmetics ...
+    # Binary arithmetics ...
     #
 
     def add(self, other, key=None):
@@ -234,10 +223,6 @@ class Dependency:
             # The *other* is, now, of the same shape as ``self[key]``,
             # since the ``&`` operations above have been carried out.
 
-    #
-    # Arithmetics
-    #
-
     def __and__(self, mask):
         """ Returns a copy of *self* where names are masked by *mask*.
         Parts of self's names where *mask* is zero are returned zero.
@@ -273,33 +258,19 @@ class Dependency:
                 derivatives=bc_derivatives,
         )
 
-    #
-    # Reflected arithmetics
-    #
-
-    # __radd__() and __rsub__() are not needed, because always both operands
-    # will be Dependency instances.
-
-#X    def __rmul__(self, other):
-#X        return Dependency(
-#X                names=self.names,
-#X                derivatives=(other * self.derivatives))
     __rmul__ = __mul__
-        # I do not expect use cases of Dependency with data arrays
-        # which do not commute on multiplication.
     
-    #
     # Augmented arithmetics will be emulated by using standard
-    # arithmetics ...
-    #
+    # arithmetics.
 
     #
     # Keying methods ...
     #
     
     def __getitem__(self, key):
-        """Returns the Dependency of the given subset applied to the
-        derivatives and variances."""
+        """ Returns a new Dependency with *key* applied both to the
+        :attr:`derivatives` as well as to the :attr:`names` of *self*.
+        The indexed results will be copied. """
         
         return Dependency(
                 names=self.names[key].copy(),
@@ -307,8 +278,8 @@ class Dependency:
         )
 
     def clear(self, key):
-        """Clear the portion given by KEY, by setting the values stored to
-        zero."""
+        """ Set *self.names* and *self.derivatives* to zero at the
+        positions indexed by *key*. """
 
         self.names = numpy.asarray(self.names)
         self.derivatives = numpy.asarray(self.derivatives)
@@ -382,63 +353,7 @@ class Dependency:
                     *transpose_args, **transpose_kwargs))
 
     #
-    # Special array methods ...
-    #
-
-#X2    def broadcasted(self, shape):
-#X2        """Bring the instance in shape SHAPE, by repetition of the object.  No
-#X2        reshape()'ing will be performed.  This function is used when coercing
-#X2        lower-dimensional object with higher-dimensional ones.  It makes shure
-#X2        that both operands can have the same shape before coercion takes 
-#X2        place.  Broadcasting is necessary in the case that an Dependency is
-#X2        taken over from the other operand into the final result, because there
-#X2        is no dependency of both operands on the Dependency.  In this case,
-#X2        no numpy broadcasting would occour, and the data integrity would be
-#X2        compromised.
-#X2
-#X2        The call will fail if len(SHAPE) < .ndim.  Otherwise, the .ndim last
-#X2        items of SHAPE must be equal to .shape.  The object will first be
-#X2        brought to the shape [1, 1, 1, ...] + .shape, such that .ndim 
-#X2        becomes len(SHAPE).  Then, it will be repeated in the added dimensions
-#X2        to meet SHAPE's elements.  The first step is done via .reshape(), and
-#X2        the second via .repeat(count, axis = axis).
-#X2        
-#X2        This method acts on a copy."""
-#X2
-#X2        # Check conditions ...
-#X2
-#X2        if len(shape) < self.ndim:
-#X2            raise ValueError('Dependency with shape %s cannot be broadcast '    
-#X2                'to shape %s.' % (self.shape, shape))
-#X2
-#X2        if self.ndim != 0:
-#X2            # If the object is scalar, the expression wouldn't work.
-#X2            if shape[-self.ndim:] != self.shape:
-#X2                raise ValueError('Dependency with shape %s cannot be '
-#X2                    'broadcast to shape %s.' % (self.shape, shape))
-#X2        # else: Scalar object can be broadcast to any shape.
-#X2
-#X2        # Prepare intermediate shape ...
-#X2
-#X2        shape = list(shape)
-#X2        intermediate_shape = [1] * (len(shape) - self.ndim) + list(self.shape)
-#X2
-#X2        # result will in the end hold the result.
-#X2        result = self.reshape(tuple(intermediate_shape))
-#X2
-#X2        # Repeat self_intermediate to match SHAPE ...
-#X2
-#X2        for dim in xrange(0, len(shape) - self.ndim):
-#X2
-#X2            # Repeat in SHAPE's dimension dim.
-#X2            result = result.repeat(shape[dim], axis=dim)
-#X2        
-#X2        # result became final object ...
-#X2
-#X2        return result
-
-    #
-    # String conversion function ...
+    # String conversion ...
     #
 
     def __str__(self):
