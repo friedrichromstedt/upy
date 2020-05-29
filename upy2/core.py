@@ -165,6 +165,7 @@ class undarray(object):
                     names=upy2.id_generator.get_idarray(
                         shape=self.shape),
                     derivatives=stddev,
+                    dtype=dtype,
             )   # The Dependency constructor doesn't copy the data
                 # given.
             self.append(dependency)
@@ -452,7 +453,8 @@ class undarray(object):
             result.append(dependency[key])
 
     def __setitem__(self, key, value):
-        """ Replace the portion of *self* indexed by *key* by *value*.
+        """ Replace the portion of *self* indexed by *key* with
+        *value*.
 
         If *value* is not an ``undarray``, it will be treated as the
         replacement for the specified portion of self's nominal value.
