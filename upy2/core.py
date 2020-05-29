@@ -479,21 +479,6 @@ class undarray(object):
     #
     # ndarray methods, alphabetically sorted ...
     #
-    
-    def argmax(self, *args, **kwargs):
-        """Refer to numpy.argmax() for documentation of the functionality."""
-
-        return self.nominal.argmax(*args, **kwargs)
-
-    def argmin(self, *args, **kwargs):
-        """Refer to numpy.argmin() for documentation of the functionality."""
-
-        return self.nominal.argmin(*args, **kwargs)
-
-    def argsort(self, *args, **kwargs):
-        """Refer to numpy.argsort() for documentation of the functionality."""
-
-        return self.nominal.argsort(*args, **kwargs)
 
     def compress(self, *compress_args, **compress_kwargs):
         """Refer to numpy.compress() for documentation of the functionality."""
