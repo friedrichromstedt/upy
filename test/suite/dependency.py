@@ -205,3 +205,21 @@ class Test_Dependency(unittest.TestCase):
         with self.assertRaises(ValueError):
             depB_ = depB.add(depA_, key=0)
             # ValueError: setting an array element with a sequence.
+
+    def test_masking(self):
+        dep = Dependency(names=[1, 2], derivatives=[10, 11])
+
+        # Masking with an ndarray of the same shape:
+        masked = dep & numpy.asarray([True, False])
+        self.assertAllEqual(masked.names, [1, 0])
+        self.assertAllEqual(masked.derivatives, [10, 0])
+
+        # Masking with an ndarray of smaller shape:
+        masked = dep & numpy.asarray(True)
+        self.assertAllEqual(masked.names, [1, 2])
+        self.assertAllEqual(masked.derivatives, [10, 11])
+
+        # Masking with an ndarray of larger shape:
+        masked = dep & numpy.asarray([[True, False], [False, True]])
+        self.assertAllEqual(masked.names, [[1, 0], [0, 2]])
+        self.assertAllEqual(masked.derivatives, [[10, 0], [0, 11]])
