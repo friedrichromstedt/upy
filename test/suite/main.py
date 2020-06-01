@@ -1,6 +1,6 @@
 import unittest
 
-from test import \
+from typesetting import \
     Test_TypesettersNumbers, Test_TypesettersRules, \
     Test_TypesettersScientific
 

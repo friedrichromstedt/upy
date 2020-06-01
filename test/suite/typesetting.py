@@ -309,9 +309,6 @@ class Test_TypesettersScientific(unittest.TestCase):
         ruled4 = rule.apply(n1)
         self.assertEqual(ruled4, ' 1  ')
 
-
-    # XXX THe following two tests are heritage and need to be pruned.
-
     def test_ScientificRule(self):
         rule = ScientificRule()
         ts = NumberTypesetter()
