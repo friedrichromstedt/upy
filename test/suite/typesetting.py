@@ -359,6 +359,7 @@ class Test_TypesettersScientific(unittest.TestCase):
         self.assertEqual(str(el5), '(00     +- 100    ) 10^1 ')
 
         # Test typesetting non-scalar undarrays:
+
         with U(2), sts:
             a = numpy.asarray([[1, 2], [42, 10]])
             stddev = numpy.asarray([[0.1, 0.1], [10, 1]]) / 2
@@ -394,10 +395,35 @@ class Test_TypesettersScientific(unittest.TestCase):
         #   3.  both zero uncertainty as well as zero nominal value.
 
         with U(2), sts:
+            # Test with zero uncertainty:
             ua1 = numpy.pi +- u(0)
+            ua2 = numpy.pi / 10 +- u(0)
+            ua3 = numpy.pi * 10 +- u(0)
 
             self.assertEqual(str(ua1),
                     '(3.14159265359 +- 0) 10^0 ')
+            self.assertEqual(str(ua2),
+                    '(3.14159265359 +- 0) 10^-1 ')
+            self.assertEqual(str(ua3),
+                    '(3.14159265359 +- 0) 10^1 ')
+
+            # Test with zero nominal value:
+            ub1 = 0 +- u(numpy.pi)
+            ub2 = 0 +- u(numpy.pi / 10)
+            ub3 = 0 +- u(numpy.pi * 10)
+
+            self.assertEqual(str(ub1),
+                    '(0 +- 3.2) 10^0 ')
+            self.assertEqual(str(ub2),
+                    '(0 +- 3.2) 10^-1 ')
+            self.assertEqual(str(ub3),
+                    '(0 +- 3.2) 10^1 ')
+
+            # Test overall zero:
+            uc1 = u(0)
+
+            self.assertEqual(str(uc1),
+                    '(0 +- 0) 10^0 ')
 
 
 if __name__ == '__main__':
