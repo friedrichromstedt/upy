@@ -2,7 +2,7 @@
 
 import unittest
 import numpy
-from upy2.dependency import Dependency, NonRealDerivativeError
+from upy2.dependency import Dependency
 
 
 class Test_Dependency(unittest.TestCase):
@@ -64,7 +64,8 @@ class Test_Dependency(unittest.TestCase):
 
     def test_variance(self):
         dep = Dependency(names=1, derivatives=(1 + 1j))
-        with self.assertRaises(NonRealDerivativeError):
+        with self.assertRaisesRegexp(ValueError,
+                "^Refusing to calculate variance of non-real Dependency$"):
             dep.variance
 
         dep1 = Dependency(names=1, derivatives=1.0)
@@ -72,7 +73,7 @@ class Test_Dependency(unittest.TestCase):
         dep3 = Dependency(names=1, derivatives=1.0, dtype=numpy.float32)
         dep4 = Dependency(names=1, derivatives=1, dtype=numpy.uint8)
 
-        # Does not raise NonRealDerivativeError:
+        # These do not raise an Exception:
         dep1.variance
         dep2.variance
         dep3.variance

@@ -2,11 +2,7 @@
 
 import numpy
 
-__all__ = ['Dependency', 'NonRealDerivativeError']
-
-
-class NonRealDerivativeError(ValueError):
-    pass
+__all__ = ['Dependency']
 
 
 class Dependency:
@@ -106,8 +102,8 @@ class Dependency:
 
         if not numpy.isrealobj(self.derivatives):
             # It might be complex.
-            raise NonRealDerivativeError(
-                'Refusing to calculate variances of non-real Dependency')
+            raise ValueError(
+                'Refusing to calculate variance of non-real Dependency')
         return (self.names != 0) * self.derivatives ** 2
 
     #
