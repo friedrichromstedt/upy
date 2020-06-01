@@ -358,6 +358,7 @@ class Test_TypesettersScientific(unittest.TestCase):
         self.assertEqual(str(el4), '( 1     +-  10    ) 10^1 ')
         self.assertEqual(str(el5), '(00     +- 100    ) 10^1 ')
 
+        # Test typesetting non-scalar undarrays:
         with U(2), sts:
             a = numpy.asarray([[1, 2], [42, 10]])
             stddev = numpy.asarray([[0.1, 0.1], [10, 1]]) / 2
@@ -383,8 +384,20 @@ class Test_TypesettersScientific(unittest.TestCase):
             )  # ub.nominal is laid out in F order.
 
             # I do not verify the swapped strides of ub.nominal w.r.t.
-            # ua.nominal since these figures can depend on
-            # architecture.
+            # ua.nominal since these figures depend on the number of
+            # bytes per element, which can vary with architecture.
+
+        # Test behaviour of *sts* with:
+        #
+        #   1.  Zero uncertainty;
+        #   2.  zero nominal value;
+        #   3.  both zero uncertainty as well as zero nominal value.
+
+        with U(2), sts:
+            ua1 = numpy.pi +- u(0)
+
+            self.assertEqual(str(ua1),
+                    '(3.14159265359 +- 0) 10^0 ')
 
 
 if __name__ == '__main__':

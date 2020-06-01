@@ -183,15 +183,13 @@ class ScientificTypesetter(Typesetter):
             exponent = -pos_leftmost_digit_nominal
             mantissa_nominal = nominal * \
                 10 ** pos_leftmost_digit_nominal
-            mantissa_uncertainty = uncertainty * \
-                10 ** pos_leftmost_digit_nominal
 
             mantissa_precision = self.infinite_precision
 
             typeset_nominal = self.nominal_typesetter.typesetfp(
                 mantissa_nominal, mantissa_precision)
             typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
-                mantissa_uncertainty, mantissa_precision)
+                number=0, precision=0)
             typeset_exponent = self.exponent_typesetter.typesetint(
                 exponent, precision=0)
 
