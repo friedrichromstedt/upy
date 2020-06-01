@@ -4,20 +4,27 @@ import numpy
 
 __all__ = ['Dependency']
 
-"""Implements the abstract dependency of "something" on an error variance
-with a derivative, identified by an error source name."""
-
 
 class Dependency:
-    """A Dependency represents the dependence of something on normalised error 
-    sources identified by an integer.  It also stores the accompanying 
-    derivatives.  The variances are unity.
-    
-    Derivatives can be multiplied with ndarrays, in this case the derivatives 
-    ndarray will be multiplied with the operand.
-    
-    The variance is ``derivative ** 2`` if ``derivative`` is not
-    complex; otherwise the variance is undefined."""
+    """ The class :class:`Dependency` represents the dependence of an
+    uncertain quantity on uncertainty sources of unity variance by a
+    derivative.  When the :attr:`derivative` is real-valued, the
+    induced variance of the quantity is equal to ``derivative ** 2``.
+    For non-real derivatives, an induced variance of the quantity
+    cannot be given.
+
+    A single :class:`Dependency` can store *one* dependency per
+    element.  The uncertainty sources are identified by integers
+    called *names*.  The name ``0`` represents the *absent* dependency
+    of the respective element.  Dependencies can be combined be means
+    of :meth:`add`, here the argument Dependency is incorporated into
+    the Dependency whose :meth:`add` is called as far as possible by
+    filling elements with zero name and by adding derivatives of
+    elements with matching name; :meth:`add` returns the remnant
+    Dependency, with all elements used cleared.
+
+    Dependencies can be *multiplied* and *masked*, and a range of
+    ``ndarray`` methods is supported. """
 
     def __init__(self,
             names=None, derivatives=None,
@@ -67,12 +74,16 @@ class Dependency:
         self.ndim = self.derivatives.ndim
 
     def is_empty(self):
-        """Return True if this Dependency can be discarded."""
+        """ Returns whether all elements of *self.names* are equal to
+        zero.  This means, that the Dependency does not induce any
+        uncertainty. """
 
         return not self.names.any()
     
     def is_nonempty(self):
-        """Return True if this Dependency cannot be discarded."""
+        """ Returns whether any alements of *self.names* aren't equal
+        to zero.  In this case, the Dependency induces some
+        uncertainty. """
 
         return self.names.any()
 
@@ -82,7 +93,11 @@ class Dependency:
 
     @property
     def variance(self):
-        """Get the variance induced by this dependency."""
+        """ When *self.derivatives* is real-valued, this method
+        returns the variance ``self.derivatives ** 2`` induced by this
+        Dependency for elements with nonzero *name*; the variance
+        returned is masked out to zero for elements with zero name.
+        For non-real derivatives, no such variance can be given. """
 
         if not numpy.isrealobj(self.derivatives):
             # It might be complex.
@@ -96,7 +111,8 @@ class Dependency:
     
     @property
     def real(self):
-        """ Returns the real part of this Dependency. """
+        """ Returns the real part of this Dependency.  Both the names
+        as well as the real part of *self.derivatives* will be copied. """
 
         return Dependency(
             names=self.names.copy(),
@@ -112,7 +128,9 @@ class Dependency:
 
     @property
     def imag(self):
-        """ Returns the imaginary part of this Dependency. """
+        """ Returns the imaginary part of this Dependency.  Both the
+        names as well as the imaginary part of *self.derivatives* will
+        be copied. """
         
         return Dependency(
             names=self.names.copy(),
@@ -120,7 +138,9 @@ class Dependency:
         )
 
     def conj(self):
-        """ Returns the complex conjugate. """
+        """ Returns the complex conjugate.  The *names* of *self* will
+        be copied; :meth:`conj` of *self.derivatives* returns a copy
+        by itself. """
 
         return Dependency(
             names=self.names.copy(),
@@ -133,10 +153,24 @@ class Dependency:
     #
 
     def add(self, other, key=None):
-        """ Adds the *other* to self as far as possible, what is left
-        and could not be added is returned as a new Dependency.  If
-        *key* is given, it specifies the portion of *self* where the
-        *other* is applied. """
+        """ This method incorporates another ``Dependency`` *other*
+        into *self* in-place as far as possible by:
+
+        1.  Filling elements of *self* with zero name by elements of
+            *other* (replacing both the *name* as well as the
+            *derivative*);
+        2.  adding the derivatives of *other* to elements of *self*
+            with matching name.
+
+        Returned is a copy of *other* with used-up elements masked
+        out.
+
+        When *key* is given, *other* will be added to the sub arrays
+        of *self.names* and *self.derivatives* indexed by *key*.
+
+        The *other* needs to be broadcastable to the shape of *self*
+        indexed by *key*.  The ``Dependency`` returned will *always*
+        have this shape. """
 
         if key is None:
             # Index everything.
@@ -169,7 +203,7 @@ class Dependency:
         
         # Second, try to fill empty space ...
         #
-        # Where there is empty space, there are zeros.
+        # An element is *empty* when its *name* is *zero*.
 
         empty_mask = (self.names[key] == 0)
 
@@ -183,23 +217,22 @@ class Dependency:
         self.names[key] += fillin_mask * other.names
         self.derivatives[key] += fillin_mask * other.derivatives
             # Do use augmented assignment ``+=`` because portions
-            # where the assigned arrays are zero are to be preserved
+            # where the augmenting arrays are zero are to be preserved
             # *without change*.
 
         # Mark the cells as used.
         other = other & (1 - fillin_mask)
 
-        # Ok, we're done so far ...
+        # Finished processing *other*.
 
         return other
             # The *other* is, now, of the same shape as ``self[key]``,
-            # since the ``&`` operations above have been carried out.
+            # since the ``&`` operation above has been carried out.
 
     def __and__(self, mask):
-        """ Returns a copy of *self* where names are masked by *mask*.
-        Parts of self's names where *mask* is zero are returned zero.
-        Same applies to the *derivatives* attribute of the returned
-        Dependency.  """
+        """ Returns a copy of *self* where names and derivatives are
+        masked by *mask*: Parts of self's names and derivatives where
+        *mask* is zero are returned zero. """
 
         return Dependency(
             names=(self.names * mask),
@@ -207,8 +240,12 @@ class Dependency:
         )
     
     def __mul__(self, other):
-        """Multiply the dependency by some ndarray factor, i.e., scale the 
-        derivatives."""
+        """ Returns a copy of *self* with the derivatives set to the
+        product of ``self.derivatives`` and *other*.
+
+        The shapes of *self* and *other* need not be equal as long as
+        they can be broadcast.  The :attr:`names` ndarray of *self*
+        will be broadcast to the result shape as well. """
 
         result_derivatives = self.derivatives * other
         (bc_names, bc_derivatives) = numpy.broadcast_arrays(
@@ -268,8 +305,8 @@ class Dependency:
     #
 
     def compress(self, *compress_args, **compress_kwargs):
-        """Returns a copy with the Dependency's arrays compress()'ed.  The
-        arguments are handed over to the arrays' methods."""
+        """ Returns a Dependency constructed from the *compressed*
+        names and derivatives of *self*. """
 
         return Dependency(
                 names=self.names.compress(
@@ -278,16 +315,16 @@ class Dependency:
                     *compress_args, **compress_kwargs))
 
     def copy(self):
-        """Returns a copy with the data arrays copied.  No name replacement
-        is done (see undarray.copy for documentation)."""
+        """ Returns a Dependency constructed from copies of the names
+        and derivatives of *self*. """
 
         return Dependency(
                 names=self.names.copy(),
                 derivatives=self.derivatives.copy())
 
     def flatten(self, *flatten_args, **flatten_kwargs):
-        """Returns a copy with the Dependency's arrays flatten()'ed.  The
-        arguments are handed over to the arrays' methods."""
+        """ Returns a Dependency constructed from the *flattened*
+        names and derivatives of *self*. """
 
         return Dependency(
                 names=self.names.flatten(
@@ -296,8 +333,8 @@ class Dependency:
                     *flatten_args, **flatten_kwargs))
 
     def repeat(self, *repeat_args, **repeat_kwargs):
-        """Returns a copy with repeat()'ed arrays.  The arguments are handed 
-        over to the arrays' methods."""
+        """ Returns a Dependency constructed from the *repeated* names
+        and derivatives of *self*. """
 
         return Dependency(
                 names=self.names.repeat(
@@ -306,17 +343,17 @@ class Dependency:
                     *repeat_args, **repeat_kwargs))
 
     def reshape(self, *reshape_args):
-        """Returns a copy with reshape()'ed arrays.  The arguments are
-        handed over to the arrays' methods.  numpy.reshape() takes no
-        keyword arguments."""
+        """ Returns a Dependency constructed from the *reshaped* names
+        and derivatives of *self*.  Notice that
+        :meth:`ndarray.reshape` doesn't accept keyword arguments. """
 
         return Dependency(
                 names=self.names.reshape(*reshape_args),
                 derivatives=self.derivatives.reshape(*reshape_args))
 
     def transpose(self, *transpose_args, **transpose_kwargs):
-        """Returns a copy with transpose()'ed arrays.  The arguments are
-        handed over to the arrays' methods."""
+        """ Returns a Dependency constructed from the *transposed*
+        names and derivatives of *self*. """
 
         return Dependency(
                 names=self.names.transpose(
@@ -329,15 +366,13 @@ class Dependency:
     #
 
     def __str__(self):
-        """Short representation."""
-
         if self.ndim == 0:
             # Return a scalar representation ...
-            return "(names = %d, derivatives = %s)" % \
-                    (self.names, self.derivatives)
+            return "(names = {name}, derivatives = {derivative}".\
+                format(name=self.names, derivative=self.derivatives)
         else:
             # Return an array representation ...
-            return "(names:\n%s\nderivatives:\n%s\n)" % \
-                    (self.names, self.derivatives)
+            return "(names:\n{names}\nderivatives:\n{derivatives}\n)".\
+                format(names=self.names, derivatives=self.derivatives)
 
-    # There seems to be no sensible __repr__().
+    # There is no :meth:`__repr__`.
