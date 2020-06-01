@@ -27,6 +27,20 @@ class Test_Dependency(unittest.TestCase):
         self.assertEqual(dep.derivatives.dtype, numpy.float)
         self.assertEqual(dep.dtype, numpy.float)
 
+        with self.assertRaises(ValueError):
+            dep = Dependency(names=[1], derivatives=[10, -10])
+            # ValueError: Shape mismatch in initialising a Dependency:
+            # names.shape = (1,), derivatives.shape = (2,)
+
+        with self.assertRaises(ValueError):
+            dep = Dependency()
+            # ValueError: Dependency: Unable to initialise from the
+            # arguments provided
+        with self.assertRaises(ValueError):
+            dep = Dependency(names=[42])
+        with self.assertRaises(ValueError):
+            dep = Dependency(derivatives=[1.0])
+
         # Test construction from *shape*:
         dep = Dependency(shape=(2, 2))
         self.assertAllEqual(dep.names, [[0, 0], [0, 0]])

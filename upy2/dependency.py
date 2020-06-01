@@ -58,10 +58,11 @@ class Dependency:
             self.names = numpy.asarray(names)
             self.derivatives = numpy.asarray(derivatives, dtype=dtype)
             if self.names.shape != self.derivatives.shape:
-                raise ValueError("Shape mismatch in initialising a"
-                    " Dependency:"
-                    " names.shape = %s, derivatives.shape = %s"
-                    % (names.shape, derivatives.shape))
+                raise ValueError(
+                        'Shape mismatch in initialising a '
+                        'Dependency: names.shape = {0}, derivatives '
+                        'shape = {1}'.format(
+                            self.names.shape, self.derivatives.shape))
 
         elif shape is not None:
             self.names = numpy.zeros(shape, dtype=numpy.int)
