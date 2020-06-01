@@ -2,7 +2,11 @@
 
 import numpy
 
-__all__ = ['Dependency']
+__all__ = ['Dependency', 'NonRealDerivativeError']
+
+
+class NonRealDerivativeError(ValueError):
+    pass
 
 
 class Dependency:
@@ -101,8 +105,8 @@ class Dependency:
 
         if not numpy.isrealobj(self.derivatives):
             # It might be complex.
-            raise ValueError('Refusing to calculate variances '
-                    'of non-real Dependency')
+            raise NonRealDerivativeError(
+                'Refusing to calculate variances of non-real Dependency')
         return (self.names != 0) * self.derivatives ** 2
 
     #
@@ -147,6 +151,10 @@ class Dependency:
             derivatives=self.derivatives.conj(),
                 # This copies the real component.
         )
+
+    conjugate = conj
+        # :func:`numpy.conj` looks for :attr:`conjugate`, not
+        # :attr:`conj`.
 
     #
     # Binary arithmetics ...
