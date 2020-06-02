@@ -223,3 +223,21 @@ class Test_Dependency(unittest.TestCase):
         masked = dep & numpy.asarray([[True, False], [False, True]])
         self.assertAllEqual(masked.names, [[1, 0], [0, 2]])
         self.assertAllEqual(masked.derivatives, [[10, 0], [0, 11]])
+
+    def test_multiplication(self):
+        dep = Dependency(names=[1, 2], derivatives=[10, 11])
+
+        # Multiplying with an ndarray of the same shape:
+        product = dep * numpy.asarray([1.5, 1])
+        self.assertAllEqual(product.names, [1, 2])
+        self.assertAllEqual(product.derivatives, [15, 11])
+
+        # Multiplying with an ndarray of smaller shape:
+        product = dep * numpy.asarray(2)
+        self.assertAllEqual(product.names, [1, 2])
+        self.assertAllEqual(product.derivatives, [20, 22])
+
+        # Multiplying with an ndarray of larger shape:
+        product = dep * numpy.asarray([[4, 5], [6, 7]])
+        self.assertAllEqual(product.names, [[1, 2], [1, 2]])
+        self.assertAllEqual(product.derivatives, [[40, 55], [60, 77]])
