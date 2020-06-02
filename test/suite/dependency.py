@@ -241,3 +241,64 @@ class Test_Dependency(unittest.TestCase):
         product = dep * numpy.asarray([[4, 5], [6, 7]])
         self.assertAllEqual(product.names, [[1, 2], [1, 2]])
         self.assertAllEqual(product.derivatives, [[40, 55], [60, 77]])
+
+        with self.assertRaisesRegexp(TypeError,
+                "^unsupported operand type\(s\) for \*: "
+                "'int' and 'Dependency'$"):
+            product = numpy.asarray([4, 5]) * dep
+
+            # With :meth:`Dependency.__rmul__` defined this would
+            # return an object-dtype ndarray::
+            #
+            #   [Dependency(names=1, derivatives=40),
+            #    Dependency(names=2, derivatives=55)]
+
+        with self.assertRaisesRegexp(TypeError,
+                "^unsupported operand type\(s\) for \*: "
+                "'int' and 'Dependency'$"):
+            product = numpy.asarray(3) * dep
+
+            # With :meth:`Dependency.__rmul__` defined this would
+            # return an object-dtype ndarray::
+            #
+            #   [Dependency(names=1, derivatives=30),
+            #    Dependency(names=2, derivatives=33)]
+
+        with self.assertRaisesRegexp(TypeError,
+                "^unsupported operand type\(s\) for \*: "
+                "'int' and 'Dependency'$"):
+            product = numpy.asarray([[11, 22], [33, 44]]) * dep
+
+            # With :meth:`Dependency.__rmul__` defined this would
+            # return an object-dtype ndarray::
+            #
+            #   [[Dependency(names=1, derivatives=110),
+            #     Dependency(names=2, derivatives=242)],
+            #    [Dependency(names=1, derivatives=333),
+            #     Dependency(names=2, derivatives=484)]]
+
+        with self.assertRaisesRegexp(TypeError,
+                "^unsupported operand type\(s\) for \*: "
+                "'int' and 'Dependency'$"):
+            product = 3 * dep
+
+            # With :meth:`Dependency.__rmul__` defined, this would
+            # *work*; it would return a Depdendency::
+            #
+            #   Depdendency(names=[1, 2], derivatives=[30, 33])
+
+        with self.assertRaisesRegexp(TypeError,
+                "^can't multiply sequence by non-int of type "
+                "'Dependency'$"):
+            product = [1, 2, 3] * dep
+
+            # Also with :meth:`Dependency.__rmul__` defined, this
+            # would fail with::
+            #
+            #   ValueError: operands could not be broadcast together
+            #   with shapes (2,) (3,)
+            #
+            # However, ``product = [1, 42] * dep`` *would* work, with
+            # result::
+            #
+            #   Dependency(names=[1, 2], derivatives=[10, 462])

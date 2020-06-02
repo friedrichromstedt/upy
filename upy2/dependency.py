@@ -5,7 +5,7 @@ import numpy
 __all__ = ['Dependency']
 
 
-class Dependency:
+class Dependency(object):
     """ The class :class:`Dependency` represents the dependence of an
     uncertain quantity on uncertainty sources of unity variance by a
     derivative.  When the :attr:`derivative` is real-valued, the
@@ -272,8 +272,8 @@ class Dependency:
                 derivatives=bc_derivatives,
         )
 
-    __rmul__ = __mul__
-    
+    # Reverse multiplication is unsupported.
+
     # Augmented arithmetics will be emulated by using standard
     # arithmetics.
 
