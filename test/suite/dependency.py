@@ -362,6 +362,9 @@ class Test_Dependency(unittest.TestCase):
                 a=dep,
                 axis=0)
 
+        dep.names[1, 0] = 42
+        dep.derivatives[1, 0] = 1
+
         self.assertAllEqual(result.names, [[3, 4]])
         self.assertAllEqual(result.derivatives, [[12, 13]])
 
@@ -372,6 +375,9 @@ class Test_Dependency(unittest.TestCase):
         result = dep.flatten()
             # You cannot use :func:`numpy.ravel`.
 
+        dep.names[0, 0] = 42
+        dep.derivatives[0, 0] = 1
+
         self.assertAllEqual(result.names, [1, 2, 3, 4])
         self.assertAllEqual(result.derivatives, [10, 11, 12, 13])
 
@@ -380,11 +386,21 @@ class Test_Dependency(unittest.TestCase):
                 names=[[1, 2], [3, 4]],
                 derivatives=[[10, 11], [12, 13]])
         repeated = numpy.repeat(dep, [2, 3], axis=1)
+        # It is obvious that *repeated* has copied elements.
 
         self.assertAllEqual(repeated.names,
                 [[1, 1, 2, 2, 2], [3, 3, 4, 4, 4]])
         self.assertAllEqual(repeated.derivatives,
                 [[10, 10, 11, 11, 11], [12, 12, 13, 13, 13]])
+
+        dep = Dependency(names=[1], derivatives=[42])
+        repeated = numpy.repeat(dep, [1], axis=0)
+
+        dep.names[0] = 2
+        dep.derivatives[0] = 43
+
+        self.assertAllEqual(repeated.names, [1])
+        self.assertAllEqual(repeated.derivatives, [42])
 
     def test_reshape(self):
         a = numpy.asarray([[1, 3], [2, 4]]).T
@@ -400,6 +416,10 @@ class Test_Dependency(unittest.TestCase):
         reshaped = dep.reshape((4,))
             # :func:`numpy.reshape` cannot be used, it returns an
             # ``object``-dtype ndarray.
+        a[0, 0] = 5
+        b[0, 0] = 6
+        self.assertAllEqual(dep.names, [[5, 2], [3, 4]])
+        self.assertAllEqual(dep.derivatives, [[6, 2], [3, 4]])
         self.assertAllEqual(reshaped.names, [1, 2, 3, 4])
         self.assertAllEqual(reshaped.derivatives, [1, 2, 3, 4])
 
@@ -408,6 +428,8 @@ class Test_Dependency(unittest.TestCase):
                 names=[[1, 2], [3, 4]],
                 derivatives=[[10, 11], [12, 13]])
         transposed = numpy.transpose(dep)
+        dep.names[0, 0] = 10
+        dep.derivatives[0, 0] = 100
         self.assertAllEqual(transposed.names, [[1, 3], [2, 4]])
         self.assertAllEqual(transposed.derivatives, [[10, 12], [11, 13]])
 

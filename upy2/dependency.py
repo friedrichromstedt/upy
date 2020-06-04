@@ -317,13 +317,11 @@ class Dependency(object):
                 names=self.names.copy(),
                 derivatives=self.derivatives.copy())
 
-    # Notice that the following methods do *not* perform a copying
-    # step.
-
     def compress(self, *compress_args, **compress_kwargs):
         """ Returns a Dependency constructed from the *compressed*
         names and derivatives of *self*. """
 
+        # :meth:`ndarray.compress` returns a copy by itself.
         return Dependency(
                 names=self.names.compress(
                     *compress_args, **compress_kwargs),
@@ -334,30 +332,39 @@ class Dependency(object):
         """ Returns a Dependency constructed from the *flattened*
         names and derivatives of *self*. """
 
+        # :meth:`ndarray.flatten` returns a copy by itself.
         return Dependency(
                 names=self.names.flatten(
                     *flatten_args, **flatten_kwargs),
                 derivatives=self.derivatives.flatten(
                     *flatten_args, **flatten_kwargs))
 
+    # Notice that :meth:`ndarray.ravel` returns a copy *only if
+    # needed*, just as :func:`numpy.ravel` does, while
+    # :meth:`ndarray.flatten` returns a copy *always*.  Notice also,
+    # that there is no :func:`numpy.flatten`.
+
     def repeat(self, *repeat_args, **repeat_kwargs):
         """ Returns a Dependency constructed from the *repeated* names
         and derivatives of *self*. """
 
+        # It appears that :meth:`ndarray.repeat` returns a copy
+        # *always*.
         return Dependency(
                 names=self.names.repeat(
                     *repeat_args, **repeat_kwargs),
                 derivatives=self.derivatives.repeat(
                     *repeat_args, **repeat_kwargs))
 
-    def reshape(self, *reshape_args):
+    def reshape(self, *reshape_args, **reshape_kwargs):
         """ Returns a Dependency constructed from the *reshaped* names
-        and derivatives of *self*.  Notice that
-        :meth:`ndarray.reshape` doesn't accept keyword arguments. """
+        and derivatives of *self*. """
 
         return Dependency(
-                names=self.names.reshape(*reshape_args),
-                derivatives=self.derivatives.reshape(*reshape_args))
+                names=self.names.reshape(
+                    *reshape_args, **reshape_kwargs).copy(),
+                derivatives=self.derivatives.reshape(
+                    *reshape_args, **reshape_kwargs).copy())
 
     def transpose(self, *transpose_args, **transpose_kwargs):
         """ Returns a Dependency constructed from the *transposed*
@@ -365,9 +372,9 @@ class Dependency(object):
 
         return Dependency(
                 names=self.names.transpose(
-                    *transpose_args, **transpose_kwargs),
+                    *transpose_args, **transpose_kwargs).copy(),
                 derivatives=self.derivatives.transpose(
-                    *transpose_args, **transpose_kwargs))
+                    *transpose_args, **transpose_kwargs).copy())
 
     #
     # String conversion ...
