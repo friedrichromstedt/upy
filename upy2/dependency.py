@@ -129,9 +129,7 @@ class Dependency(object):
 
     @property
     def imag(self):
-        """ Returns the imaginary part of this Dependency.  Both the
-        names as well as the imaginary part of *self.derivatives* will
-        be copied. """
+        """ Returns the imaginary part of this Dependency. """
         
         return Dependency(
             names=self.names.copy(),
@@ -139,9 +137,7 @@ class Dependency(object):
         )
 
     def conj(self):
-        """ Returns the complex conjugate.  The *names* of *self* will
-        be copied; :meth:`conj` of *self.derivatives* returns a copy
-        by itself. """
+        """ Returns the complex conjugate. """
 
         return Dependency(
             names=self.names.copy(),
@@ -284,7 +280,7 @@ class Dependency(object):
     def __getitem__(self, key):
         """ Returns a new Dependency with *key* applied both to the
         :attr:`derivatives` as well as to the :attr:`names` of *self*.
-        The indexed results will be copied. """
+        """
         
         return Dependency(
                 names=self.names[key].copy(),
