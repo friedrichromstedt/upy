@@ -302,3 +302,143 @@ class Test_Dependency(unittest.TestCase):
             # result::
             #
             #   Dependency(names=[1, 2], derivatives=[10, 462])
+
+    def test_getitem(self):
+        a = Dependency(names=[1, 2], derivatives=[10, 11])
+        b = a[1]
+
+        a.names[1] = 22
+        a.derivatives[1] = 111
+
+        self.assertAllEqual(b.names, 2)
+        self.assertAllEqual(b.derivatives, 11)
+
+        self.assertAllEqual(a.names, [1, 22])
+        self.assertAllEqual(a.derivatives, [10, 111])
+
+        a = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        b = a[:, 0]
+
+        self.assertAllEqual(b.names, [1, 3])
+        self.assertAllEqual(b.derivatives, [10, 12])
+
+        b.names[0] = 42
+        b.derivatives[0] = 43
+
+        self.assertAllEqual(b.names, [42, 3])
+        self.assertAllEqual(b.derivatives, [43, 12])
+
+        self.assertAllEqual(a.names, [[1, 2], [3, 4]])
+        self.assertAllEqual(a.derivatives, [[10, 11], [12, 13]])
+
+    def test_clear(self):
+        dep = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        dep.clear((slice(0, 2), 0))
+
+        self.assertAllEqual(dep.names, [[0, 2], [0, 4]])
+        self.assertAllEqual(dep.derivatives, [[0, 11], [0, 13]])
+
+    def test_len(self):
+        dep = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        self.assertEqual(len(dep), 2)
+
+        dep = Dependency(names=42, derivatives=12)
+        with self.assertRaisesRegexp(IndexError,
+                '^tuple index out of range$'):
+            len(dep)
+
+    def test_compress(self):
+        dep = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        result = numpy.compress(
+                condition=[False, True],
+                a=dep,
+                axis=0)
+
+        self.assertAllEqual(result.names, [[3, 4]])
+        self.assertAllEqual(result.derivatives, [[12, 13]])
+
+    def test_flatten(self):
+        dep = Dependency(
+                names=numpy.asarray([[1, 3], [2, 4]]).T,
+                derivatives=[[10, 11], [12, 13]])
+        result = dep.flatten()
+            # You cannot use :func:`numpy.ravel`.
+
+        self.assertAllEqual(result.names, [1, 2, 3, 4])
+        self.assertAllEqual(result.derivatives, [10, 11, 12, 13])
+
+    def test_repeat(self):
+        dep = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        repeated = numpy.repeat(dep, [2, 3], axis=1)
+
+        self.assertAllEqual(repeated.names,
+                [[1, 1, 2, 2, 2], [3, 3, 4, 4, 4]])
+        self.assertAllEqual(repeated.derivatives,
+                [[10, 10, 11, 11, 11], [12, 12, 13, 13, 13]])
+
+    def test_reshape(self):
+        a = numpy.asarray([[1, 3], [2, 4]]).T
+        b = numpy.asarray([[1, 2], [3, 4]])
+        self.assertAllEqual(a, [[1, 2], [3, 4]])
+
+        bx = numpy.reshape(b, (4,))
+        self.assertAllEqual(bx, [1, 2, 3, 4])
+        ax = numpy.reshape(a, (4,))
+        self.assertAllEqual(ax, [1, 2, 3, 4])
+
+        dep = Dependency(names=a, derivatives=b)
+        reshaped = dep.reshape((4,))
+            # :func:`numpy.reshape` cannot be used, it returns an
+            # ``object``-dtype ndarray.
+        self.assertAllEqual(reshaped.names, [1, 2, 3, 4])
+        self.assertAllEqual(reshaped.derivatives, [1, 2, 3, 4])
+
+    def test_transpose(self):
+        dep = Dependency(
+                names=[[1, 2], [3, 4]],
+                derivatives=[[10, 11], [12, 13]])
+        transposed = numpy.transpose(dep)
+        self.assertAllEqual(transposed.names, [[1, 3], [2, 4]])
+        self.assertAllEqual(transposed.derivatives, [[10, 12], [11, 13]])
+
+        a = numpy.asarray([[[1], [2]], [[3], [4]]])
+        self.assertAllEqual(a.T, [[[1, 3], [2, 4]]])
+            # Notice that ``.T`` *reverses* the order of *all* axes.
+
+        dep = Dependency(
+                names=[[[1], [2]], [[3], [4]]],
+                derivatives=[[[10], [11]], [[12], [13]]])
+        transposed = numpy.transpose(dep)
+        self.assertAllEqual(transposed.names,
+                [[[1, 3], [2, 4]]])
+        self.assertAllEqual(transposed.derivatives,
+                [[[10, 12], [11, 13]]])
+
+        transposed = numpy.transpose(dep, (0, 2, 1))
+            # Reverses the two last axes.
+        self.assertAllEqual(transposed.names,
+                [[[1, 2]], [[3, 4]]])
+        self.assertAllEqual(transposed.derivatives,
+                [[[10, 11]], [[12, 13]]])
+
+    def test_str(self):
+        str1 = str(Dependency(names=1, derivatives=42))
+        self.assertEqual(str1, "(names = 1, derivatives = 42)")
+
+        str2 = str(Dependency(names=[1, 2], derivatives=[42, 100]))
+        self.assertEqual(str2,
+"""(names:
+[1 2]
+derivatives:
+[ 42 100]
+)""")

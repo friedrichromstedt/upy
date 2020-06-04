@@ -309,6 +309,17 @@ class Dependency(object):
     # ndarray methods ...
     #
 
+    def copy(self):
+        """ Returns a Dependency constructed from copies of the names
+        and derivatives of *self*. """
+
+        return Dependency(
+                names=self.names.copy(),
+                derivatives=self.derivatives.copy())
+
+    # Notice that the following methods do *not* perform a copying
+    # step.
+
     def compress(self, *compress_args, **compress_kwargs):
         """ Returns a Dependency constructed from the *compressed*
         names and derivatives of *self*. """
@@ -318,14 +329,6 @@ class Dependency(object):
                     *compress_args, **compress_kwargs),
                 derivatives=self.derivatives.compress(
                     *compress_args, **compress_kwargs))
-
-    def copy(self):
-        """ Returns a Dependency constructed from copies of the names
-        and derivatives of *self*. """
-
-        return Dependency(
-                names=self.names.copy(),
-                derivatives=self.derivatives.copy())
 
     def flatten(self, *flatten_args, **flatten_kwargs):
         """ Returns a Dependency constructed from the *flattened*
@@ -373,7 +376,7 @@ class Dependency(object):
     def __str__(self):
         if self.ndim == 0:
             # Return a scalar representation ...
-            return "(names = {name}, derivatives = {derivative}".\
+            return "(names = {name}, derivatives = {derivative})".\
                 format(name=self.names, derivative=self.derivatives)
         else:
             # Return an array representation ...
