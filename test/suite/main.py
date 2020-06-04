@@ -5,6 +5,7 @@ from typesetting import \
     Test_TypesettersScientific
 from operators import TestOperators
 from dependency import Test_Dependency
+from core import Test_Core
 
 
 unittest.main()

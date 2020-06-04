@@ -1,15 +1,13 @@
 # Developed since: Jan 2010
 
-"""The central upy2 module, implementing the uncertain ndarray:
-:class:`undarray`."""
+""" The central upy2 module, implementing the uncertain ndarray:
+:class:`undarray`. """
 
 import numpy
 import upy2
 import upy2.dependency
 import upy2.typesetting.protocol
 import upy2.context
-#import upy2.printable
-#import warnings
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
     'unegative', 'uabsolute', 'usqrt', 'usquare',
