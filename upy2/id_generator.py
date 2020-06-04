@@ -1,11 +1,11 @@
 # Developed since: Feb 2010
 
+""" Implements a thread-safe generator for unique IDs. """
+
 import threading
 import numpy
 
 __all__ = ['IDGenerator']
-
-"""Implements a thread-safe generator for unique IDs."""
 
 
 class IDGenerator:
@@ -18,9 +18,6 @@ class IDGenerator:
     def get_idarray(self, shape):
         """ Returns unique IDs in shape *shape*. """
         
-#X        shape = numpy.asarray(shape)
-#X        # Because shape may be (), then ().prod() is float by default.
-#X        N = shape.prod(dtype = numpy.int)
         # For an empty iterable *shape* like [] and (), ``numpy.prod``
         # returns 1.0 with dtype numpy.float by default; thus we need
         # to override the result dtype.  This does not affect the
@@ -39,12 +36,3 @@ class IDGenerator:
             self._current_id += N
 
         return idarray
-#X
-#X        self.lock.acquire()
-#X        id_return = numpy.arange(self.id, self.id + N).\
-#X                reshape(shape)
-#X        self.id += N
-#X        # Now, as the id has been stepped, others can access.
-#X        self.lock.release()
-#X
-#X        return id_return

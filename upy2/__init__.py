@@ -2,8 +2,8 @@
 
 # Create the module-scope ID generator ...
 
-from upy2.id_generator import *
-id_generator = IDGenerator()
+from upy2.id_generator import IDGenerator
+guid_generator = IDGenerator()  # Globally Unique IDs
 
 # Load all the things ...
 

@@ -82,7 +82,7 @@ class U(upy2.context.Protocol):
         result = undarray(shape=shape, dtype=stddev.dtype)
 
         dependency = upy2.dependency.Dependency(
-                names=upy2.id_generator.get_idarray(shape=shape),
+                names=upy2.guid_generator.get_idarray(shape=shape),
                 derivatives=stddev,
         )
         result.append(dependency)
@@ -162,7 +162,7 @@ class undarray(object):
         if stddev is not None:
             # Create a Dependendy instance from scratch.
             dependency = upy2.dependency.Dependency(
-                    names=upy2.id_generator.get_idarray(
+                    names=upy2.guid_generator.get_idarray(
                         shape=self.shape),
                     derivatives=stddev,
                     dtype=dtype,
