@@ -3,7 +3,7 @@
 import unittest
 import numpy
 import upy2
-from upy2 import undarray
+from upy2 import undarray, U, u
 
 
 class Test_Core(unittest.TestCase):
@@ -59,3 +59,13 @@ class Test_Core(unittest.TestCase):
 
         self.assertClose(uc.nominal, [1.0, 5.0])
         self.assertClose(uc.stddev, [0.1, 0.3])
+
+    def test_U(self):
+        x = U(stddevs=2)
+
+        y1 = x.provide([1, 2])
+        self.assertAllEqual(y1.nominal, [0, 0])
+        self.assertClose(y1.stddev, [0.5, 1])
+
+        y2 = x([0.5, 5])
+        self.assertClose(y2.stddev, [0.25, 2.5])

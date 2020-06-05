@@ -69,13 +69,13 @@ class U(upy2.context.Protocol):
 
         self.stddevs = stddevs
 
-    def provide(self, error):
+    def provide(self, uncertainty):
         """ Provides an undarray with zero nominal value and with
-        uncertainty based on *error*.  *error* is interpreted as a
-        multiple of the standard deviation as defined on
-        initialisation time. """
+        uncertainty based on *uncertainty*.  *uncertainty* is
+        interpreted as a multiple of the standard deviation as defined
+        on initialisation time. """
 
-        stddev = numpy.true_divide(error, self.stddevs)
+        stddev = numpy.true_divide(uncertainty, self.stddevs)
         shape = stddev.shape
         result = undarray(shape=shape, dtype=stddev.dtype)
 
@@ -87,20 +87,20 @@ class U(upy2.context.Protocol):
 
         return result
 
-    def __call__(self, error):
+    def __call__(self, uncertainty):
         """ Convenience method to provide a short-hand for
         :meth:`provide`.
 
         Example::
 
             u5 = U(5)
-            ua = nominal +- u5(five_sigma_error)
+            ua = nominal +- u5(five_sigma_uncertainty)
 
         Writing ``.provide(...)`` is not needed to ensure readability
         and hence the syntax can be made more terse by pruning the
         explicit call to :meth:`provide`. """
 
-        return self.provide(error)
+        return self.provide(uncertainty)
 
 upy2.context.define(U)
 
