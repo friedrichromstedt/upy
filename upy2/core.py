@@ -7,7 +7,7 @@ import numpy
 import upy2
 import upy2.dependency
 import upy2.typesetting.protocol
-import upy2.context
+import upy2.sessions
 
 __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
     'unegative', 'uabsolute', 'usqrt', 'usquare',
@@ -17,7 +17,7 @@ __all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
     'uadd', 'usubtract', 'umultiply', 'udivide', 'upower',
     'uarctan2']
 
-typesetting_context = upy2.context.byprotocol(
+typesetting_session = upy2.sessions.byprotocol(
     upy2.typesetting.protocol.Typesetter)
 
 #
@@ -57,15 +57,14 @@ def ucopy(uarray_like):
 
 # Definition of the "Uncertainty" Protocol:
 
-class U(upy2.context.Protocol):
+class U(upy2.sessions.Protocol):
     def __init__(self, stddevs):
-        """ "Uncertainty" (``U``) Context Providers provide
-        uncertainty *standard deviations* based on *errors*.  The
-        *error* is supposed to be a multiple of the *standard
-        deviation*.  The connecting factor is given by the *stddevs*
-        argument. """
+        """ "Uncertainty" (``U``) Session managers provide *standard
+        deviations* based on *uncertainties*.  The *uncertainties* are
+        a multiple of the standard deviations with the factor given by
+        the *stddevs* argument. """
 
-        upy2.context.Protocol.__init__(self)
+        upy2.sessions.Protocol.__init__(self)
 
         self.stddevs = stddevs
 
@@ -102,14 +101,14 @@ class U(upy2.context.Protocol):
 
         return self.provide(uncertainty)
 
-upy2.context.define(U)
+upy2.sessions.define(U)
 
-# Access to the "U" Context:
+# Access to the "U" Session:
 
-U_context = upy2.context.byprotocol(U)
+U_session = upy2.sessions.byprotocol(U)
 
 def u(error):
-    return U_context.current().provide(error)
+    return U_session.current().provide(error)
 
 #
 # The central undarray class ...
@@ -566,7 +565,7 @@ class undarray(object):
     #
 
     def __str__(self):
-        typesetter = typesetting_context.current()
+        typesetter = typesetting_session.current()
         return typesetter.typeset(self)
 
 

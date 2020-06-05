@@ -3,7 +3,7 @@
 """ Defines the Typesetter Protocol Class and registers a typesetter
 Context at :mod:`upy2.context`. """
 
-from upy2.context import define, Protocol
+from upy2.sessions import define, Protocol
 
 
 class Typesetter(Protocol):
