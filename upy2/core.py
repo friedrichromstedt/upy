@@ -9,8 +9,8 @@ import upy2.dependency
 import upy2.typesetting.protocol
 import upy2.sessions
 
-__all__ = ['undarray', 'uzeros', 'asuarray', 'U', 'u', 'ucopy',
-    'unegative', 'uabsolute', 'usqrt', 'usquare',
+__all__ = ['undarray', 'uzeros', 'asuarray', 'ucopy', 'U', 'u',
+    'upositive', 'unegative', 'uabsolute', 'usqrt', 'usquare',
     'usin', 'ucos', 'utan', 'uarcsin', 'uarccos', 'uarctan',
     'usinh', 'ucosh', 'utanh', 'uarcsinh', 'uarccosh', 'uarctanh',
     'uexp', 'uexp2', 'ulog', 'ulog2', 'ulog10',
@@ -107,8 +107,8 @@ upy2.sessions.define(U)
 
 U_session = upy2.sessions.byprotocol(U)
 
-def u(error):
-    return U_session.current().provide(error)
+def u(uncertainty):
+    return U_session.current().provide(uncertainty)
 
 #
 # The central undarray class ...
