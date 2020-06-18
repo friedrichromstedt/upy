@@ -1,0 +1,656 @@
+.. vim: syntax=rst
+
+Thread Synchronisation
+######################
+
+.. rubric:: Montag, d. 8. Juni 2020, 16:04 Uhr in Kirchheim
+
+
+Ziele
+=====
+
+1.  Hauptthread startet einen der Workerthreads.
+
+2.  Control Flow wird an den ersten Workerthread uebergeben.
+
+3.  Control Flow wird an den Hauptthread zurueckgegeben.
+
+
+Ideen
+=====
+
+Reicht nicht einfach ein Lock?
+------------------------------
+
+Im Hauptthread:
+
+.. code:: python
+
+    with lock:
+        thread.start()
+
+Im Nebenthread:
+
+.. code:: python
+
+    with lock:
+        <do work>
+
+Allerdings muss dann der Hauptthread das Lock wieder acquiren, sodass
+der Code im Hauptthread insgesamt lautet:
+
+.. code:: python
+
+    with lock:
+        thread.start()
+    with lock:
+        <do work>
+
+Dabei ist nicht sicher, dass zwischen den beiden ``with``-Bloecken
+tatsaechlich der Nebenthread das Lock acquired.
+
+
+Uebergabe des Control Flows vom Hauptthread zum ersten Workerthread
+-------------------------------------------------------------------
+
+Im Hauptthread:
+
+.. code:: python
+
+    with Rx:
+        thread.start()
+        Rx.wait()
+
+und im Workerthread:
+
+.. code:: python
+
+    with Rx:
+        Rx.notify()
+
+Ablauf:
+
+1.  Der Hauptthread acquired das Lock.
+2.  Der Workerthread startet.  Er wartet auf das Lock.
+    Der Hauptthread gibt das Lock frei.
+3.  Der Workerthread acquired das Lock und benachrichtigt den
+    Haupthread.
+4.  Der Workerthread gibt das Lock frei.
+5.  Der Hauptthread acquired as Lock, beendet den ``with``-Block und
+    gibt im Zuge dessen das Lock wieder frei.
+
+Ohne ``with``-Bloecke:
+
+Im Hauptthread:
+
+.. code:: python
+
+    Rx.acquire()
+    thread.start()
+    Rx.wait()
+    Rx.release()
+
+Im Workerthread:
+
+.. code:: python
+
+    Rx.acquire()
+    Rx.notify()
+    Rx.release()
+
+
+Uebergang des Control Flows vom Workerthread zum Hauptthread
+------------------------------------------------------------
+
+Im Hautpthread:
+
+.. code:: python
+
+    with Tx:
+        Tx.notify()
+
+und im Workerthread:
+
+.. code:: python
+
+    with Tx:
+        <das Aequivalent zu thread.start>
+        Tx.wait()
+
+Ohne ``with``-Bloecke:
+
+Im Hauptthread:
+
+.. code:: python
+
+    Tx.aquire()
+    Tx.notify()
+    Tx.relase()
+
+und im Workerthread:
+
+.. code:: python
+
+    Tx.acquire()
+    <das Aequivalent zu thread.start>
+    Tx.wait()
+    Tx.relase()
+
+
+Zusammengeschrieben
+-------------------
+
+Im Workerthread:
+
+.. code:: python
+
+    Rx.acquire()
+    Tx.acquire()
+    Rx.notify()
+    Rx.release()
+
+    Tx.wait()
+    Tx.release()
+
+und im Hauptthread:
+
+.. code:: python
+
+    Rx.aquire()
+    thread.start()
+    Rx.wait()
+    Rx.release()
+
+    Tx.acquire()
+    Tx.notify()
+    Tx.release()
+
+..  Das ``thread.start()`` entspricht also dem Tx.release() im
+    Workerthread.
+
+Das Aequivalent zu ``thread.start()`` im Hauptthread ist also
+``Rx.notify()`` im Nebenthread.
+
+Bringe nun in die richtige Reihenfolge.
+
+Im Hauptthread:
+
+.. code:: python
+
+    Rx.acquire()
+    thread.start()
+    Rx.wait()
+    Rx.release()
+
+    Tx.acquire()
+    Tx.notify()
+    Tx.release()
+
+Im Workerthread:
+
+.. code:: python
+
+    Rx.acquire()
+    Tx.acquire()
+    Rx.notify()
+    Rx.release()
+
+    Tx.wait()
+    Tx.release()
+
+Die Zeilen 2 (``Tx.acquire()``) und 3 (``Rx.notify()``) im
+Workerthread koennen vertauscht werden, da der Hauptthread erst dann
+von ``Rx.wait()`` und dann von ``Rx.release()`` zurueckkehrt, wenn der
+Workerthread ``Rx`` released hat.
+
+Was leistete die entwickelte Logik?  Sie sorgt dafuer, dass Code
+zwischen den zwei Bloecken in den Threads mit Sicherheit so
+ausgefuehrt wird, dass beide Nutzlastbloecke nicht beginnen, bevor der
+Code im Hauptthread *vor* dem ersten Sync-Block beendet wurde, und
+dass beide enden, bevor beide Threads den jeweils zweiten Sync-Block
+verlassen haben.
+
+Insofern handelt es sich nicht bloss um den Transfer des Control
+Flows, sondern um die Synchronisation zweier Control Flows.  Die
+Benennung der Conditions als ``Rx`` und ``Tx`` ist also
+moeglicherweise nicht ganz zutreffend.  Gleichzeitig *kann* der Code
+verwendet werden, um Control Flow zu transferieren, wenn der jeweils
+andere Nutzlastblock *leer* bleibt.
+
+Weiterhin sollte es fuer die *Synchonisation* gleichgueltig sein,
+welcher Thread den Part mit ``<condition>.wait()`` ausfuehrt und
+welcher den mit ``<condition>.notify()``?  Kann man den Code so
+formulieren, dass in beiden Sync-Bloecken der Part mit
+``<condition>.wait()`` vom Hauptthread uebernommen wird?
+
+Code im Hauptthread:
+
+.. code:: python
+
+    C1.acquire()
+    tread.start()
+    C2.acquire()
+    C1.wait()
+    C1.release()
+
+    C2.wait()
+    C2.release()
+
+Im Workerthread:
+
+.. code:: python
+
+    C1.acquire()
+    C1.notify()
+    C1.release()
+
+    C2.acquire()
+    C2.notify()
+    C2.release()
+
+Mit zwei synchronisierten Abschnitten:
+
+Im Hauptthread:
+
+.. code:: python
+
+    C1.acquire()
+    thread.start()
+
+    C2.acquire()
+    C1.wait()
+    C1.release()
+
+    <Abschnitt 1>
+
+    C3.acquire()
+    C2.wait()
+    C2.release()
+
+    <Abschnitt 2>
+
+    C3.wait()
+    C3.release()
+
+und im Workerthread:
+
+.. code:: python
+
+    C1.acquire()
+    C1.notify()
+    C1.release()
+
+    <Abschnitt 1>
+
+    C2.acquire()
+    C2.notify()
+    C2.release()
+
+    <Abschnitt 2>
+
+    C3.acquire()
+    C3.notify()
+    C3.release()
+
+
+.. rubric:: Samstag, d. 13. Juni 2020, 7:49 Uhr
+
+
+Reicht nicht vielleicht doch ein Lock?
+--------------------------------------
+
+In diesem Abschnitt gehe ich davon aus, dass wartende Threads bei
+Release eines Locks *bevorzugt* werden.
+
+Dann ergibt sich in den Threads als Code jeweils:
+
+.. code:: python
+
+    with lock:
+        # do work
+    # another thread acquires the lock and does its work
+    with lock:  # waiting for the other thread to release the lock
+        # do work
+    # and so on ...
+
+Dabei kann *prinzipiell* der Fall eintreten, dass der andere Thread
+seine Arbeit beendet *bevor* the erste Thread das Lock acquired hat,
+wenn dies auch aeusserst unwahrscheinlich ist.  In diesem Fall wuerde
+der zweite Thread zwei Schritte direkt hintereinander ausfuehren, ohne
+dass zwischendurch der erste Thread zum Zuge kommt.
+
+
+.. rubric:: Montag, d. 15. Juni 2020, 6:48 Uhr
+
+
+Synchronisation von *drei* Threads
+----------------------------------
+
+Mit einfachen Locks
+^^^^^^^^^^^^^^^^^^^
+
+Im Hauptthread:
+
+.. code:: python
+
+    with lockA, lockB:
+        threadA.start()
+        threadB.start()
+        # <do work>
+    # threadA und threadB acquiren lockA bzw. lockB und tun ihre
+    # Arbeit ...
+    with lockA, lockB:
+        # <do work>
+    # und so weiter
+
+Man kann auch *erst* ``threadA`` seine Arbeit tun lassen und *dann*
+``threadB``:
+
+.. code:: python
+
+    lockA.acquire()
+    lockB.acquire()
+
+    threadA.start()
+    threadB.start()
+    # <do work>
+
+    threadA.release()
+    # <threadA acquires lockA  and does its work>
+    threadA.acquire()
+
+    threadB.release()
+    # <threadB acquires lockB and does its work>
+    threadB.acquire()
+
+    # und so weiter ...
+
+Man beachte dass man hier nicht mehr mit ``with``-Bloecken arbeiten
+kann, wenn nur *einer* der beiden Threads zu jeder Zeit laufen soll:
+
+.. code:: python
+
+    with lockB:
+        with lockA:
+            threadA.start()
+            threadB.start()
+            # <do work>
+        # <threadA acquires lockA and does its work>
+        # lockA.acquire() needs to be called *before* lockB is
+        # released, otherwise threadA and threadB run concurrently.
+
+Auch bei Hinnahme der Gleichzeitigkeit fuehren ``with``-Bloecke nicht
+zum Erfolg:
+
+.. code:: python
+
+    with lockA, lockB:
+        threadA.start()
+        threadB.start()
+        # <do work>
+    # threadA and threadB will acquire their locks, do their work and
+    # will release their lock.  They will immediately after releasing
+    # their lock attempt to reacquire it.
+
+Man muss also im Hauptthread *sofort* *beide* Locks probieren zu
+acquiren, damit der Hauptthread bevorzugt wird.  Dies geht nicht, weil
+man :meth:`.acquire` nur von *einem* Thread zu jeder Zeit aufrufen
+kann.  Der Entwurf oben [:334] *funktioniert also nicht*.
+
+
+Mit Conditions
+^^^^^^^^^^^^^^
+
+Im Hauptthread:
+
+.. code:: python
+
+    CAodd.acquire()
+    CBodd.acquire()
+    threadA.start()
+    threadB.start()
+
+    CAeven.acquire()
+    CBeven.acquire()
+    CAodd.wait()
+    CBodd.wait()
+    CAodd.release()
+    CBodd.release()
+
+    # <Abschnitt 1>
+
+    CAodd.acquire()
+    CBodd.acquire()
+    CAeven.wait()
+    CBeven.wait()
+    CAeven.release()
+    CBeven.release()
+
+    # <Abschnitt 2>
+
+    CAodd.wait()
+    CBodd.wait()
+    CAodd.release()
+    CBodd.release()
+
+und in den Nebenthreads:
+
+.. code:: python
+
+    Codd.acquire()
+    Codd.notify()
+    Codd.release()
+
+    # <Abschnitt 1>
+
+    Ceven.aqcuire()
+    Ceven.notify()
+    Ceven.release()
+
+    # <Abschnitt 2>
+
+    Codd.acquire()
+    Codd.notify()
+    Codd.release()
+
+In den Nebenthreads kann man also auch schreiben:
+
+.. code:: python
+
+    with Codd:
+        Codd.notify()
+
+    # <Abschnitt 1>
+
+    with Ceven:
+        Ceven.notify()
+
+    # <Abschnitt 2>
+
+    with Codd:
+        Codd.notify()
+
+Im Steuerthread koennen ``with``-Bloecke nicht verwendet werden, weil
+die Nutzungen der Conditions miteinander verwoben sind.
+
+
+Diskussion
+^^^^^^^^^^
+
+Bei Verwendung einfacher Locks laeuft zu jeder Zeit hoechstens ein
+einzelner Thread.  Bei Verwendung von Conditions kann es vorkommen,
+dass *alle* Threads den jeweiligen Abschnitt gleichzeitig durchlaufen.
+
+Die Loesung unter Nutzung von Conditions ist sicherer, da keine
+Timing-Probleme auftauchen koennen.
+
+Problematisch koennte es werden, wenn einer der Threads abstuerzt,
+weil dann der Ablauf u.U. stillsteht.
+
+Nach Ende von Abschnitt 2 brauchen im Hauptthread ``C{A, B}even``
+nicht nochmals acquired werden, weil es keine weitere Synchronisation
+gibt, fuer welche es notwendig ist, dass zu ihrem Beginn der
+Hauptthread ``C{A, B}even`` acquired hat.
+
+
+.. rubric:: Dienstag, d. 16. Juni 2020, 7:24 Uhr
+
+
+Bei Verwendung einfacher Locks besteht das Problem mit dem Absturz eines Workerthreads nicht, da niemals explizit auf einen Workerthread gewartet wird, vgl. [:358 ff.].  Man kann bei der Verwendung von Conditions ein Timeout von einigen wenigen Sekunden zum Aufruf von :meth:`wait` hinzufuegen, dann laeuft der Hauptthread auch dann weiter, wenn ein Workerthread abstuerzt.
+
+
+Weiter im Stoff
+^^^^^^^^^^^^^^^
+
+Auch wenn man mit ``odd`` und ``even`` arbeiten kann, ist es fuer die Uebersicht sinnvoll, dennoch die Conditions nur einmal zu verwenden.
+
+Im Hauptthread:
+
+.. code:: python
+
+    CA1.acquire()
+    CB1.acquire()
+    threadA.start()
+    threadB.start()
+
+    # <Abschnitt 0>
+
+    CA2.acquire()
+    CB2.acquire()
+    CA1.wait()
+    CB1.wait()
+    # -synchron-
+    CA1.release()
+    CB1.release()
+
+    # <Abschnitt 1>
+
+    CA3.acquire()
+    CB3.acquire()
+    CA2.wait()
+    CB2.wait()
+    # -synchron-
+    CA2.release()
+    CB2.release()
+
+    # <Abschnitt 2>
+
+    CA3.wait()
+    CB3.wait()
+    # -synchron-
+    CA3.release()
+    CB3.release()
+
+In den Nebenthreads:
+
+.. code:: python
+
+    # <Abschnitt 0>
+
+    with C1:
+        C1.notify()
+
+    # <Abschnitt 1>
+
+    with C2:
+        C2.notify()
+
+    # <Abschnitt 2>
+
+    with C3:
+        C3.notify()
+
+Das Paradigma soll eigentlich garantieren, dass kein zeitlicher
+Ueberlapp zwischen der Gesamtheit aller Instruktionen der jeweiligen
+Abschnitte besteht.  D.h., dass z.B. keine Instruktionen aus Abschnitt
+2 *nach* anderen Instruktionen aus Abschnitt 1 ausgefuehrt werden.
+Dies wird von obigem Code [:511 ff.] *nicht* geleistet; die
+Eintragungen ``-synchron-`` sind irrtuemlich.  Beispiel: Sobald
+``CA2.wait()`` in [:530] zurueckkehrt, koennen Instruktionen aus
+Abschnitt 2 des Workerthreads A ausgefuehrt werden, obwohl
+Workerthread B vielleicht seine Arbeit in Abschnitt 1 noch nicht
+beendet hat.
+
+Ich probiere deshalb die umgekehrte Signalisierung aus.  D.h. im
+Hauptthread:
+
+.. code:: python
+
+    threadA.Cstart.acquire()
+    threadB.Cstart.acquire()
+    threadA.start()
+    threadB.start()
+    threadA.Cstart.wait()
+    threadB.Cstart.wait()
+    threadA.Cstart.release()
+    threadB.Cstart.release()
+
+    with threadA.C1, threadB.C1:
+        # -synchron-
+        threadA.C1.notify()
+        threadB.C1.notify()
+
+    # <Abschnitt 1>
+
+    with threadA.C2, threadB.C2:
+        # -synchron-
+        threadA.C2.notify()
+        threadB.C2.notify()
+
+    # <Abschnitt 2>
+
+    with threadA.C3, threadB.C3:
+        # -synchron-
+        threadA.C3.notify()
+        threadB.C3.notify()
+
+und in einem Workerthread:
+
+.. code:: python
+
+    C1.acquire()
+    with Cstart:
+        Cstart.notify()
+
+    C2.acquire()
+    C1.wait()
+    C1.release()
+
+    # <Abschnitt 1>
+
+    C3.acquire()
+    C2.wait()
+    C2.release()
+
+    # <Abschnitt 2>
+
+    C3.wait()
+    C3.release()
+
+Der erste Abschnitt mit ``Cstart`` ist notwendig, um sicherzustellen,
+dass die Workerthreads ihr :attr:`C1` acquiren *bevor* der erste
+``with``-Block im Hauptthread beginnt.
+
+Man kann den ersten Block im Hauptthread vereinfachen zu:
+
+.. code:: python
+
+    with threadA.Cstart, threadB.Cstart:
+        threadA.start()
+        threadB.start()
+        threadA.Cstart.wait()
+        threadB.Cstart.wait()
+
+Die mit ``# -synchron-`` bezeichneten Zeilen werden erst ausgefuehrt,
+wenn *sowohl* ``threadA`` *als auch* ``threadB`` ihre
+``Cx.wait()``-Zeile erreicht haben.  Dann werden die
+``notify()``-Zeilen im Hauptthread ausgefuehrt, und danach die
+Conditions der Threads released, sodass sie jeweils von ihrem
+``wait()``-Call zurueckkehren und die Conditions selbst aquiren, um
+sie unmittelbar danach selbst zu releasen.
+
+Alle Instruktionen sowohl im Hauptthread with auch in den
+Nebenthreads der numerierten Abschnitte werden also *zwischen* den
+synchronen Punkten (``# -synchron-``) ausgefuehrt; es gibt keinen
+Ueberlapp der Gesamtheit aller Instruktionen aller Threads in einem
+numerierten Block mehr.
