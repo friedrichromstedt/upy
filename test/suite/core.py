@@ -99,12 +99,12 @@ class Test_Core(unittest.TestCase):
         # Test combination of :meth:`{register, unregister}` and
         # :meth:{default, undefault}`:
         y = U(stddevs=3)
-        U_session.default(x)
-        U_session.register(y)
+        x.default()
+        y.register()
         self.assertIs(U_session.current(), y)
-        U_session.undefault(x)
+        x.undefault()
         self.assertIs(U_session.current(), y)
-        U_session.unregister(y)
+        y.unregister()
         with self.assertRaisesRegexp(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
@@ -126,13 +126,12 @@ class Test_Core(unittest.TestCase):
 
         # Test order check in :meth:`unregister`:
         U_session.register(x)
-        U_session.register(y)
-        with self.assertRaisesRegexp(ValueError,
-                '^The session manager to be unregistered is not '
-                'the topmost entry on the stack$'):
-            U_session.unregister(x)
-        self.assertIs(U_session.current(), y)
-        U_session.unregister(y)
+        with y:
+            with self.assertRaisesRegexp(ValueError,
+                    '^The session manager to be unregistered is not '
+                    'the topmost entry on the stack$'):
+                U_session.unregister(x)
+            self.assertIs(U_session.current(), y)
         self.assertIs(U_session.current(), x)
         U_session.unregister(x)
         with self.assertRaisesRegexp(LookupError,

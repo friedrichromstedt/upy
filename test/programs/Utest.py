@@ -87,6 +87,17 @@ class SideThread1(SideThread):
                 self.U_session.current(),
                 self.defaultU,
                 'side thread 1, section 1')
+        echo('side thread 1: Passed section 1.')
+    
+    def section2(self):
+        localU = U(2)
+        echo('side thread 1: About to use ``localU.register()``.')
+        localU.register()
+        echo('side thread 1: Called ``localU.register()``.')
+        suite.assertIs(U_session.current(), localU,
+                'side thread 1, section 2')
+        localU.unregister()
+        echo('side thread 1: Used ``localU.unregister()``.')
 
 class SideThread2(SideThread):
     def section1(self):
@@ -94,10 +105,22 @@ class SideThread2(SideThread):
                 self.U_session.current(),
                 self.defaultU,
                 'side thread 2, section 1')
+        echo('side thread 2: Passed section 1.')
+
+    def section2(self):
+        localU = U(2)
+        echo("side thread 2: About to use ``U_session.register(localU)``.")
+        U_session.register(localU)
+        echo("side thread 2: Called ``U_session.register(localU)``.")
+        suite.assertIs(U_session.current(), localU,
+                'side thread 2, section 2')
+        U_session.unregister(localU)
+        echo("side thread 2: Called ``U_session.unregister(localU)``.")
 
 
 defaultU = U(2)
 defaultU.default()
+echo("main thread: Defaulted ``defaultU``.")
 
 threadA = SideThread1(defaultU=defaultU)
 threadB = SideThread2(defaultU=defaultU)
@@ -110,20 +133,40 @@ with threadA.Cstart, threadB.Cstart:
     threadB.Cstart.wait()
 
 with threadA.C1, threadB.C1:
+    print "Passing initial barrier."
+    print
     threadA.C1.notify()
     threadB.C1.notify()
 
 # Section 1:
 suite.assertIs(U_session.current(), defaultU,
         'main thread, section 1')
+echo("main thread: Passed section 1.")
 
 with threadA.C2, threadB.C2:
-    defaultU.undefault()
-
+    print
+    print "Passing barrier between section 1 and 2."
+    print
     threadA.C2.notify()
     threadB.C2.notify()
 
 # Section 2:
+
+echo("main thread: About to undefault ``defaultU``.")
+defaultU.undefault()
+echo("main thread: Undefaulted ``defaultU``.")
+
+localU = U(2)
+echo('main thread: About to enter ``with localU:``.')
+with localU:
+    echo("main thread: Entered ``with localU:``")
+    suite.assertIs(U_session.current(), localU,
+            'main thread, section 2')
+echo('main thread: Left ``with localU:``.')
+
+echo("main thread: About to default ``defaultU`` via ``U_session``.")
+U_session.default(defaultU)
+echo("main thread: Defaulted ``defaultU``.")
 
 with threadA.C3, threadB.C3:
     threadA.C3.notify()
@@ -135,4 +178,5 @@ with threadA.C4, threadB.C4:
     threadA.C4.notify()
     threadB.C4.notify()
 
+print
 suite.report()
