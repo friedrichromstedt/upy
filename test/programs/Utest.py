@@ -25,7 +25,7 @@ class TestSuite(object):
             self.assertions += 1
 
     def report(self):
-        echo("asserted {} conditions.".format(self.assertions))
+        echo("Asserted {} conditions.".format(self.assertions))
         if self.ok:
             echo("OK")
         else:
@@ -96,6 +96,7 @@ class SideThread1(SideThread):
         echo('side thread 1: Called ``localU.register()``.')
         suite.assertIs(U_session.current(), localU,
                 'side thread 1, section 2')
+        echo('side thread 1: Asserted identity.')
         localU.unregister()
         echo('side thread 1: Used ``localU.unregister()``.')
 
@@ -114,6 +115,7 @@ class SideThread2(SideThread):
         echo("side thread 2: Called ``U_session.register(localU)``.")
         suite.assertIs(U_session.current(), localU,
                 'side thread 2, section 2')
+        echo("side thread 2: Asserted identity.")
         U_session.unregister(localU)
         echo("side thread 2: Called ``U_session.unregister(localU)``.")
 
@@ -133,6 +135,7 @@ with threadA.Cstart, threadB.Cstart:
     threadB.Cstart.wait()
 
 with threadA.C1, threadB.C1:
+    print
     print "Passing initial barrier."
     print
     threadA.C1.notify()
@@ -152,27 +155,28 @@ with threadA.C2, threadB.C2:
 
 # Section 2:
 
-echo("main thread: About to undefault ``defaultU``.")
-defaultU.undefault()
-echo("main thread: Undefaulted ``defaultU``.")
-
 localU = U(2)
 echo('main thread: About to enter ``with localU:``.')
 with localU:
     echo("main thread: Entered ``with localU:``")
+
     suite.assertIs(U_session.current(), localU,
             'main thread, section 2')
+
+    echo("main thread: About to undefault ``defaultU``.")
+    defaultU.undefault()
+    echo("main thread: Undefaulted ``defaultU``.")
 echo('main thread: Left ``with localU:``.')
 
-echo("main thread: About to default ``defaultU`` via ``U_session``.")
-U_session.default(defaultU)
-echo("main thread: Defaulted ``defaultU``.")
-
 with threadA.C3, threadB.C3:
+    print
+    print "Left section 2."
     threadA.C3.notify()
     threadB.C3.notify()
 
 # Section 3:
+#
+# We leave Section 3 unused at the moment.
 
 with threadA.C4, threadB.C4:
     threadA.C4.notify()
