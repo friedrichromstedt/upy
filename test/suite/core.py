@@ -1,9 +1,11 @@
 # Developed since: Jun 2020
 
+import threading
 import unittest
 import numpy
 import upy2
 from upy2 import undarray, U, u
+import upy2.sessions
 
 
 class Test_Core(unittest.TestCase):
@@ -69,3 +71,124 @@ class Test_Core(unittest.TestCase):
 
         y2 = x([0.5, 5])
         self.assertClose(y2.stddev, [0.25, 2.5])
+
+        # Test the session ...
+
+        U_session = upy2.sessions.byprotocol(U)
+
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        # Test :meth:`{default, undefault}`:
+        U_session.default(x)
+        self.assertIs(U_session.current(), x)
+        U_session.undefault(x)
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        # Test :meth:`{register, unregister}`:
+        U_session.register(x)
+        self.assertIs(U_session.current(), x)
+        U_session.unregister(x)
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        # Test combination of :meth:`{register, unregister}` and
+        # :meth:{default, undefault}`:
+        y = U(stddevs=3)
+        U_session.default(x)
+        U_session.register(y)
+        self.assertIs(U_session.current(), y)
+        U_session.undefault(x)
+        self.assertIs(U_session.current(), y)
+        U_session.unregister(y)
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        # Test order check in :meth:`undefault`:
+        U_session.default(x)
+        U_session.default(y)
+        with self.assertRaisesRegexp(ValueError,
+                '^Un-defaulting a session manager which is not '
+                'the current default item$'):
+            U_session.undefault(x)
+        self.assertIs(U_session.current(), y)
+        U_session.undefault(y)
+        self.assertIs(U_session.current(), x)
+        U_session.undefault(x)
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        # Test order check in :meth:`unregister`:
+        U_session.register(x)
+        U_session.register(y)
+        with self.assertRaisesRegexp(ValueError,
+                '^The session manager to be unregistered is not '
+                'the topmost entry on the stack$'):
+            U_session.unregister(x)
+        self.assertIs(U_session.current(), y)
+        U_session.unregister(y)
+        self.assertIs(U_session.current(), x)
+        U_session.unregister(x)
+        with self.assertRaisesRegexp(LookupError,
+                '^No applicable session manager found$'):
+            mgr = U_session.current()
+
+        thread1 = SessionTestThread1()
+
+        with thread1.Rx:
+            thread1.start()
+            thread1.Rx.wait()
+
+
+        thread1 = SessionTestThread1()
+        thread1.handle.acquire()
+
+        thread1.start()
+        thread1.handle.release()
+
+        with thread1.done:
+            thread1.start()
+            thread1.done.wait()
+
+        with thread1.done:
+            thread1.proceed.notify()
+            thread1.done.wait()
+
+
+class SessionTestThread1(thrading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        U_session = upy2.sessions.byprotocol(U)
+
+        self.Rx = threading.Condition()
+        self.Tx = threading.Condition()
+
+
+        self.handle = threading.Semaphore()
+
+        self.proceed = threading.Event()
+        self.done = threading.Event()
+
+    def run(self):
+        self.Rx.acquire()
+
+        self.Tx.acquire()
+        self.Rx.notify()
+        self.Rx.release()
+
+
+        with self.Rx:
+            self.Rx.notify()
+
+
+        with self.handle:
+            pass
+
+        self.done.set()
+        self.proceed.wait()
