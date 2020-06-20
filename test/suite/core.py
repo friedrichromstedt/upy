@@ -5,6 +5,7 @@ import unittest
 import numpy
 import upy2
 from upy2 import undarray, U, u
+from upy2.dependency import Dependency
 import upy2.sessions
 
 
@@ -137,3 +138,182 @@ class Test_Core(unittest.TestCase):
         with self.assertRaisesRegexp(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
+
+
+class Test_undarray(unittest.TestCase):
+
+    def assertAllEqual(self, a, b):
+        if not numpy.all(a == b):
+            raise AssertionError(
+                'Not all equal:\n{a}\nand\n{b}'.format(a=a, b=b))
+
+    def assertClose(self, a, b):
+        if not numpy.allclose(a, b):
+            raise NotCloseError('{} not close to {}'.format(a, b))
+
+    def test_creation(self):
+        # Test *nominal* and *dtype* arguments:
+
+        ua = undarray(nominal=[10, 11])
+        self.assertAllEqual(ua.nominal, [10, 11])
+        self.assertEqual(ua.nominal.dtype, numpy.int)
+        self.assertEqual(ua.dtype, numpy.int)
+
+        ua = undarray(nominal=[10, 11], dtype=numpy.float)
+        self.assertAllEqual(ua.nominal, [10.0, 11.0])
+        self.assertEqual(ua.nominal.dtype, numpy.float)
+        self.assertEqual(ua.dtype, numpy.float)
+
+        ua = undarray(nominal=[10.5, 11.4], dtype=numpy.int)
+        self.assertAllEqual(ua.nominal, [10, 11])
+        self.assertEqual(ua.nominal.dtype, numpy.int)
+        self.assertEqual(ua.dtype, numpy.int)
+
+        # Test *shape* argument:
+
+        ua = undarray(shape=(2, 2))
+        self.assertAllEqual(ua.nominal, [[0, 0], [0, 0]])
+        self.assertEqual(ua.nominal.dtype, numpy.float)
+        self.assertEqual(ua.dtype, numpy.float)
+
+        ua = undarray(shape=(2, 2), dtype=numpy.int)
+        self.assertAllEqual(ua.nominal, [[0, 0], [0, 0]])
+        self.assertEqual(ua.nominal.dtype, numpy.int)
+        self.assertEqual(ua.dtype, numpy.int)
+
+        ua = undarray(nominal=[20, 30], shape=(2, 2))
+            # *nominal* overrides *shape*.
+        self.assertAllEqual(ua.nominal, [20, 30])
+
+        # Test *stddev* argument:
+
+        ua = undarray(nominal=[1.0, 2.0], stddev=[0.1, 0.1])
+        self.assertAllEqual(ua.stddev, [0.1, 0.1])
+
+        with self.assertRaises(ValueError):
+            # Cannot append a Dependency of dtype float64 to a
+            # int64-dtyped undarray
+            # - ``float64`` and ``int64`` might be machine-dependent.
+            ua = undarray(nominal=[10, 11], stddev=[0.1, 0.1])
+
+        ua = undarray(nominal=[10, 11], stddev=[0.1, 0.1],
+                dtype=numpy.float)
+        self.assertAllEqual(ua.stddev, [0.1, 0.1])
+
+        ua = undarray(nominal=[42, 43], stddev=[1.1, 1.9],
+                dtype=numpy.int)
+        self.assertAllEqual(ua.stddev, [1, 1])
+
+        # Test *shape* and *stddev* argument:
+
+        ua = undarray(shape=(2, 2), stddev=[[0.5, 0.6], [0.7, 0.8]])
+        self.assertAllEqual(ua.nominal, [[0, 0], [0, 0]])
+        self.assertAllEqual(ua.stddev, [[0.5, 0.6], [0.7, 0.8]])
+
+    def test_append(self):
+        ua = undarray(nominal=[-10, 10])
+
+        dependency = Dependency(shape=(2,), dtype=numpy.int)
+        ua.append(dependency)
+
+        dependency = Dependency(shape=(2,))
+        with self.assertRaises(ValueError):
+            # Cannot append a Dependency of dtype float64 to a
+            # int64-dtyped undarray
+            ua.append(dependency)
+
+        dependency = Dependency(shape=(2, 2), dtype=numpy.int)
+        with self.assertRaises(ValueError):
+            # Cannot append a Dependency of shape (2, 2) to a
+            # (2,)-shaped undarray
+            ua.append(dependency)
+
+        dependency = Dependency(shape=(2,), dtype=numpy.int16)
+        with self.assertRaises(ValueError):
+            # Cannot append a Dependency of dtype int16 to a
+            # int64-dtyped undarray
+            ua.append(dependency)
+
+    def test_clear(self):
+        ua = undarray(nominal=[[1.0, 2.0], [3.0, 4.0]])
+
+        ua.append(Dependency(
+            names=upy2.guid_generator.get_idarray((2, 2)),
+            derivatives=[[0.1, 0.1], [0.1, 0.1]]))
+        ua.append(Dependency(
+            names=upy2.guid_generator.get_idarray((2, 2)),
+            derivatives=[[0.2, 0.2], [0.2, 0.2]]))
+
+        ua.clear((1, 0))
+
+        self.assertAllEqual(ua.dependencies[0].names == 0,
+                [[False, False], [True, False]])
+        self.assertAllEqual(ua.dependencies[1].names == 0,
+                [[False, False], [True, False]])
+
+        self.assertAllEqual(ua.dependencies[0].derivatives == 0,
+                [[False, False], [True, False]])
+        self.assertAllEqual(ua.dependencies[1].derivatives == 0,
+                [[False, False], [True, False]])
+
+    def test_scaled(self):
+        ua = undarray(nominal=[1.0, 2.0], stddev=[0.1, 0.1])
+        ub = ua.scaled(2)
+        self.assertAllEqual(ub.nominal, [2.0, 4.0])
+        self.assertAllEqual(ub.stddev, [0.2, 0.2])
+
+        ua = undarray(nominal=[100, 101], stddev=[1, 2])
+        ub = ua.scaled(2)
+        uc = ua.scaled(0.5)
+
+        self.assertEqual(ub.dtype, numpy.int)
+        self.assertEqual(uc.dtype, numpy.float)
+
+        self.assertAllEqual(ub.nominal, [200, 202])
+        self.assertAllEqual(ub.stddev, [2, 4])
+        self.assertAllEqual(uc.nominal, [50.0, 50.5])
+        self.assertAllEqual(uc.stddev, [0.5, 1.0])
+
+    def test_copy_dependencies(self):
+        utarget = undarray(shape=(2, 2))
+        usource1 = undarray(shape=(2, 2), stddev=[[0.1, 0.2], [0.3, 0.4]])
+        usource2 = undarray(shape=(2,), stddev=[0.5, 0.6])
+
+        utarget.copy_dependencies(usource1)
+        self.assertAllEqual(utarget.dependencies[0].derivatives,
+                [[0.1, 0.2], [0.3, 0.4]])
+
+        utarget.clear((0, 0))
+        utarget.copy_dependencies(usource2, key=(0,))
+        self.assertAllEqual(utarget.dependencies[0].derivatives,
+                [[0.5, 0.2], [0.3, 0.4]])
+        self.assertAllEqual(utarget.dependencies[1].derivatives,
+                [[0.0, 0.6], [0.0, 0.0]])
+
+        # Test independence:
+
+        usource1.clear((0, 0))
+        usource2.clear((0,))
+
+        self.assertAllEqual(utarget.dependencies[0].derivatives,
+                [[0.5, 0.2], [0.3, 0.4]])
+        self.assertAllEqual(utarget.dependencies[1].derivatives,
+                [[0.0, 0.6], [0.0, 0.0]])
+
+    def test_complex(self):
+        ua = undarray(
+                nominal=[1 + 2j, 2 + 3j],
+                stddev=[0.1 + 0.2j, 0.2 + 0.3j])
+        real = ua.real
+        imag = ua.imag
+        conj = ua.conj()
+
+        self.assertAllEqual(real.nominal, [1, 2])
+        self.assertAllEqual(real.stddev, [0.1, 0.2])
+
+        self.assertAllEqual(imag.nominal, [2, 3])
+        self.assertAllEqual(imag.stddev, [0.2, 0.3])
+
+        self.assertAllEqual(conj.nominal, [1 - 2j, 2 - 3j])
+        self.assertAllEqual(conj.dependencies[0].derivatives,
+                [0.1 - 0.2j, 0.2 - 0.3j])

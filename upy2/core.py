@@ -242,6 +242,7 @@ class undarray(object):
         the nominal value as well as to the Dependencies. """
 
         result = undarray(self.nominal.real.copy())
+            # ``.real`` returns a View.
         for dependency in self.dependencies:
             result.append(dependency.real)
         return result
@@ -252,6 +253,7 @@ class undarray(object):
         the nominal value as well as to the Dependencies. """
 
         result = undarray(self.nominal.imag.copy())
+            # ``.imag`` returns a View.
         for dependency in self.dependencies:
             result.append(dependency.imag)
         return result
