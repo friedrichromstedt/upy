@@ -151,6 +151,9 @@ class Test_undarray(unittest.TestCase):
         if not numpy.allclose(a, b):
             raise NotCloseError('{} not close to {}'.format(a, b))
 
+    def assertIsundarray(self, obj):
+        self.assertIsInstance(obj, undarray)
+
     def test_creation(self):
         # Test *nominal* and *dtype* arguments:
 
@@ -308,6 +311,11 @@ class Test_undarray(unittest.TestCase):
         imag = ua.imag
         conj = ua.conj()
 
+        ua[0] = 42
+        self.assertAllEqual(ua.nominal, [42, 2 + 3j])
+        self.assertAllEqual(ua.dependencies[0].derivatives,
+                [0, 0.2 + 0.3j])
+
         self.assertAllEqual(real.nominal, [1, 2])
         self.assertAllEqual(real.stddev, [0.1, 0.2])
 
@@ -317,3 +325,44 @@ class Test_undarray(unittest.TestCase):
         self.assertAllEqual(conj.nominal, [1 - 2j, 2 - 3j])
         self.assertAllEqual(conj.dependencies[0].derivatives,
                 [0.1 - 0.2j, 0.2 - 0.3j])
+
+    def test_variance_and_stddev(self):
+        ua = undarray(nominal=[40], stddev=[2])
+        ub = undarray(nominal=[1 + 1j], stddev=[1j])
+
+        self.assertAllEqual(ua.variance, [4])
+        with self.assertRaisesRegexp(ValueError,
+                '^Refusing to calculate variance of non-real Dependency$'):
+            ub.variance
+
+        self.assertAllEqual(ua.stddev, [2])
+        with self.assertRaisesRegexp(ValueError,
+                '^Refusing to calculate variance of non-real Dependency$'):
+            ub.stddev
+
+    def test_binary_operators(self):
+        with U(1):
+            ua = [10, 11.5] +- u([1.5, 1.0])
+
+        b = [1, 2]
+        c = numpy.asarray([1, 2])
+
+        self.assertIsundarray(ua + b)
+        self.assertIsundarray(b + ua)
+        self.assertIsundarray(ua + c)
+        self.assertIsundarray(c + ua)
+
+        self.assertIsundarray(ua - b)
+        self.assertIsundarray(b - ua)
+        self.assertIsundarray(ua - c)
+        self.assertIsundarray(c - ua)
+
+        self.assertIsundarray(ua * b)
+        self.assertIsundarray(b * ua)
+        self.assertIsundarray(ua * c)
+        self.assertIsundarray(c * ua)
+
+        self.assertIsundarray(ua / b)
+        self.assertIsundarray(b / ua)
+        self.assertIsundarray(ua / c)
+        self.assertIsundarray(c / ua)

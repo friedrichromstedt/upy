@@ -580,8 +580,8 @@ class undarray(object):
 
 
 class uufunc(object):
-    """ uufuncs augment a numpy ufunc by propagation of
-    uncertainties. """
+    """ uufuncs augment a numpy ufunc by propagation of uncertainties.
+    """
 
     def __init__(self, ufunc):
         """ *ufunc* is the numpy ufunc calculating the nominal value
@@ -594,11 +594,24 @@ class uufunc(object):
 
 
 class Unary(uufunc):
+    """ The base class for unary uufuncs.  Derive unary uufunc classes
+    from this class and define :meth:`_source`.
+
+    Upon calling the derived unary uufunc, :meth:`_source` will only
+    be called when the operand is an ``undarray`.
+
+    The result of calling an unary uufunc is *always* an ``undarray``.
+    """
+
     def __call__(self, x):
+        """ Performs the operation on operand *x*.  If *x* is not an
+        instance of :class:`undarray`, it will be passed through
+        :func:`numpy.asarray`. """
+
         if isinstance(x, undarray):
             y = x.nominal
         else:
-            y = x
+            y = numpy.asarray(x)
 
         yout = self.ufunc(y)
         result = undarray(nominal=yout)
@@ -615,35 +628,32 @@ class Unary(uufunc):
 
 
 class Binary(uufunc):
-    """The base class for binary uufuncs.  Derive binary uufunc classes
-    from this class and define:
+    """ The base class for binary uufuncs.  Derive binary uufunc
+    classes from this class and define :meth:`_source1` and
+    :meth:`_source2`.
 
-    *   :meth:`_derivative1` to provide the derivatives of the result
-        w.r.t. the first operand, and
-
-    *   likewise :meth:`_derivative2` for the derivatives w.r.t. the
-        second operand.
-
-    Opon calling the derived binary uufunc, :meth:`_derivative1` will
-    only be called when the first operand is an ``undarray``, and
-    likewise :meth:`_derivative2` will only be used when the second
-    operand is an ``undarray``.
+    Opon calling the derived binary uufunc, :meth:`_source1` will only
+    be called when the first operand is an ``undarray``, and likewise
+    :meth:`_source2` will only be used when the second operand is an
+    ``undarray``.
 
     The result of calling a binary uufunc is *always* an ``undarray``.
     """
 
     def __call__(self, x1, x2):
-        """ Performs the operation on operands *x1* and *x2*. """
+        """ Performs the operation on operands *x1* and *x2*.  If the
+        operands are not instances of :class:`undarray`, they will be
+        passed through :func:`numpy.asarray`. """
 
         if isinstance(x1, undarray):
             y1 = x1.nominal
         else:
-            y1 = x1
+            y1 = numpy.asarray(x1)
 
         if isinstance(x2, undarray):
             y2 = x2.nominal
         else:
-            y2 = x2
+            y2 = numpy.asarray(x2)
 
         yout = self.ufunc(y1, y2)
         result = undarray(nominal=yout)
@@ -656,14 +666,16 @@ class Binary(uufunc):
     def _source1(self, x1, y2):
         """ Return the uncertainty source arising from the first
         operand *x1* given the nominal value *y2* of the second
-        operand.  *x1* is guaranteed to be an ``undarray``. """
+        operand.  *x1* is guaranteed to be an ``undarray``, *y2* is
+        guaranteed to be an ``ndarray``. """
 
         raise NotImplementedError('Virtual method called')
 
     def _source2(self, y1, x2):
         """ Return the uncertainty source arising from the second
         operand *x2* given the nominal value *y1* of the first
-        operand.  *x2* is guaranteed to be an ``undarray``. """
+        operand.  *x2* is guaranteed to be an ``undarray``, *y1* is
+        guaranteed to be an ``ndarray`. """
 
         raise NotImplementedError('Virtual method called')
 
