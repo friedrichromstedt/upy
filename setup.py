@@ -62,6 +62,7 @@ setup(
         'upy2',
         'upy2.typesetting',
     ],
+    package_dir={'': 'lib'},
     install_requires=[
         'numpy',
     ],
