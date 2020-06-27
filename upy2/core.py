@@ -444,9 +444,11 @@ class undarray(object):
         """Returns the given subset of the undarray, by applying *key*
         both to the nominal value as well as to the Dependencies. """
 
-        result = undarray(nominal=self.nominal[key])
+        result = undarray(nominal=self.nominal[key].copy())
         for dependency in self.dependencies:
             result.append(dependency[key])
+
+        return result
 
     def __setitem__(self, key, value):
         """ Replace the portion of *self* indexed by *key* with
@@ -531,8 +533,8 @@ class undarray(object):
                 *repeat_args, **repeat_kwargs
             ))
         for dependency in self.dependencies:
-            result.appen(dependency.repeat(
-                *repeat_arg, **repeat_kwargs
+            result.append(dependency.repeat(
+                *repeat_args, **repeat_kwargs
             ))
         return result
 
@@ -542,7 +544,7 @@ class undarray(object):
         result = undarray(
             nominal=self.nominal.reshape(
                 *reshape_args, **reshape_kwargs
-            ))
+            ).copy())
         for dependency in self.dependencies:
             result.append(dependency.reshape(
                 *reshape_args, **reshape_kwargs
@@ -555,7 +557,7 @@ class undarray(object):
         result = undarray(
             nominal=self.nominal.transpose(
                 *transpose_args, **transpose_kwargs
-            ))
+            ).copy())
         for dependency in self.dependencies:
             result.append(dependency.transpose(
                 *transpose_args, **transpose_kwargs

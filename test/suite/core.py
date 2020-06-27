@@ -1,6 +1,7 @@
 # Developed since: Jun 2020
 
 import threading
+import operator
 import unittest
 import numpy
 import upy2
@@ -343,6 +344,7 @@ class Test_undarray(unittest.TestCase):
     def test_binary_operators(self):
         with U(1):
             ua = [10, 11.5] +- u([1.5, 1.0])
+            ux = undarray(nominal=[40, 41])
 
         b = [1, 2]
         c = numpy.asarray([1, 2])
@@ -366,3 +368,139 @@ class Test_undarray(unittest.TestCase):
         self.assertIsundarray(b / ua)
         self.assertIsundarray(ua / c)
         self.assertIsundarray(c / ua)
+
+        self.assertIsundarray(operator.div(ua, b))
+        self.assertIsundarray(operator.div(b, ua))
+        self.assertIsundarray(operator.div(ua, c))
+        self.assertIsundarray(operator.div(c, ua))
+
+        self.assertIsundarray(operator.truediv(ua, b))
+        self.assertIsundarray(operator.truediv(b, ua))
+        self.assertIsundarray(operator.truediv(ua, c))
+        self.assertIsundarray(operator.truediv(c, ua))
+
+        self.assertIsundarray(ua ** b)
+        self.assertIsundarray(b ** ua)
+        self.assertIsundarray(ua ** c)
+        self.assertIsundarray(c ** ua)
+
+        ub = ua; ub += b; self.assertIsundarray(ub)
+        self.assertAllEqual(ua.nominal, [10, 11.5])
+        ub = ua; ub += c; self.assertIsundarray(ub)
+        ub = ua; ub += ux; self.assertIsundarray(ub)
+
+        ub = ua; ub -= b; self.assertIsundarray(ub)
+        ub = ua; ub -= c; self.assertIsundarray(ub)
+        ub = ua; ub -= ux; self.assertIsundarray(ub)
+
+        ub = ua; ub *= b; self.assertIsundarray(ub)
+        ub = ua; ub *= c; self.assertIsundarray(ub)
+        ub = ua; ub *= ux; self.assertIsundarray(ub)
+
+        ub = ua; ub = operator.idiv(ua, b); self.assertIsundarray(ub)
+        ub = ua; ub = operator.idiv(ua, c); self.assertIsundarray(ub)
+        ub = ua; ub = operator.idiv(ua, ux); self.assertIsundarray(ub)
+
+        ub = ua; ub = operator.itruediv(ua, b); self.assertIsundarray(ub)
+        ub = ua; ub = operator.itruediv(ua, c); self.assertIsundarray(ub)
+        ub = ua; ub = operator.itruediv(ua, ux); self.assertIsundarray(ub)
+
+        ub = ua; ub **= b; self.assertIsundarray(ub)
+        ub = ua; ub **= c; self.assertIsundarray(ub)
+        ub = ua; ub **= ux; self.assertIsundarray(ub)
+
+    def test_getitem_setitem_len(self):
+        with U(1):
+            ua = [[1.0, 2.0], [3.0, 4.0]] +- u([[0.1, 0.2], [0.3, 0.4]])
+
+        ub = ua[1]
+
+        with U(1):
+            ua[1, 0] = 10.0 +- u(1.0)
+
+        self.assertAllEqual(ub.nominal, [3.0, 4.0])
+        self.assertAllEqual(ub.stddev, [0.3, 0.4])
+
+        self.assertAllEqual(ua.nominal, [[1.0, 2.0], [10.0, 4.0]])
+        self.assertAllEqual(ua.stddev, [[0.1, 0.2], [1.0, 0.4]])
+
+        self.assertEqual(len(ua), 2)
+
+    def test_compress(self):
+        with U(1):
+            ua = [[10, 11], [12, 13]] +- u([[1, 2], [3, 4]])
+
+        ub = numpy.compress(
+                condition=[False, True],
+                a=ua, axis=0)
+        ua[1, 0] = 42
+
+        self.assertAllEqual(ub.nominal, [12, 13])
+        self.assertAllEqual(ub.stddev, [3, 4])
+
+    def test_copy(self):
+        with U(1):
+            ua = [10, 11] +- u([1, 2])
+
+        ub = ua.copy()
+        ua[0] = 42
+
+        self.assertAllEqual(ub.nominal, [10, 11])
+        self.assertAllEqual(ub.stddev, [1, 2])
+
+    def test_flatten(self):
+        ua = undarray(
+                nominal=numpy.asarray([[10, 12], [11, 13]]).T,
+                stddev=[[1, 2], [3, 4]])
+
+        ub = ua.flatten()
+
+        self.assertAllEqual(ub.nominal, [10, 11, 12, 13])
+        self.assertAllEqual(ub.stddev, [1, 2, 3, 4])
+
+    def test_repeat(self):
+        with U(1):
+            ua = [[10, 11], [12, 13]] +- u([[1, 2], [3, 4]])
+
+        ub = numpy.repeat(ua, [2, 3], axis=1)
+
+        self.assertAllEqual(ub.nominal,
+                [[10, 10, 11, 11, 11], [12, 12, 13, 13, 13]])
+        self.assertAllEqual(ub.stddev,
+                [[1, 1, 2, 2, 2], [3, 3, 4, 4, 4]])
+
+    def test_reshape(self):
+        ua = undarray(
+                nominal=numpy.asarray([[10, 12], [11, 13]]).T,
+                stddev=[[1, 2], [3, 4]])
+
+        ub = ua.reshape((4,))
+        ua[0, 1] = 0
+
+        self.assertAllEqual(ub.nominal, [10, 11, 12, 13])
+        self.assertAllEqual(ub.stddev, [1, 2, 3, 4])
+
+    def test_transpose(self):
+        ua = undarray(
+                nominal=numpy.asarray([[10, 12], [11, 13]]).T,
+                stddev=[[1, 2], [3, 4]])
+
+        ub = numpy.transpose(ua)
+        ua[0, 0] = 0
+        self.assertAllEqual(ub.nominal, [[10, 12], [11, 13]])
+        self.assertAllEqual(ub.stddev, [[1, 3], [2, 4]])
+
+        with U(1):
+            nominal = numpy.asarray([[[10], [11]], [[12], [13]]])
+            stddev = numpy.asarray([[[1], [2]], [[3], [4]]])
+
+            ua = nominal +- u(stddev)
+
+        ub = numpy.transpose(ua)
+        self.assertAllEqual(ub.nominal, numpy.transpose(nominal))
+        self.assertAllEqual(ub.stddev, numpy.transpose(stddev))
+
+        ub = numpy.transpose(ua, (0, 2, 1))
+            # Swaps the last two axes.
+        self.assertAllEqual(ub.nominal, numpy.transpose(nominal, (0, 2, 1)))
+        self.assertAllEqual(ub.stddev, numpy.transpose(stddev, (0, 2, 1)))

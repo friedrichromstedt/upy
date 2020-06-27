@@ -339,6 +339,10 @@ class Dependency(object):
     # needed*, just as :func:`numpy.ravel` does, while
     # :meth:`ndarray.flatten` returns a copy *always*.  Notice also,
     # that there is no :func:`numpy.flatten`.
+    #
+    # Notice further, that :func:`numpy.ravel` does not make use of a
+    # :meth:`ravel` of the operand provided; instead, it returns an
+    # ``dtype=object`` array always.
 
     def repeat(self, *repeat_args, **repeat_kwargs):
         """ Returns a Dependency constructed from the *repeated* names
