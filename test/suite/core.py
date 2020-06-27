@@ -344,7 +344,7 @@ class Test_undarray(unittest.TestCase):
     def test_binary_operators(self):
         with U(1):
             ua = [10, 11.5] +- u([1.5, 1.0])
-            ux = undarray(nominal=[40, 41])
+            ux = undarray(nominal=[40, 41], stddev=[1, 2])
 
         b = [1, 2]
         c = numpy.asarray([1, 2])
