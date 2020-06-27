@@ -345,6 +345,9 @@ class Test_undarray(unittest.TestCase):
         with U(1):
             ua = [10, 11.5] +- u([1.5, 1.0])
             ux = undarray(nominal=[40, 41], stddev=[1, 2])
+                # *ux* is used in testing the augmented arithmetics,
+                # since these aren't covered by the :mod:`operators`
+                # test module.
 
         b = [1, 2]
         c = numpy.asarray([1, 2])
