@@ -593,7 +593,7 @@ class uufunc(object):
 
         self.ufunc = ufunc
 
-    def __repr__(self):
+    def __str__(self):
         return "<{!r} uufunc>".format(self.ufunc)
 
 

@@ -149,6 +149,10 @@ class Test_Core(unittest.TestCase):
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
+    def test_string_conversion(self):
+        self.assertEqual(str(upy2.uadd), "<<ufunc 'add'> uufunc>")
+        # :class:`uufunc` doesn't exhibit a :meth:`__repr__`.
+
 
 class Test_undarray(unittest.TestCase):
 
