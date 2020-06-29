@@ -8,7 +8,7 @@ import upy2.sessions
 echolock = threading.Lock()
 def echo(message):
     with echolock:
-        print message
+        print(message)
 
 
 class TestSuite(object):
@@ -135,9 +135,9 @@ with threadA.Cstart, threadB.Cstart:
     threadB.Cstart.wait()
 
 with threadA.C1, threadB.C1:
-    print
-    print "Passing initial barrier."
-    print
+    print("")
+    print("Passing initial barrier.")
+    print("")
     threadA.C1.notify()
     threadB.C1.notify()
 
@@ -147,9 +147,9 @@ suite.assertIs(U_session.current(), defaultU,
 echo("main thread: Passed section 1.")
 
 with threadA.C2, threadB.C2:
-    print
-    print "Passing barrier between section 1 and 2."
-    print
+    print("")
+    print("Passing barrier between section 1 and 2.")
+    print("")
     threadA.C2.notify()
     threadB.C2.notify()
 
@@ -169,8 +169,8 @@ with localU:
 echo('main thread: Left ``with localU:``.')
 
 with threadA.C3, threadB.C3:
-    print
-    print "Left section 2."
+    print("")
+    print("Left section 2.")
     threadA.C3.notify()
     threadB.C3.notify()
 
@@ -182,5 +182,5 @@ with threadA.C4, threadB.C4:
     threadA.C4.notify()
     threadB.C4.notify()
 
-print
+print("")
 suite.report()
