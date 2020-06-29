@@ -21,12 +21,12 @@ class UnaryOperator(object):
         return getattr(self.ufunc, name)
 
     def __str__(self):
-        return "<upy Unary operator for numpy %s and upy %s>" % \
-            (self.ufunc, self.uufunc)
+        return "<upy Unary operator for numpy {0} and upy {1}>".\
+                format(self.ufunc, self.uufunc)
 
     def __repr__(self):
-        return "<UnaryOperator(ufunc=%r, uufunc=%r)>" % \
-            (self.ufunc, self.uufunc)
+        return "<UnaryOperator(ufunc={0!r}, uufunc={1!r})>".\
+                format(self.ufunc, self.uufunc)
 
 
 class BinaryOperator(object):
@@ -50,12 +50,12 @@ class BinaryOperator(object):
         return getattr(self.ufunc, name)
 
     def __str__(self):
-        return "<upy Binary operator for numpy %s and upy %s>" % \
-            (self.ufunc, self.uufunc)
+        return "<upy Binary operator for numpy {0} and upy {1}>".\
+                format(self.ufunc, self.uufunc)
 
     def __repr__(self):
-        return "<BinaryOperator(ufunc=%r, uufunc=%r)>" % \
-            (self.ufunc, self.uufunc)
+        return "<BinaryOperator(ufunc={0!r}, uufunc={1!r})>".\
+                format(self.ufunc, self.uufunc)
 
 
 def install_numpy_operators():

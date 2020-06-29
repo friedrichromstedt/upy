@@ -123,7 +123,8 @@ def byprotocol(protocol):
         if issubclass(protocol, key):
             # *protocol* is a subclass of *key*.
             return sessions[key]
-    raise KeyError('No Session defined for protocol %s' % protocol)
+    raise KeyError('No Session defined for protocol {}'.\
+            format(protocol))
 
 def byprotocolobj(protocolobj):
     """ Returns the Session for an instance of :class:`Protocol` given
@@ -133,7 +134,8 @@ def byprotocolobj(protocolobj):
     for key in sessions.keys():
         if isinstance(protocolobj, key):
             return sessions[key]
-    raise KeyError('No Session defined for protocol object %s' % protocolobj)
+    raise KeyError('No Session defined for protocol object {}'.\
+            format(protocolobj))
 
 # Registering and unregistering at the registry:
 

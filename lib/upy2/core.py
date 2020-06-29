@@ -169,13 +169,15 @@ class undarray(object):
 
     def append(self, dependency):
         if not self.shape == dependency.shape:
-            raise ValueError('Cannot append a Dependency of shape %s '
-                    'to a %s-shaped undarray' %
-                    (dependency.shape, self.shape))
+            raise ValueError(
+                    ('Cannot append a Dependency of shape {0} '
+                     'to a {1}-shaped undarray').format(
+                    dependency.shape, self.shape))
         if not self.dtype == dependency.dtype:
-            raise ValueError('Cannot append a Dependency of dtype %s '
-                    'to a %s-dtyped undarray' %
-                    (dependency.dtype, self.dtype))
+            raise ValueError(
+                    ('Cannot append a Dependency of dtype {0} '
+                     'to a {1}-dtyped undarray').format(
+                    dependency.dtype, self.dtype))
         self.dependencies.append(dependency)
 
     def clear(self, key):
@@ -592,7 +594,7 @@ class uufunc(object):
         self.ufunc = ufunc
 
     def __repr__(self):
-        return "<%r uufunc>" % self.ufunc
+        return "<{!r} uufunc>".format(self.ufunc)
 
 
 class Unary(uufunc):
