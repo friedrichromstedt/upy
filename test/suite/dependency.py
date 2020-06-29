@@ -4,6 +4,10 @@ import unittest
 import numpy
 from upy2.dependency import Dependency
 
+import sys
+py3 = (sys.version_info >= (3,))
+py2 = not py3
+
 
 class Test_Dependency(unittest.TestCase):
 
@@ -11,6 +15,12 @@ class Test_Dependency(unittest.TestCase):
         if not numpy.all(a == b):
             raise AssertionError(
                 'Not all equal:\n{a}\nand\n{b}'.format(a=a, b=b))
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if py2:
+            return unittest.TestCase.assertRaisesRegexp(self, *args, **kwargs)
+        else:
+            return unittest.TestCase.assertRaisesRegex(self, *args, **kwargs)
 
     def test_construction(self):
         # Test construction from *names* and *derivatives*:
@@ -64,7 +74,7 @@ class Test_Dependency(unittest.TestCase):
 
     def test_variance(self):
         dep = Dependency(names=1, derivatives=(1 + 1j))
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                 "^Refusing to calculate variance of non-real Dependency$"):
             dep.variance
 
@@ -242,7 +252,7 @@ class Test_Dependency(unittest.TestCase):
         self.assertAllEqual(product.names, [[1, 2], [1, 2]])
         self.assertAllEqual(product.derivatives, [[40, 55], [60, 77]])
 
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                 "^unsupported operand type\(s\) for \*: "
                 "'int' and 'Dependency'$"):
             product = numpy.asarray([4, 5]) * dep
@@ -253,7 +263,7 @@ class Test_Dependency(unittest.TestCase):
             #   [Dependency(names=1, derivatives=40),
             #    Dependency(names=2, derivatives=55)]
 
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                 "^unsupported operand type\(s\) for \*: "
                 "'int' and 'Dependency'$"):
             product = numpy.asarray(3) * dep
@@ -264,7 +274,7 @@ class Test_Dependency(unittest.TestCase):
             #   [Dependency(names=1, derivatives=30),
             #    Dependency(names=2, derivatives=33)]
 
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                 "^unsupported operand type\(s\) for \*: "
                 "'int' and 'Dependency'$"):
             product = numpy.asarray([[11, 22], [33, 44]]) * dep
@@ -277,7 +287,7 @@ class Test_Dependency(unittest.TestCase):
             #    [Dependency(names=1, derivatives=333),
             #     Dependency(names=2, derivatives=484)]]
 
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                 "^unsupported operand type\(s\) for \*: "
                 "'int' and 'Dependency'$"):
             product = 3 * dep
@@ -287,7 +297,7 @@ class Test_Dependency(unittest.TestCase):
             #
             #   Depdendency(names=[1, 2], derivatives=[30, 33])
 
-        with self.assertRaisesRegexp(TypeError,
+        with self.assertRaisesRegex(TypeError,
                 "^can't multiply sequence by non-int of type "
                 "'Dependency'$"):
             product = [1, 2, 3] * dep
@@ -349,7 +359,7 @@ class Test_Dependency(unittest.TestCase):
         self.assertEqual(len(dep), 2)
 
         dep = Dependency(names=42, derivatives=12)
-        with self.assertRaisesRegexp(IndexError,
+        with self.assertRaisesRegex(IndexError,
                 '^tuple index out of range$'):
             len(dep)
 

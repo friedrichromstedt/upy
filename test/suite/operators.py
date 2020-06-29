@@ -133,7 +133,7 @@ class TestOperators(unittest.TestCase):
 
         with self.assertRaises(DerivativeApproximationError):
             random.seed(1812)
-            for i in xrange(100):
+            for i in range(100):
                 z = self.cgauss()
                 self.assertDerivative(
                     specimen=(lambda z:
@@ -145,7 +145,7 @@ class TestOperators(unittest.TestCase):
 
         with self.assertRaises(DerivativeVerificationError):
             random.seed(1815)
-            for i in xrange(100):
+            for i in range(100):
                 z = self.cgauss()
                 self.assertDerivative(
                     specimen=numpy.cos,
@@ -156,7 +156,7 @@ class TestOperators(unittest.TestCase):
 
         # Test successful differentiation:
         random.seed(1819)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                 specimen=numpy.cos,
@@ -169,7 +169,7 @@ class TestOperators(unittest.TestCase):
 
     def test_construction(self):
         random.seed( 658)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
 
             ua1 = nom +- u(unc)
@@ -188,7 +188,7 @@ class TestOperators(unittest.TestCase):
 
     def test_positive(self):
         random.seed( 646)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = +ua
@@ -196,7 +196,7 @@ class TestOperators(unittest.TestCase):
 
     def test_unegative(self):
         random.seed(1)
-        for i in xrange(0, 10):
+        for i in range(0, 10):
             nom, unc = self.gauss()
             ua1 = nom +- u(unc)
             ua2 = -ua1
@@ -225,7 +225,7 @@ class TestOperators(unittest.TestCase):
 
     def test_sqrt(self):
         random.seed( 658)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.expo()
             ua = nom +- u(unc)
             ub = numpy.sqrt(ua)
@@ -233,7 +233,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) * 0.5 * nom ** (-0.5))
 
         random.seed(1953)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.sqrt, position=z,
@@ -243,7 +243,7 @@ class TestOperators(unittest.TestCase):
 
     def test_square(self):
         random.seed( 700)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.square(ua)
@@ -251,7 +251,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) * 2 * abs(nom))
 
         random.seed(1955)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.square, position=z,
@@ -261,7 +261,7 @@ class TestOperators(unittest.TestCase):
 
     def test_sin(self):
         random.seed(2)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua1 = undarray(nominal=nom, stddev=unc)
             ua2 = numpy.sin(ua1)
@@ -269,7 +269,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua2.stddev, abs(unc * numpy.cos(nom)))
 
         random.seed(1656)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.sin, position=z,
@@ -279,7 +279,7 @@ class TestOperators(unittest.TestCase):
 
     def test_cos(self):
         random.seed(1632)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua1 = nom +- u(unc)
             ua2 = numpy.cos(ua1)
@@ -287,7 +287,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua2.stddev, abs(-unc * numpy.sin(nom)))
 
         random.seed(1957)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.cos, position=z,
@@ -297,7 +297,7 @@ class TestOperators(unittest.TestCase):
 
     def test_tan(self):
         random.seed( 702)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.tan(ua)
@@ -305,7 +305,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) * (1 + numpy.tan(nom) ** 2))
 
         random.seed(1959)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.tan, position=z,
@@ -315,7 +315,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arcsin(self):
         random.seed( 704)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.inpm01()
             ua = nom +- u(unc)
             ub = numpy.arcsin(ua)
@@ -323,7 +323,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
 
         random.seed(2001)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arcsin, position=z,
@@ -333,7 +333,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arccos(self):
         random.seed( 709)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.inpm01()
             ua = nom +- u(unc)
             ub = numpy.arccos(ua)
@@ -341,7 +341,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(1 - nom ** 2))
 
         random.seed(2002)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arccos, position=z,
@@ -351,7 +351,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arctan(self):
         random.seed( 710)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.arctan(ua)
@@ -359,7 +359,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) / (1 + nom ** 2))
 
         random.seed(2004)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arctan, position=z,
@@ -369,7 +369,7 @@ class TestOperators(unittest.TestCase):
 
     def test_sinh(self):
         random.seed( 712)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.sinh(ua)
@@ -377,7 +377,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc * numpy.cosh(nom)))
 
         random.seed( 632)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.sinh, position=z,
@@ -387,7 +387,7 @@ class TestOperators(unittest.TestCase):
 
     def test_cosh(self):
         random.seed( 715)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.cosh(ua)
@@ -395,7 +395,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc * numpy.sinh(nom)))
 
         random.seed( 633)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.cosh, position=z,
@@ -405,7 +405,7 @@ class TestOperators(unittest.TestCase):
 
     def test_tanh(self):
         random.seed( 716)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.tanh(ua)
@@ -413,7 +413,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) * (1 - numpy.tanh(nom) ** 2))
 
         random.seed( 636)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.tanh, position=z,
@@ -423,7 +423,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arcsinh(self):
         random.seed( 723)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.arcsinh(ua)
@@ -431,7 +431,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) / numpy.sqrt(nom ** 2 + 1))
 
         random.seed( 637)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arcsinh, position=z,
@@ -442,7 +442,7 @@ class TestOperators(unittest.TestCase):
     @unittest.expectedFailure
     def test_arccosh(self):
         random.seed( 730)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.above1()
             ua = nom +- u(unc)
             ub = numpy.arccosh(ua)
@@ -451,7 +451,7 @@ class TestOperators(unittest.TestCase):
 
         # This succeeds:
         random.seed( 644)
-        for i in xrange(100):
+        for i in range(100):
             x = 1 + random.expovariate(1)
             self.assertDerivative(
                     specimen=numpy.arccosh, position=x,
@@ -461,7 +461,7 @@ class TestOperators(unittest.TestCase):
 
         # This fails:
         random.seed( 656)
-        for i in xrange(100):
+        for i in range(100):
             x = random.gauss(0, 1) + 0j
             self.assertDerivative(
                     specimen=numpy.arccosh, position=x,
@@ -474,7 +474,7 @@ class TestOperators(unittest.TestCase):
 
         # This fails:
         random.seed( 640)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arccosh, position=z,
@@ -485,7 +485,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arctanh(self):
         random.seed( 734)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.inpm01()
             ua = nom +- u(unc)
             ub = numpy.arctanh(ua)
@@ -493,7 +493,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) / (1 - nom ** 2))
 
         random.seed(1346)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.arctanh, position=z,
@@ -503,7 +503,7 @@ class TestOperators(unittest.TestCase):
 
     def test_exp(self):
         random.seed(1638)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua1 = nom + u(unc)
             ua2 = numpy.exp(ua1)
@@ -518,7 +518,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua2.stddev / ua2.nominal, abs(unc))
 
         random.seed(1348)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.exp, position=z,
@@ -528,7 +528,7 @@ class TestOperators(unittest.TestCase):
 
     def test_exp2(self):
         random.seed( 737)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.gauss()
             ua = nom +- u(unc)
             ub = numpy.exp2(ua)
@@ -539,7 +539,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ub.stddev, abs(unc) * numpy.log(2) * 2 ** nom)
 
         random.seed(1349)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.exp2, position=z,
@@ -549,7 +549,7 @@ class TestOperators(unittest.TestCase):
 
     def test_log(self):
         random.seed(1648)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.expo()
             ua1 = nom +- u(unc)
             ua2 = numpy.log(ua1)
@@ -563,7 +563,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(ua2.stddev, ua1.stddev / ua1.nominal)
 
         random.seed(1351)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.log, position=z,
@@ -573,7 +573,7 @@ class TestOperators(unittest.TestCase):
 
     def test_log2(self):
         random.seed(1653)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.expo()
             ua1 = nom +- u(unc)
             ua2 = numpy.log2(ua1)
@@ -585,7 +585,7 @@ class TestOperators(unittest.TestCase):
                     1/numpy.log(2) * ua1.stddev / ua1.nominal)
 
         random.seed(1352)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.log2, position=z,
@@ -595,7 +595,7 @@ class TestOperators(unittest.TestCase):
 
     def test_log10(self):
         random.seed(1655)
-        for i in xrange(10):
+        for i in range(10):
             nom, unc = self.expo()
             ua1 = nom +- u(unc)
             ua2 = numpy.log10(ua1)
@@ -607,7 +607,7 @@ class TestOperators(unittest.TestCase):
                     1/numpy.log(10) * ua1.stddev / ua1.nominal)
 
         random.seed(1354)
-        for i in xrange(100):
+        for i in range(100):
             z = self.cgauss()
             self.assertDerivative(
                     specimen=numpy.log10, position=z,
@@ -617,7 +617,7 @@ class TestOperators(unittest.TestCase):
 
     def test_add(self):
         random.seed( 707)
-        for i in xrange(10):
+        for i in range(10):
             nom1, unc1 = self.gauss()
             nom2, unc2 = self.gauss()
             ua1 = nom1 +- u(unc1)
@@ -628,7 +628,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(uy.variance, ua1.variance + ua2.variance)
 
         random.seed(1406)
-        for i in xrange(100):
+        for i in range(100):
             z1 = self.cgauss()
             z2 = self.cgauss()
 
@@ -645,7 +645,7 @@ class TestOperators(unittest.TestCase):
 
     def test_subtract(self):
         random.seed( 710)
-        for i in xrange(10):
+        for i in range(10):
             nom1, unc1 = self.gauss()
             nom2, unc2 = self.gauss()
             ua1 = nom1 +- u(unc1)
@@ -656,7 +656,7 @@ class TestOperators(unittest.TestCase):
             self.assertClose(uy.variance, ua1.variance + ua2.variance)
 
         random.seed(1409)
-        for i in xrange(100):
+        for i in range(100):
             z1 = self.cgauss()
             z2 = self.cgauss()
 
@@ -673,7 +673,7 @@ class TestOperators(unittest.TestCase):
 
     def test_multiply(self):
         random.seed( 712)
-        for i in xrange(10):
+        for i in range(10):
             nom1, unc1 = self.gauss()
             nom2, unc2 = self.gauss()
             ua1 = nom1 +- u(unc1)
@@ -706,7 +706,7 @@ class TestOperators(unittest.TestCase):
                         (ua2.stddev / ua2.nominal) ** 2)
 
         random.seed(1402)
-        for i in xrange(100):
+        for i in range(100):
             z1 = self.cgauss()
             z2 = self.cgauss()
 
@@ -723,7 +723,7 @@ class TestOperators(unittest.TestCase):
 
     def test_divide(self):
         random.seed( 723)
-        for i in xrange(10):
+        for i in range(10):
             nom1, unc1 = self.gauss()
             nom2, unc2 = self.gauss()
             ua1 = nom1 +- u(unc1)
@@ -753,7 +753,7 @@ class TestOperators(unittest.TestCase):
                     ua2.variance / nom2 ** 2)
 
         random.seed(1413)
-        for i in xrange(100):
+        for i in range(100):
             z1 = self.cgauss()
             z2 = self.cgauss()
 
@@ -770,7 +770,7 @@ class TestOperators(unittest.TestCase):
 
     def test_power(self):
         random.seed( 742)
-        for i in xrange(10):
+        for i in range(10):
             nom1, unc1 = self.expo()
             nom2, unc2 = self.gauss()
             ua1 = nom1 +- u(unc1)
@@ -792,7 +792,7 @@ class TestOperators(unittest.TestCase):
                     ua1.variance * d1 ** 2 + ua2.variance * d2 ** 2)
 
         random.seed(1416)
-        for i in xrange(100):
+        for i in range(100):
             z1 = self.cgauss()
             z2 = self.cgauss()
 
@@ -809,7 +809,7 @@ class TestOperators(unittest.TestCase):
 
     def test_arctan2(self):
         random.seed( 740)
-        for i in xrange(10):
+        for i in range(10):
             nomx, uncx = self.gauss()
             nomy, uncy = self.gauss()
             ux = nomx +- u(uncx)
@@ -823,7 +823,7 @@ class TestOperators(unittest.TestCase):
                     ux.variance * (dx ** 2) + uy.variance * (dy ** 2))
 
         random.seed(1419)
-        for i in xrange(100):
+        for i in range(100):
             x = random.gauss(0, 1)
             y = random.gauss(0, 1)
             # ``numpy.arctan2`` is supported only for real-valued

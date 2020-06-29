@@ -9,6 +9,9 @@ from upy2 import undarray, U, u
 from upy2.dependency import Dependency
 import upy2.sessions
 
+import sys
+py3 = (sys.version_info >= (3,))
+py2 = not py3
 
 class Test_Core(unittest.TestCase):
 
@@ -20,6 +23,12 @@ class Test_Core(unittest.TestCase):
     def assertClose(self, a, b):
         if not numpy.allclose(a, b):
             raise NotCloseError('{} not close to {}'.format(a, b))
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if py2:
+            return unittest.TestCase.assertRaisesRegexp(self, *args, **kwargs)
+        else:
+            return unittest.TestCase.assertRaisesRegex(self, *args, **kwargs)
 
     def test_uzeros(self):
         ua = upy2.uzeros((10, 10))
@@ -78,7 +87,7 @@ class Test_Core(unittest.TestCase):
 
         U_session = upy2.sessions.byprotocol(U)
 
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
@@ -86,7 +95,7 @@ class Test_Core(unittest.TestCase):
         U_session.default(x)
         self.assertIs(U_session.current(), x)
         U_session.undefault(x)
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
@@ -94,7 +103,7 @@ class Test_Core(unittest.TestCase):
         U_session.register(x)
         self.assertIs(U_session.current(), x)
         U_session.unregister(x)
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
@@ -107,14 +116,14 @@ class Test_Core(unittest.TestCase):
         x.undefault()
         self.assertIs(U_session.current(), y)
         y.unregister()
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test order check in :meth:`undefault`:
         U_session.default(x)
         U_session.default(y)
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                 '^Un-defaulting a session manager which is not '
                 'the current default item$'):
             U_session.undefault(x)
@@ -122,21 +131,21 @@ class Test_Core(unittest.TestCase):
         U_session.undefault(y)
         self.assertIs(U_session.current(), x)
         U_session.undefault(x)
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test order check in :meth:`unregister`:
         U_session.register(x)
         with y:
-            with self.assertRaisesRegexp(ValueError,
+            with self.assertRaisesRegex(ValueError,
                     '^The session manager to be unregistered is not '
                     'the topmost entry on the stack$'):
                 U_session.unregister(x)
             self.assertIs(U_session.current(), y)
         self.assertIs(U_session.current(), x)
         U_session.unregister(x)
-        with self.assertRaisesRegexp(LookupError,
+        with self.assertRaisesRegex(LookupError,
                 '^No applicable session manager found$'):
             mgr = U_session.current()
 
@@ -154,6 +163,12 @@ class Test_undarray(unittest.TestCase):
 
     def assertIsundarray(self, obj):
         self.assertIsInstance(obj, undarray)
+
+    def assertRaisesRegex(self, *args, **kwargs):
+        if py2:
+            return unittest.TestCase.assertRaisesRegexp(self, *args, **kwargs)
+        else:
+            return unittest.TestCase.assertRaisesRegex(self, *args, **kwargs)
 
     def test_creation(self):
         # Test *nominal* and *dtype* arguments:
@@ -332,12 +347,12 @@ class Test_undarray(unittest.TestCase):
         ub = undarray(nominal=[1 + 1j], stddev=[1j])
 
         self.assertAllEqual(ua.variance, [4])
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                 '^Refusing to calculate variance of non-real Dependency$'):
             ub.variance
 
         self.assertAllEqual(ua.stddev, [2])
-        with self.assertRaisesRegexp(ValueError,
+        with self.assertRaisesRegex(ValueError,
                 '^Refusing to calculate variance of non-real Dependency$'):
             ub.stddev
 
@@ -372,10 +387,11 @@ class Test_undarray(unittest.TestCase):
         self.assertIsundarray(ua / c)
         self.assertIsundarray(c / ua)
 
-        self.assertIsundarray(operator.div(ua, b))
-        self.assertIsundarray(operator.div(b, ua))
-        self.assertIsundarray(operator.div(ua, c))
-        self.assertIsundarray(operator.div(c, ua))
+        if py2:
+            self.assertIsundarray(operator.div(ua, b))
+            self.assertIsundarray(operator.div(b, ua))
+            self.assertIsundarray(operator.div(ua, c))
+            self.assertIsundarray(operator.div(c, ua))
 
         self.assertIsundarray(operator.truediv(ua, b))
         self.assertIsundarray(operator.truediv(b, ua))
@@ -400,9 +416,10 @@ class Test_undarray(unittest.TestCase):
         ub = ua; ub *= c; self.assertIsundarray(ub)
         ub = ua; ub *= ux; self.assertIsundarray(ub)
 
-        ub = ua; ub = operator.idiv(ua, b); self.assertIsundarray(ub)
-        ub = ua; ub = operator.idiv(ua, c); self.assertIsundarray(ub)
-        ub = ua; ub = operator.idiv(ua, ux); self.assertIsundarray(ub)
+        if py2:
+            ub = ua; ub = operator.idiv(ua, b); self.assertIsundarray(ub)
+            ub = ua; ub = operator.idiv(ua, c); self.assertIsundarray(ub)
+            ub = ua; ub = operator.idiv(ua, ux); self.assertIsundarray(ub)
 
         ub = ua; ub = operator.itruediv(ua, b); self.assertIsundarray(ub)
         ub = ua; ub = operator.itruediv(ua, c); self.assertIsundarray(ub)
