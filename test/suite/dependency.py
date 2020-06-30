@@ -463,14 +463,16 @@ class Test_Dependency(unittest.TestCase):
         self.assertAllEqual(transposed.derivatives,
                 [[[10, 11]], [[12, 13]]])
 
-    def test_str(self):
-        str1 = str(Dependency(names=1, derivatives=42))
-        self.assertEqual(str1, "(names = 1, derivatives = 42)")
+    def test_string_conversion(self):
+        dep1 = Dependency(names=1, derivatives=42)
+        dtype1 = numpy.dtype(numpy.int)
+        self.assertEqual(str(dep1),
+                "<()-shaped {}-typed Dependency>".format(dtype1))
+            # The actual width of the default numpy int dtype might
+            # depend on architecture, i.e., it might now everywhere be
+            # equal to ``numpy.int64``.
 
-        str2 = str(Dependency(names=[1, 2], derivatives=[42, 100]))
-        self.assertEqual(str2,
-"""(names:
-[1 2]
-derivatives:
-[ 42 100]
-)""")
+        dep2 = Dependency(names=[1.0, 2.0], derivatives=[42.0, 100.0])
+        dtype2 = numpy.dtype(numpy.float)
+        self.assertEqual(repr(dep2),
+                "<(2,)-shaped {}-typed Dependency>".format(dtype2))

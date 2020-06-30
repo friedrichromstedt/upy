@@ -151,7 +151,7 @@ class Test_Core(unittest.TestCase):
 
     def test_string_conversion(self):
         self.assertEqual(str(upy2.uadd), "<<ufunc 'add'> uufunc>")
-        # :class:`uufunc` doesn't exhibit a :meth:`__repr__`.
+        self.assertEqual(repr(upy2.uadd), "<<ufunc 'add'> uufunc>")
 
 
 class Test_undarray(unittest.TestCase):
