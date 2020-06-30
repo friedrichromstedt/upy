@@ -21,7 +21,7 @@ class UnaryOperator(object):
         return getattr(self.ufunc, name)
 
     def __str__(self):
-        return "<upy Unary operator for numpy {0} and upy {1}>".\
+        return "<upy unary operator for numpy {0} and upy {1}>".\
                 format(self.ufunc, self.uufunc)
 
     def __repr__(self):
@@ -50,7 +50,7 @@ class BinaryOperator(object):
         return getattr(self.ufunc, name)
 
     def __str__(self):
-        return "<upy Binary operator for numpy {0} and upy {1}>".\
+        return "<upy binary operator for numpy {0} and upy {1}>".\
                 format(self.ufunc, self.uufunc)
 
     def __repr__(self):
