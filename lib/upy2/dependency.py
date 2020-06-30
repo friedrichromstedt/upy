@@ -380,14 +380,7 @@ class Dependency(object):
     # String conversion ...
     #
 
-    def __str__(self):
-        if self.ndim == 0:
-            # Return a scalar representation ...
-            return "(names = {name}, derivatives = {derivative})".\
-                format(name=self.names, derivative=self.derivatives)
-        else:
-            # Return an array representation ...
-            return "(names:\n{names}\nderivatives:\n{derivatives}\n)".\
-                format(names=self.names, derivatives=self.derivatives)
-
-    # There is no :meth:`__repr__`.
+    def __repr__(self):
+        return "<{shape}-shaped {dtype}-typed Dependency>".format(
+                shape=self.shape,
+                dtype=self.dtype)
