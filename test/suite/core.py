@@ -261,10 +261,10 @@ class Test_undarray(unittest.TestCase):
         ua = undarray(nominal=[[1.0, 2.0], [3.0, 4.0]])
 
         ua.append(Dependency(
-            names=upy2.guid_generator.get_idarray((2, 2)),
+            names=upy2.guid_generator.generate_idarray((2, 2)),
             derivatives=[[0.1, 0.1], [0.1, 0.1]]))
         ua.append(Dependency(
-            names=upy2.guid_generator.get_idarray((2, 2)),
+            names=upy2.guid_generator.generate_idarray((2, 2)),
             derivatives=[[0.2, 0.2], [0.2, 0.2]]))
 
         ua.clear((1, 0))

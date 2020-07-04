@@ -15,7 +15,7 @@ class IDGenerator:
         self._lock = threading.Lock()
         self._current_id = 1
 
-    def get_idarray(self, shape):
+    def generate_idarray(self, shape):
         """ Returns unique IDs in shape *shape*. """
         
         # For an empty iterable *shape* like [] and (), ``numpy.prod``
@@ -25,9 +25,8 @@ class IDGenerator:
         # or (42, 100).
         N = numpy.prod(shape, dtype=numpy.int)
 
-        # Make sure that never two same IDs are returned by locking the 
-        # .lock until the procedure is complete ...
-
+        # Make sure that never two same IDs are returned by acquiring
+        # ``self.lock`` until the transaction is complete:
         with self._lock:
             idarray = numpy.arange(
                 self._current_id,
