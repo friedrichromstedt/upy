@@ -13,5 +13,5 @@ print b
 c = 10 +- u([[1.0, 2.0], [5.0, 20.0]])
 print c
 
-d = u(1)  # Integer ``1`` will be truncated in division by ``2``.
+d = u(1)  # *u* uses *true division*
 print d

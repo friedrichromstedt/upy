@@ -3,7 +3,6 @@ import upy2
 from upy2 import u, U
 from upy2.typesetting import ScientificTypesetter
 
-upy2.install_numpy_operators()
 U(2).default()
 ScientificTypesetter(stddevs=2, precision=2).default()
 
