@@ -46,16 +46,33 @@ class ScientificRule(object):
 
 
 class ScientificElement:
+    """ :class:`ScientificElement` will be used to populate
+    object-dtype ndarrays corresponding to an ``undarray`` to be
+    typeset. """
+
     def __init__(self, 
             nominal, uncertainty,
             typesetter, rule,
     ):
+        """ *nominal* and *uncertainty* are numbers; *typesetter* is
+        the :class:`ScientificTypesetter` instance responsible for
+        this ``ScientificElement`` and *rule* is the instance of
+        :class:`ScientificRule` used for this element.
+
+        The *rule* will be shared by all :class:`ScientificElement`
+        instances corresponding to elements of the same ``undarray``;
+        the *typesetter* is the Typesetting Session Manager used. """
+
         self.nominal = nominal
         self.uncertainty = uncertainty
         self.typesetter = typesetter
         self.rule = rule
 
     def __repr__(self):
+        """ Notice that both ``str(<object-dtype ndarray>)`` as well
+        as ``repr(<object-dtype ndarray>)`` will use the ``__repr__``
+        conversion of the ndarray's elements. """
+
         result = self.typesetter.typeset_element(
             nominal=self.nominal, uncertainty=self.uncertainty,
             rule=self.rule,
@@ -208,7 +225,7 @@ class ScientificTypesetter(Typesetter):
             # uncertainty.
 
             exponent = -pos_leftmost_digit_uncertainty
-            # mantissa_nominal  is not needed.
+            # *mantissa_nominal* is not needed.
             mantissa_uncertainty = uncertainty * \
                 10 ** pos_leftmost_digit_uncertainty
 

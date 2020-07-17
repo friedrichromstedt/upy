@@ -20,9 +20,11 @@ __all__ = ['undarray', 'uzeros', 'asuarray', 'ucopy', 'U', 'u',
 typesetting_session = upy2.sessions.byprotocol(
     upy2.typesetting.protocol.Typesetter)
 
+
 #
 # Some convenience functions ...
 #
+
 
 def uzeros(shape, dtype=None):
     """ Returns a zero-undarray of shape *shape* and optionally using
@@ -51,9 +53,11 @@ def ucopy(uarray_like):
         return uarray_like.copy()
     return undarray(nominal=numpy.copy(uarray_like))
 
+
 #
 # Syntactic Sugar ...
 #
+
 
 # Definition of the "Uncertainty" Protocol:
 
@@ -110,13 +114,15 @@ U_session = upy2.sessions.byprotocol(U)
 def u(uncertainty):
     return U_session.current().provide(uncertainty)
 
+
 #
 # The central undarray class ...
 #
 
+
 class undarray(object):
     """Implements uncertain ndarrays.  The name is derived from
-    numpy.ndarray. """
+    :class:`numpy.ndarray`. """
 
     def __init__(self,
             nominal=None,
@@ -168,6 +174,11 @@ class undarray(object):
             self.append(dependency)
 
     def append(self, dependency):
+        """ Append an instance of :class:`Dependency` to the list of
+        Dependencies in this :class:`undarray`.  Both the shape as
+        well as the dtype of *dependency* need to match the shape and
+        the dtype of *self* *accurately*. """
+
         if not self.shape == dependency.shape:
             raise ValueError(
                     ('Cannot append a Dependency of shape {0} '
@@ -181,6 +192,9 @@ class undarray(object):
         self.dependencies.append(dependency)
 
     def clear(self, key):
+        """ Abandon all uncertainty information in the subset of
+        *self* specified by *key*. """
+
         for dependency in self.dependencies:
             dependency.clear(key)
 
@@ -251,8 +265,8 @@ class undarray(object):
 
     @property
     def imag(self):
-        """ Returns the imaginary component of *self*.  This pertains to
-        the nominal value as well as to the Dependencies. """
+        """ Returns the imaginary component of *self*.  This pertains
+        to the nominal value as well as to the Dependencies. """
 
         result = undarray(self.nominal.imag.copy())
             # ``.imag`` returns a View.
@@ -264,6 +278,7 @@ class undarray(object):
         """ Returns the conjugate of *self*. """
 
         result = undarray(self.nominal.conj())
+            # ``.conj`` returns a copy of the real component.
         for dependency in self.dependencies:
             result.append(dependency.conj())
         return result
@@ -281,6 +296,11 @@ class undarray(object):
     def variance(self):
         """ Returns the variance array, i.e., stddev ** 2. """
 
+        if not numpy.isrealobj(self.nominal):
+            raise ValueError(
+                    'Refusing to calculate the variance of a '
+                    'non-real undarray')
+
         result = numpy.zeros(shape=self.shape, dtype=self.dtype)
         for dependency in self.dependencies:
             result += dependency.variance
@@ -291,10 +311,7 @@ class undarray(object):
         """ Returns the standard deviation. """
         
         return numpy.sqrt(self.variance)
-            # In case of complex dependencies, retrieving
-            # self.variance will fail when in the code path of
-            # the :class:`Dependency` instance exhibiting complex
-            # derivatives.
+            # Obtaining the variance for non-real undarrays will fail.
 
     #
     # Binary arithmetics ...
@@ -443,8 +460,9 @@ class undarray(object):
     #
     
     def __getitem__(self, key):
-        """Returns the given subset of the undarray, by applying *key*
-        both to the nominal value as well as to the Dependencies. """
+        """ Returns the given subset of the undarray, by applying
+        *key* both to the nominal value as well as to the
+        Dependencies. """
 
         result = undarray(nominal=self.nominal[key].copy())
         for dependency in self.dependencies:
@@ -457,7 +475,8 @@ class undarray(object):
         *value*.
 
         If *value* is not an ``undarray``, it will be treated as the
-        replacement for the specified portion of self's nominal value.
+        replacement for the specified portion of *self*'s nominal
+        value.
 
         *value* might be broadcast to fit the portion of *self*
         indexed by *key*. """
@@ -484,8 +503,8 @@ class undarray(object):
     #
 
     def compress(self, *compress_args, **compress_kwargs):
-        """Refer to ``numpy.compress`` for documentation of the
-        functionality."""
+        """ Returns a copy with compressed nominal value and
+        Dependencies, see ``numpy.compress``. """
 
         result = undarray(
             nominal=self.nominal.compress(
@@ -498,16 +517,10 @@ class undarray(object):
         return result
 
     def copy(self):
-        """Returns a copy of the undarray.  Note that only the data is
+        """ Returns a copy of the undarray.  Note that only the data is
         copied, and no new names for the dependencies are created.  This
         means, that the undarray will bahave in all arithmetics the same as
-        the original, except for that it has its own memory.
-        
-        This behaviour is chosen, because there may happen too many
-        complications with lost intercorrelations when the data would be
-        dropped and replaced by new names completely.  Also, it cannot be
-        decided at this program level which correlation to keep and which
-        to "copy", i.e., to replicate with new names."""
+        the original, except for that it has its own memory. """
 
         result = undarray(nominal=self.nominal.copy())
         for dependency in self.dependencies:
@@ -515,7 +528,8 @@ class undarray(object):
         return result
 
     def flatten(self, *flatten_args, **flatten_kwargs):
-        """Returns a copy with flatten()'ed ndarrays."""
+        """ Returns a copy with *flattened* nominal value and
+        Dependencies, see ``numpy.ndarray.flatten``. """
 
         result = undarray(
             nominal=self.nominal.flatten(
@@ -527,8 +541,12 @@ class undarray(object):
             ))
         return result
 
+    # Notice also the comment beneath the definition of
+    # :meth:`Dependency.flatten`.
+
     def repeat(self, *repeat_args, **repeat_kwargs):
-        """Returns a copy with repeat()'ed ndarrays."""
+        """ Returns a copy with *repeated* nominal value and
+        Dependencies, see ``numpy.repeat``. """
 
         result = undarray(
             nominal=self.nominal.repeat(
@@ -541,7 +559,8 @@ class undarray(object):
         return result
 
     def reshape(self, *reshape_args, **reshape_kwargs):
-        """Returns a copy with reshape()'ed ndarrays."""
+        """ Returns a copy with *reshaped* nominal value and
+        Dependencies, see ``numpy.repeat``. """
 
         result = undarray(
             nominal=self.nominal.reshape(
@@ -554,7 +573,8 @@ class undarray(object):
         return result
 
     def transpose(self, *transpose_args, **transpose_kwargs):
-        """Returns a copy with transpos()'ed ndarrays."""
+        """ Returns a copy with *transposed* nominal value and
+        Dependencies, see ``numpy.transpose``. """
 
         result = undarray(
             nominal=self.nominal.transpose(
@@ -571,6 +591,9 @@ class undarray(object):
     #
 
     def __str__(self):
+        """ Returns the string representation of *self* according to
+        the typesetting session. """
+
         typesetter = typesetting_session.current()
         return typesetter.typeset(self)
 
@@ -639,7 +662,7 @@ class Binary(uufunc):
     classes from this class and define :meth:`_source1` and
     :meth:`_source2`.
 
-    Opon calling the derived binary uufunc, :meth:`_source1` will only
+    Upon calling the derived binary uufunc, :meth:`_source1` will only
     be called when the first operand is an ``undarray``, and likewise
     :meth:`_source2` will only be used when the second operand is an
     ``undarray``.

@@ -1,7 +1,7 @@
 # Developed since: October 2016
 
 """ Defines the Typesetter Protocol Class and registers a typesetter
-Context at :mod:`upy2.context`. """
+Session at :mod:`upy2.sessions`. """
 
 from upy2.sessions import define, Protocol
 

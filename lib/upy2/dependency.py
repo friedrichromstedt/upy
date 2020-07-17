@@ -42,8 +42,9 @@ class Dependency(object):
         overridden.  The dtype of the *names* array *never* will be
         overridden.
 
-        Otherwise, *shape* will be used to provide an empty Dependency
-        of the given *dtype* (with all names set to zero and with zero
+        When at least one of *names* and *derivatives* is ``None``,
+        *shape* will be used to provide an empty Dependency of the
+        given *dtype* (with all names set to zero and with zero
         derivatives).  In this case, the *names* will have dtype
         ``numpy.int``.
 
@@ -56,7 +57,7 @@ class Dependency(object):
             if self.names.shape != self.derivatives.shape:
                 raise ValueError(
                         'Shape mismatch in initialising a '
-                        'Dependency: names.shape = {0}, derivatives '
+                        'Dependency: names.shape = {0}, derivatives.'
                         'shape = {1}'.format(
                             self.names.shape, self.derivatives.shape))
 
@@ -67,8 +68,8 @@ class Dependency(object):
                 # ndarray with "standard" dtype (``numpy.float``).
 
         else:
-            raise ValueError("Dependency: Unable to initialise from"
-                " the arguments provided")
+            raise ValueError("Dependency: Unable to initialise from "
+                "the arguments provided")
 
         self.shape = self.derivatives.shape
         self.dtype = self.derivatives.dtype
@@ -103,7 +104,8 @@ class Dependency(object):
         if not numpy.isrealobj(self.derivatives):
             # It might be complex.
             raise ValueError(
-                'Refusing to calculate variance of non-real Dependency')
+                'Refusing to calculate the variance of a non-real '
+                'Dependency')
         return (self.names != 0) * self.derivatives ** 2
 
     #
@@ -268,7 +270,8 @@ class Dependency(object):
                 derivatives=bc_derivatives,
         )
 
-    # Reverse multiplication is unsupported.
+    # Reverse multiplication is unsupported.  It would not work with
+    # ndarrays as first operand (see 228ad14).
 
     # Augmented arithmetics will be emulated by using standard
     # arithmetics.
@@ -280,7 +283,7 @@ class Dependency(object):
     def __getitem__(self, key):
         """ Returns a new Dependency with *key* applied both to the
         :attr:`derivatives` as well as to the :attr:`names` of *self*.
-        """
+        The results will be copied. """
         
         return Dependency(
                 names=self.names[key].copy(),
@@ -341,7 +344,7 @@ class Dependency(object):
     # that there is no :func:`numpy.flatten`.
     #
     # Notice further, that :func:`numpy.ravel` does not make use of a
-    # :meth:`ravel` of the operand provided; instead, it returns an
+    # :meth:`ravel` of the operand provided; instead, it returns a
     # ``dtype=object`` array always.
 
     def repeat(self, *repeat_args, **repeat_kwargs):
@@ -358,7 +361,7 @@ class Dependency(object):
 
     def reshape(self, *reshape_args, **reshape_kwargs):
         """ Returns a Dependency constructed from the *reshaped* names
-        and derivatives of *self*. """
+        and derivatives of *self*.  The results will be copied. """
 
         return Dependency(
                 names=self.names.reshape(
@@ -368,7 +371,8 @@ class Dependency(object):
 
     def transpose(self, *transpose_args, **transpose_kwargs):
         """ Returns a Dependency constructed from the *transposed*
-        names and derivatives of *self*. """
+        names and derivatives of *self*.  The results will be copied.
+        """
 
         return Dependency(
                 names=self.names.transpose(

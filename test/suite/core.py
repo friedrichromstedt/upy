@@ -323,6 +323,23 @@ class Test_undarray(unittest.TestCase):
         self.assertAllEqual(utarget.dependencies[1].derivatives,
                 [[0.0, 0.6], [0.0, 0.0]])
 
+        # Test dtype compatibility test and conversion:
+
+        utarget = undarray(shape=(2, 2))
+        usource = undarray(shape=(2, 2), dtype=numpy.int,
+                stddev=[[1, 2], [3, 4]])
+        utarget.copy_dependencies(usource)
+        self.assertEqual(utarget.dependencies[0].dtype, numpy.float)
+
+        utarget = undarray(shape=(2, 2), dtype=numpy.int)
+        usource = undarray(shape=(2, 2))
+        with self.assertRaisesRegex(ValueError,
+                "Cannot incorporate the dependencies of an {0}-dtype "
+                "undarray into an {1}-dtype undarray"\
+                        .format(numpy.dtype(numpy.float),
+                            numpy.dtype(numpy.int))):
+            utarget.copy_dependencies(usource)
+
     def test_complex(self):
         ua = undarray(
                 nominal=[1 + 2j, 2 + 3j],
@@ -349,16 +366,27 @@ class Test_undarray(unittest.TestCase):
     def test_variance_and_stddev(self):
         ua = undarray(nominal=[40], stddev=[2])
         ub = undarray(nominal=[1 + 1j], stddev=[1j])
+        uc = undarray(shape=(2, 2), dtype=numpy.complex)
 
         self.assertAllEqual(ua.variance, [4])
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate variance of non-real Dependency$'):
+                '^Refusing to calculate the variance of a non-real '
+                'undarray$'):
             ub.variance
+        with self.assertRaisesRegex(ValueError,
+                '^Refusing to calculate the variance of a non-real '
+                'undarray$'):
+            uc.variance
 
         self.assertAllEqual(ua.stddev, [2])
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate variance of non-real Dependency$'):
+                '^Refusing to calculate the variance of a non-real '
+                'undarray$'):
             ub.stddev
+        with self.assertRaisesRegex(ValueError,
+                '^Refusing to calculate the variance of a non-real '
+                'undarray$'):
+            uc.stddev
 
     def test_binary_operators(self):
         with U(1):

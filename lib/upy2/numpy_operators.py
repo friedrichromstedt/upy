@@ -12,12 +12,17 @@ class UnaryOperator(object):
         self.uufunc = uufunc
 
     def __call__(self, x, *args, **kwargs):
+        """ *args* nad **kwargs** are used only when calling the numpy
+        ufunc. """
+
         if not isinstance(x, undarray):
             return self.ufunc(x, *args, **kwargs)
         else:
             return self.uufunc(x)
 
     def __getattr__(self, name):
+        """ Forwards the attribute request to the ufunc contained. """
+
         return getattr(self.ufunc, name)
 
     def __str__(self):

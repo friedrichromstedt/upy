@@ -37,15 +37,15 @@ class Test_Dependency(unittest.TestCase):
         self.assertEqual(dep.derivatives.dtype, numpy.float)
         self.assertEqual(dep.dtype, numpy.float)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError,
+                '^Shape mismatch in initialising a Dependency: '
+                'names.shape = \(1,\), derivatives.shape = \(2,\)$'):
             dep = Dependency(names=[1], derivatives=[10, -10])
-            # ValueError: Shape mismatch in initialising a Dependency:
-            # names.shape = (1,), derivatives.shape = (2,)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError,
+                '^Dependency: Unable to initialise from the arguments '
+                'provided$'):
             dep = Dependency()
-            # ValueError: Dependency: Unable to initialise from the
-            # arguments provided
         with self.assertRaises(ValueError):
             dep = Dependency(names=[42])
         with self.assertRaises(ValueError):
@@ -75,7 +75,8 @@ class Test_Dependency(unittest.TestCase):
     def test_variance(self):
         dep = Dependency(names=1, derivatives=(1 + 1j))
         with self.assertRaisesRegex(ValueError,
-                "^Refusing to calculate variance of non-real Dependency$"):
+                "^Refusing to calculate the variance of a non-real "
+                "Dependency$"):
             dep.variance
 
         dep1 = Dependency(names=1, derivatives=1.0)

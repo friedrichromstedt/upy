@@ -32,9 +32,9 @@ def get_position_of_leftmost_digit(number):
     binary representation, this calculations hold only "in
     principle" on a machine working with binary numbers.
    
-    When *weight* is larger than *val*, the expression ``value %
+    When *weight* is larger than *value*, the expression ``value %
     weight`` returns *value* unchanged.  *weight* is larger than
-    *val* iff. all digits in the decimal representation of *val*
+    *value* iff. all digits in the decimal representation of *value*
     non-right of *pos* are zero.  In this case the expression:
    
       value - value % weight
@@ -96,14 +96,15 @@ class TypesetNumber:
 
 class NumberTypesetter:
     def __init__(self, typeset_positive_sign=None, ceil=None):
-        """ Plusses before positive signs will only be printed when
+        """ Plusses before positive numbers will only be printed when
         *typeset_positive_sign* is true.  Per default such positive
         signs won't be typeset.
         
         When *ceil* is true, discarded portions of the number (due to
-        *precision*, handed over to :meth:`typeset`) will increase the
-        absolute value of the number represented by the typesetting
-        result.  The default for *ceil* is ``False``. """
+        the *precision* handed over to :meth:`typesetfp` or
+        :meth:`typesetint`) will increase the absolute value of the
+        number represented by the typesetting result.  The default for
+        *ceil* is ``False``. """
 
         if typeset_positive_sign is None:
             typeset_positive_sign = False
@@ -114,8 +115,8 @@ class NumberTypesetter:
         self.ceil = ceil
 
     def typesetfp(self, number, precision):
-        """ Returns a decimal representation of *number* as an instance of
-        :class:`TypesetNumber` with a certain precision.
+        """ Returns a decimal representation of *number* as an
+        instance of :class:`TypesetNumber` with a certain precision.
 
         The rightmost nonzero digit of the representation is at
         position *precision* with decimal weigth 10 ** -(*precision*).
@@ -161,7 +162,7 @@ class NumberTypesetter:
         if precision <= 0:
             # Append zeros.
             #
-            # *digitstream* contains all digits up to digits at
+            # *digitstream* contains all digits up to the digit at
             # position *precision*.  For *precision* = 0,
             # *digitstream* contains all digits of the result.  For
             # *precision* = -1, one zero needs to be appended to
@@ -186,7 +187,7 @@ class NumberTypesetter:
                 digitstream
             # When *digitstream* already contains at least
             # (*precision* + 1) digits, ``minimum_lenth -
-            # len(digitsteam)`` is nonpositive.  Multiplying a string
+            # len(digitstream)`` is nonpositive.  Multiplying a string
             # ('0') by a nonpositive number returns an empty string.
 
             # Split the stream.
