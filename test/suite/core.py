@@ -340,6 +340,21 @@ class Test_undarray(unittest.TestCase):
                             numpy.dtype(numpy.int))):
             utarget.copy_dependencies(usource)
 
+        # Test Exception raising with too large source undarray:
+
+        utarget = undarray(shape=(2,))
+        usource = undarray(shape=(2, 2))
+        utarget.copy_dependencies(usource)
+            # This succeeds, since *usource* features no Dependency.
+
+        usource = undarray(
+                nominal=numpy.zeros((2, 2)),
+                stddev=[[1.0, 2.0], [3.0, 4.0]])
+        with self.assertRaisesRegex(ValueError,
+                "^non-broadcastable output operand with shape \(2,\) "
+                "doesn't match the broadcast shape \(2,2\)$"):
+            utarget.copy_dependencies(usource)
+
     def test_complex(self):
         ua = undarray(
                 nominal=[1 + 2j, 2 + 3j],
