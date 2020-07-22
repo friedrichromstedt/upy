@@ -79,16 +79,8 @@ class U(upy2.sessions.Protocol):
         on initialisation time. """
 
         stddev = numpy.true_divide(uncertainty, self.stddevs)
-        shape = stddev.shape
-        result = undarray(shape=shape, dtype=stddev.dtype)
-
-        dependency = upy2.dependency.Dependency(
-                names=upy2.guid_generator.generate_idarray(shape=shape),
-                derivatives=stddev,
-        )
-        result.append(dependency)
-
-        return result
+        nominal = numpy.zeros_like(stddev)
+        return undarray(nominal=nominal, stddev=stddev)
 
     def __call__(self, uncertainty):
         """ Convenience method to provide a short-hand for
