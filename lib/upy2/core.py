@@ -475,10 +475,6 @@ class undarray(object):
 
         self.clear(key)
 
-        self.nominal = numpy.asarray(self.nominal)
-            # Turn "true" scalars into scalar ndarrays prior to item
-            # assignment.
-
         if isinstance(value, undarray):
             self.nominal[key] = value.nominal
                 # Since we use key assignment, the shape of

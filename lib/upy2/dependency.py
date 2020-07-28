@@ -188,9 +188,6 @@ class Dependency(object):
         matching_mask = (self.names[key] == other.names)
             # This might involve broadcasting of ``other.names``.
 
-        self.derivatives = numpy.asarray(self.derivatives)
-            # Turn "true" scalars into scalar ndarrays prior to item
-            # assignment.
         self.derivatives[key] += matching_mask * other.derivatives
             # If the shape of ``matching_mask * other.derivatives`` is
             # too large, numpy will complain.  In all other cases, the
@@ -213,10 +210,6 @@ class Dependency(object):
         other_filled_mask = (other.names != 0)
         fillin_mask = empty_mask * other_filled_mask
 
-        self.names = numpy.asarray(self.names)
-            # Turn "true" scalars into scalar ndarrays prior to item
-            # assignment.  *self.derivatives* has already been
-            # prepared above.
         self.names[key] += fillin_mask * other.names
         self.derivatives[key] += fillin_mask * other.derivatives
             # Do use augmented assignment ``+=`` because portions
@@ -294,10 +287,6 @@ class Dependency(object):
         """ Set *self.names* and *self.derivatives* to zero at the
         positions indexed by *key*. """
 
-        self.names = numpy.asarray(self.names)
-        self.derivatives = numpy.asarray(self.derivatives)
-            # Turn "true" scalars into scalar ndarrays prior to item
-            # assignment.
         self.names[key] = 0
         self.derivatives[key] = 0
 
