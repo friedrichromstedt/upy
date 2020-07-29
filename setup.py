@@ -31,8 +31,7 @@ of the results.
 Differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
 uncertain values as well as with any numeric Python or ``numpy``
-objects.  I'm planning to support a sufficiently large range of
-mathematical functions.
+objects.  A range of mathematical functions is supported.
  ``upy`` provides several syntactic conventions appropriate to the
 subject.  For instance, defining uncertain quantities is possible by
 writing:
@@ -45,8 +44,8 @@ where ``u`` is a function provided by ``upy``.  Uncertain values
 constructed in this way will be independent of each other with respect
 to their uncertainties; ``upy`` will keep track of the correlations
 arising from combination of uncertain quantities in mathematical
-operations.  All functionality is thread safe, and suited both for use
-in the interactive Python shell as well as in programs for numerical
+operations.  All functionality is suited both for use in the
+interactive Python shell as well as in programs for numerical
 analysis. """
 
 setup(
