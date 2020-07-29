@@ -50,7 +50,7 @@ analysis. """
 
 setup(
     name='upy2',
-    version='2.0.1a4',
+    version='2.0.1b1',
     description='A Package for Uncertainty Propagation',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -66,12 +66,13 @@ setup(
         'numpy',
     ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Scientific/Engineering :: Mathematics',
     ],
