@@ -27,8 +27,8 @@ given by the number of digits with respect to the uncertainty.
 Furthermore, when typesetting multidimensional arrays with
 uncertainty, the decimal fractions are aligned to improve readability
 of the results.
- ``upy`` uses *Algorithmic Differentiation* (also known as *Automatic
-Differentation*) to track uncertainties through the operations.
+ ``upy`` uses *algorithmic differentiation* (also known as *automatic
+differentation*) to track uncertainties through the operations.
 Uncertain values might be used in calculations together with other
 uncertain values as well as with any numeric Python or ``numpy``
 objects.  A range of mathematical functions is supported.
