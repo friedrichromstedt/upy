@@ -375,5 +375,4 @@ class Dependency(object):
 
     def __repr__(self):
         return "<{shape}-shaped {dtype}-typed Dependency>".format(
-                shape=self.shape,
-                dtype=self.dtype)
+                shape=self.shape, dtype=self.dtype)

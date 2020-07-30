@@ -585,6 +585,10 @@ class undarray(object):
         typesetter = typesetting_session.current()
         return typesetter.typeset(self)
 
+    def __repr__(self):
+        return "<{shape}-shaped {dtype}-typed undarray>".format(
+                shape=self.shape, dtype=self.dtype)
+
 
 #
 # uufuncs ...

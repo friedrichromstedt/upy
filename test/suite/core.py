@@ -571,3 +571,21 @@ class Test_undarray(unittest.TestCase):
             # Swaps the last two axes.
         self.assertAllEqual(ub.nominal, numpy.transpose(nominal, (0, 2, 1)))
         self.assertAllEqual(ub.stddev, numpy.transpose(stddev, (0, 2, 1)))
+
+    def test_repr(self):
+        ua = undarray(
+                nominal=42,
+                stddev=1)
+        ub = undarray(
+                nominal=[42.0],
+                stddev=[1.])
+        uc = undarray(
+                nominal=[[10], [11]],
+                stddev=[[1], [2]])
+
+        self.assertEqual(repr(ua), "<()-shaped {}-typed undarray>".
+                format(numpy.dtype(numpy.int)))
+        self.assertEqual(repr(ub), "<(1,)-shaped {}-typed undarray>".
+                format(numpy.dtype(numpy.float)))
+        self.assertEqual(repr(uc), "<(2, 1)-shaped {}-typed undarray>".
+                format(numpy.dtype(numpy.int)))
