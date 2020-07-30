@@ -51,7 +51,7 @@ analysis. """
 setup(
     name='upy2',
     version='2.0.1b1',
-    description='A Package for Uncertainty Propagation',
+    description='A package for uncertainty propagation',
     long_description=long_description,
     long_description_content_type='text/x-rst',
     author='Friedrich Romstedt',
