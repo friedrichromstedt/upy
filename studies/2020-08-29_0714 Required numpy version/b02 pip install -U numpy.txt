@@ -1,0 +1,13 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/studies
+Command: pip install -U numpy
+
+Collecting numpy
+  Using cached numpy-1.19.1-cp38-cp38-manylinux2010_x86_64.whl (14.5 MB)
+Installing collected packages: numpy
+  Attempting uninstall: numpy
+    Found existing installation: numpy 1.13.0
+    Uninstalling numpy-1.13.0:
+      Successfully uninstalled numpy-1.13.0
+Successfully installed numpy-1.19.1
+WARNING: You are using pip version 20.1.1; however, version 20.2.2 is available.
+You should consider upgrading via the '/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python3/bin/python -m pip install --upgrade pip' command.

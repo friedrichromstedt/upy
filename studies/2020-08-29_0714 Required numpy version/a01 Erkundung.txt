@@ -1,0 +1,41 @@
+.. vim: syntax=rst
+
+.. rubric:: Samstag, d. 29. August 2020, 7:32 Uhr
+
+
+Arbeite mit dem Python3-venv :file:`/test/venv/python3/`.
+
+Habe ``upy2-2.0.1b2`` installiert.
+
+*   ``numpy-1.17.0``: OK
+*   ``numpy-1.16.0``: OK
+*   ``numpy-1.15.0``: OK
+*   ``numpy-1.14.0``: OK
+
+
+.. rubric:: Mittwoch, d. 2. September 2020, 7:55 Uhr
+
+
+*   ``numpy-1.13.0``: OK
+*   ``numpy-1.12.0``: NOK, ``numpy.positive`` existiert nicht.
+
+
+.. rubric:: Freitag, d. 4. September 2020, 6:54 Uhr
+
+
+Es gibt in der ``12.x``-Serie noch genau ``12.1``.
+
+*   ``numpy-1.12.1``: NOK, selber Fehler wie fuer ``v1.12.0``.
+
+Habe nochmals geprueft dass die Test Suite mit ``v1.13.0`` durchlaeuft.
+
+Weitere Proben:
+
+*   :file:`/test/programs/Utest.py`: Gibt ``OK`` aus.
+
+*   :file:`/test/studies/arccosh.py``:
+
+    -   Ausgabe mit ``v1.13.0`` [b01].
+    -   ``$ pip install -U numpy``, installiert ``v1.19.1`` [b02].
+    -   Ausgabe mit ``v1.19.1`` [b03].
+    -   ``$ diff [b01] [b03]``: *Keinerlei Unterschiede*.
