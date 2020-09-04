@@ -1,0 +1,3 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: python 2018-04-27_0820 Session.py
+

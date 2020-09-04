@@ -1,0 +1,18 @@
+Fuehre zunaechst alle ad-hoc-Tests mit ``python`` (Python2) aus
+[a02-a07].
+
+Beim Log [a07] werden die RuntimeWarnings faelschlich *am Anfang*
+gelogged; sie wurden an den Ort ihres tatsaechlichen Auftretens
+*manuell verschoben*.  Dieser Ort wurde durch *Ausfuehren ohne Log*
+ermittelt.
+
+Wende ``$ 2to3 -wn`` auf alle ad-hoc-Tests an [b01].  Dabei geht die
+Rueckwaertskompatibilitaet mit Python 2 verloren, da teilweise
+``print`` *mehr als ein Argument uebergeben wird*.
+
+Fuehre die ad-hoc-Skripte per ``python3`` aus [b02-b07].  Habe die
+Position der Warnungen in [b07] wie in [a07] korrigiert.  Diffs von
+[b02-b07] mit ihren a-Pendants ergeben, dass die Ausgaben identisch
+sind.  (Habe festgestellt, dass ich [a04] faelschlich ein Argument
+``/home/friedrich`` uebergeben habe; dies schadet aber nicht.
+Wahrscheinlich wurde irgendwie eine Tilde angehangen.)

@@ -1,0 +1,42 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: python3 2018-05-09_1108 absolute value.py
+
+absolute(1 +- u(0.2)) =
+(1.00 +- 0.20) 10^0 
+absolute(-1 +- u(0.2)) =
+(1.00 +- 0.20) 10^0 
+ua + absolute(ua) =
+(0 +- 0) 10^0 
+absolute(1j +- 0.2j), real and imag =
+(1.00 +- 0.20) 10^0  (0 +- 0) 10^0 
+absolute(1j +- 0.2), real and imag =
+(1.00000000000 +- 0) 10^0  (0 +- 0) 10^0 
+absolute(1 + 1j +- u(0.2), real and imag =
+(1.41 +- 0.15) 10^0  (0 +- 0) 10^0 
+absolute(1 + 1j +- u(0.2j), real and imag =
+(1.41 +- 0.15) 10^0  (0 +- 0) 10^0 
+absolute(zrandom +- zrandom), real and imag =
+(1.76 +- 0.61) 10^-1  (0 +- 0) 10^0 
+absolute(zrandom +- zrandom +- zrandom), real and imag =
+(6.4 +- 8.5) 10^-1  (0 +- 0) 10^0 
+absolute(zrandom +- zrandom +- zrandom +- zrandom), real and imag =
+(3.7 +- 8.2) 10^-1  (0 +- 0) 10^0 
+/home/friedrich/.local/lib/python3.8/site-packages/upy2-2.0.1b2-py3.8.egg/upy2/numpy_operators.py:48: RuntimeWarning: divide by zero encountered in power
+/home/friedrich/.local/lib/python3.8/site-packages/upy2-2.0.1b2-py3.8.egg/upy2/core.py:680: RuntimeWarning: invalid value encountered in multiply
+/home/friedrich/.local/lib/python3.8/site-packages/upy2-2.0.1b2-py3.8.egg/upy2/numpy_operators.py:48: RuntimeWarning: invalid value encountered in multiply
+nominal and stddev of absolute(0 +- 1).real =
+0.0 nan
+absolute(1j) = (1+0j)
+absolute(1) = 1.0
+absolute(0.001 +- 1), real and imag =
+(000 +- 1000) 10^-3  (0 +- 0) 10^0 
+absolute2(1 +- 0.1), real and imag =
+(1.00 +- 0.10) 10^0  (0 +- 0) 10^0 
+absolute2(10 +- 0.1), real and imag =
+(1.000 +- 0.011) 10^1  (0 +- 0) 10^0 
+absolute2(zrandom +- zrandom +- zrandom), real and imag =
+(2.6 +- 6.5) 10^-1  (0 +- 0) 10^0 
+nominal and stddev of absolute2(0 +- 1).real =
+0.0 nan
+nominal and stddev of absolute2(0 +- 1).imag =
+0.0 0.0

@@ -1,0 +1,7 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: python 2018-01-17_0926.py
+
+[(1.00 +- 0.10) 10^1  (1.10 +- 0.16) 10^1 ]
+[[(1.00  +- 0.10 ) 10^1 ]
+ [(1.100 +- 0.015) 10^1 ]]
+<<ufunc 'add'> uufunc>

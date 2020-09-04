@@ -7,9 +7,9 @@ U(2).default()
 ScientificTypesetter(stddevs=2, precision=2).default()
 
 ua = numpy.asarray([10, 11]) +- u([1, 1.5])
-print ua
+print(ua)
 
 ub = numpy.asarray([[10], [11]]) +- u([[1], [0.15]])
-print ub
+print(ub)
 
-print upy2.uadd
+print(upy2.uadd)

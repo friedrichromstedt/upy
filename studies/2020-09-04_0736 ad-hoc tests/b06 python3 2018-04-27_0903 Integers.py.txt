@@ -1,0 +1,10 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: python3 2018-04-27_0903 Integers.py
+
+ua = (0 +- 2.0) 10^0 
+ua.nominal = 0.0
+ua.dependencies[0].derivatives = 1.0
+ua.dtype = float64
+ua.dependencies[0].dtype = float64
+ua.stddev = 1.0
+ua.variance = 1.0

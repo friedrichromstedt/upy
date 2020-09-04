@@ -1,0 +1,19 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: python3 2018-04-21_1940 division.py
+
+ua = (1.00 +- 0.20) 10^1 
+ua.dtype = float64
+Testing uncertainty annihilation:
+(ua / ua).nominal = 1.0
+(ua / ua).stddev = 0.0
+Testing conservation of relative error on inversion:
+1 / ua = (1.00 +- 0.20) 10^-1 
+Testing behaviour with an empty undarray as first operand:
+uzero = (2.00000000000 +- 0) 10^0 
+uzero / ua = (2.00 +- 0.40) 10^-1 
+Testing addition of relative variances:
+ub = (2.00 +- 0.50) 10^0 
+rela = 0.2
+relb = 0.25
+relresult = 0.32015621187164245
+relexpected = 0.32015621187164245

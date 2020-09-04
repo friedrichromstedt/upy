@@ -1,0 +1,249 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/ad-hoc
+Command: 2to3 -wn 2018-01-17_0926.py 2018-04-21_1744 multiplication.py 2018-04-21_1940 division.py 2018-04-27_0820 Session.py 2018-04-27_0903 Integers.py 2018-05-09_1108 absolute value.py
+
+RefactoringTool: Skipping optional fixer: buffer
+RefactoringTool: Skipping optional fixer: idioms
+RefactoringTool: Skipping optional fixer: set_literal
+RefactoringTool: Skipping optional fixer: ws_comma
+RefactoringTool: Refactored 2018-01-17_0926.py
+RefactoringTool: Refactored 2018-04-21_1744 multiplication.py
+RefactoringTool: Refactored 2018-04-21_1940 division.py
+RefactoringTool: Refactored 2018-04-27_0903 Integers.py
+RefactoringTool: Refactored 2018-05-09_1108 absolute value.py
+RefactoringTool: Files that were modified:
+RefactoringTool: 2018-01-17_0926.py
+RefactoringTool: 2018-04-21_1744 multiplication.py
+RefactoringTool: 2018-04-21_1940 division.py
+RefactoringTool: 2018-04-27_0903 Integers.py
+RefactoringTool: 2018-05-09_1108 absolute value.py
+--- 2018-01-17_0926.py	(original)
++++ 2018-01-17_0926.py	(refactored)
+@@ -7,9 +7,9 @@
+ ScientificTypesetter(stddevs=2, precision=2).default()
+ 
+ ua = numpy.asarray([10, 11]) +- u([1, 1.5])
+-print ua
++print(ua)
+ 
+ ub = numpy.asarray([[10], [11]]) +- u([[1], [0.15]])
+-print ub
++print(ub)
+ 
+-print upy2.uadd
++print(upy2.uadd)
+--- 2018-04-21_1744 multiplication.py	(original)
++++ 2018-04-21_1744 multiplication.py	(refactored)
+@@ -8,11 +8,11 @@
+ 
+ ua = 1 +- u(0.1)
+ 
+-print 10 * ua
+-print ua * 10
++print(10 * ua)
++print(ua * 10)
+ 
+ ub = 1 +- u(0.2)
+ 
+ with ScientificTypesetter(stddevs=2, precision=4):
+-    print ua * ub
+-    print numpy.sqrt(0.2 ** 2 + 0.1 ** 2)
++    print(ua * ub)
++    print(numpy.sqrt(0.2 ** 2 + 0.1 ** 2))
+--- 2018-04-21_1940 division.py	(original)
++++ 2018-04-21_1940 division.py	(refactored)
+@@ -7,31 +7,31 @@
+ ScientificTypesetter(stddevs=2, precision=2).default()
+ 
+ ua = 10 +- u(2)
+-print "ua =", ua
+-print "ua.dtype =", ua.dtype
++print("ua =", ua)
++print("ua.dtype =", ua.dtype)
+ 
+-print "Testing uncertainty annihilation:"
+-print "(ua / ua).nominal =", (ua / ua).nominal
+-print "(ua / ua).stddev =", (ua / ua).stddev
++print("Testing uncertainty annihilation:")
++print("(ua / ua).nominal =", (ua / ua).nominal)
++print("(ua / ua).stddev =", (ua / ua).stddev)
+ # print ua / ua
+ 
+-print "Testing conservation of relative error on inversion:"
+-print "1 / ua =", 1 / ua
++print("Testing conservation of relative error on inversion:")
++print("1 / ua =", 1 / ua)
+ 
+-print "Testing behaviour with an empty undarray as first operand:"
++print("Testing behaviour with an empty undarray as first operand:")
+ uzero = undarray(2)
+-print "uzero =", uzero
+-print "uzero / ua =", uzero / ua
++print("uzero =", uzero)
++print("uzero / ua =", uzero / ua)
+ 
+-print "Testing addition of relative variances:"
++print("Testing addition of relative variances:")
+ ub = 2 +- u(0.5)
+-print "ub =", ub
++print("ub =", ub)
+ rela = 2 * ua.stddev / ua.nominal
+ relb = 2 * ub.stddev / ub.nominal
+-print "rela =", rela
+-print "relb =", relb
++print("rela =", rela)
++print("relb =", relb)
+ uresult = ua / ub
+ relresult = 2 * uresult.stddev / uresult.nominal
+-print "relresult =", relresult
++print("relresult =", relresult)
+ relexpected = numpy.sqrt(rela ** 2 + relb ** 2)
+-print "relexpected =", relexpected
++print("relexpected =", relexpected)
+--- 2018-04-27_0903 Integers.py	(original)
++++ 2018-04-27_0903 Integers.py	(refactored)
+@@ -10,10 +10,10 @@
+ # is not a bug, but a feature.
+ 
+ ua = u(2)
+-print "ua =", ua
+-print "ua.nominal =", ua.nominal
+-print "ua.dependencies[0].derivatives =", ua.dependencies[0].derivatives
+-print "ua.dtype =", ua.dtype
+-print "ua.dependencies[0].dtype =", ua.dependencies[0].dtype
+-print "ua.stddev =", ua.stddev
+-print "ua.variance =", ua.variance
++print("ua =", ua)
++print("ua.nominal =", ua.nominal)
++print("ua.dependencies[0].derivatives =", ua.dependencies[0].derivatives)
++print("ua.dtype =", ua.dtype)
++print("ua.dependencies[0].dtype =", ua.dependencies[0].dtype)
++print("ua.stddev =", ua.stddev)
++print("ua.variance =", ua.variance)
+--- 2018-05-09_1108 absolute value.py	(original)
++++ 2018-05-09_1108 absolute value.py	(refactored)
+@@ -11,33 +11,33 @@
+         # This is possibly complex (but the imaginary component
+         # vanishes in all cases covered by this test).
+ 
+-print "absolute(1 +- u(0.2)) ="
+-print absolute(1 +- u(0.2))
+-print "absolute(-1 +- u(0.2)) ="
+-print absolute(-1 +- u(0.2))
++print("absolute(1 +- u(0.2)) =")
++print(absolute(1 +- u(0.2)))
++print("absolute(-1 +- u(0.2)) =")
++print(absolute(-1 +- u(0.2)))
+ 
+ ua = -1 +- u(0.2)
+-print "ua + absolute(ua) ="
+-print ua + absolute(ua)
++print("ua + absolute(ua) =")
++print(ua + absolute(ua))
+ 
+ ub = 1j +- u(0.2j)
+ UB = absolute(ub)
+-print "absolute(1j +- 0.2j), real and imag ="
+-print UB.real, UB.imag
++print("absolute(1j +- 0.2j), real and imag =")
++print(UB.real, UB.imag)
+ 
+ uc = 1j +- u(0.2)
+ UC = absolute(uc)
+-print "absolute(1j +- 0.2), real and imag ="
+-print UC.real, UC.imag
++print("absolute(1j +- 0.2), real and imag =")
++print(UC.real, UC.imag)
+ 
+ ud1 = 1 + 1j +- u(0.2)
+ ud2 = 1 + 1j +- u(0.2j)
+ UD1 = absolute(ud1)
+ UD2 = absolute(ud2)
+-print "absolute(1 + 1j +- u(0.2), real and imag ="
+-print UD1.real, UD1.imag
+-print "absolute(1 + 1j +- u(0.2j), real and imag ="
+-print UD2.real, UD2.imag
++print("absolute(1 + 1j +- u(0.2), real and imag =")
++print(UD1.real, UD1.imag)
++print("absolute(1 + 1j +- u(0.2j), real and imag =")
++print(UD2.real, UD2.imag)
+ 
+ numpy.random.seed(0)
+ def r():
+@@ -48,55 +48,55 @@
+     return(r() + 1j * r())
+ ue = zr() +- u(zr())
+ UE = absolute(ue)
+-print "absolute(zrandom +- zrandom), real and imag ="
+-print UE.real, UE.imag
++print("absolute(zrandom +- zrandom), real and imag =")
++print(UE.real, UE.imag)
+ uf = zr() +- u(zr()) +- u(zr())
+ UF = absolute(uf)
+-print "absolute(zrandom +- zrandom +- zrandom), real and imag ="
+-print UF.real, UF.imag
++print("absolute(zrandom +- zrandom +- zrandom), real and imag =")
++print(UF.real, UF.imag)
+ ug = zr() +- u(zr()) +- u(zr()) +- u(zr())
+ UG = absolute(ug)
+-print "absolute(zrandom +- zrandom +- zrandom +- zrandom), real and imag ="
+-print UG.real, UG.imag
++print("absolute(zrandom +- zrandom +- zrandom +- zrandom), real and imag =")
++print(UG.real, UG.imag)
+ 
+ uh = u(1)
+ UH = absolute(uh)
+ # This yields RuntimeWarnings.  The following then fails:
+ # print "absolute(0 +- 1), real and imag ="
+ # print UH.real, UH.imag
+-print "nominal and stddev of absolute(0 +- 1).real ="
+-print UH.real.nominal, UH.real.stddev
++print("nominal and stddev of absolute(0 +- 1).real =")
++print(UH.real.nominal, UH.real.stddev)
+     # The stddev is nan
+ 
+-print "absolute(1j) =", absolute(1j)
+-print "absolute(1) =", absolute(1)
++print("absolute(1j) =", absolute(1j))
++print("absolute(1) =", absolute(1))
+ 
+ ui = 0.001 +- u(1)
+ UI = absolute(ui)
+-print "absolute(0.001 +- 1), real and imag ="
+-print UI.real, UI.imag
++print("absolute(0.001 +- 1), real and imag =")
++print(UI.real, UI.imag)
+ 
+ def absolute2(x):
+     return x ** 0.5 * x.conjugate() ** 0.5
+ 
+ uj = 1 +- u(0.1)
+ UJ = absolute2(uj)
+-print "absolute2(1 +- 0.1), real and imag ="
+-print UJ.real, UJ.imag
++print("absolute2(1 +- 0.1), real and imag =")
++print(UJ.real, UJ.imag)
+ 
+ uk = 10 +- u(0.1)
+ UK = absolute2(uk)
+-print "absolute2(10 +- 0.1), real and imag ="
+-print UK.real, UK.imag
++print("absolute2(10 +- 0.1), real and imag =")
++print(UK.real, UK.imag)
+ 
+ uk = zr() +- u(zr()) +- u(zr())
+ UK = absolute2(uk) 
+-print "absolute2(zrandom +- zrandom +- zrandom), real and imag ="
+-print UK.real, UK.imag
++print("absolute2(zrandom +- zrandom +- zrandom), real and imag =")
++print(UK.real, UK.imag)
+ 
+ ul = 0 +- u(1)
+ UL = absolute2(ul)
+-print "nominal and stddev of absolute2(0 +- 1).real ="
+-print UL.real.nominal, UL.real.stddev
+-print "nominal and stddev of absolute2(0 +- 1).imag ="
+-print UL.imag.nominal, UL.imag.stddev
++print("nominal and stddev of absolute2(0 +- 1).real =")
++print(UL.real.nominal, UL.real.stddev)
++print("nominal and stddev of absolute2(0 +- 1).imag =")
++print(UL.imag.nominal, UL.imag.stddev)
