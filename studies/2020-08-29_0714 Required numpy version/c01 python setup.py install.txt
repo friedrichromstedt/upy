@@ -1,0 +1,126 @@
+Cwd: /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git
+Command: python setup.py install
+
+running install
+running bdist_egg
+running egg_info
+writing requirements to lib/upy2.egg-info/requires.txt
+writing lib/upy2.egg-info/PKG-INFO
+writing top-level names to lib/upy2.egg-info/top_level.txt
+writing dependency_links to lib/upy2.egg-info/dependency_links.txt
+reading manifest file 'lib/upy2.egg-info/SOURCES.txt'
+reading manifest template 'MANIFEST.in'
+writing manifest file 'lib/upy2.egg-info/SOURCES.txt'
+installing library code to build/bdist.linux-x86_64/egg
+running install_lib
+running build_py
+creating build/bdist.linux-x86_64/egg
+creating build/bdist.linux-x86_64/egg/upy2
+copying build/lib/upy2/dependency.py -> build/bdist.linux-x86_64/egg/upy2
+copying build/lib/upy2/sessions.py -> build/bdist.linux-x86_64/egg/upy2
+creating build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/typesetting/scientific.py -> build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/typesetting/protocol.py -> build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/typesetting/rules.py -> build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/typesetting/__init__.py -> build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/typesetting/numbers.py -> build/bdist.linux-x86_64/egg/upy2/typesetting
+copying build/lib/upy2/id_generator.py -> build/bdist.linux-x86_64/egg/upy2
+copying build/lib/upy2/__init__.py -> build/bdist.linux-x86_64/egg/upy2
+copying build/lib/upy2/numpy_operators.py -> build/bdist.linux-x86_64/egg/upy2
+copying build/lib/upy2/core.py -> build/bdist.linux-x86_64/egg/upy2
+byte-compiling build/bdist.linux-x86_64/egg/upy2/dependency.py to dependency.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/sessions.py to sessions.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/typesetting/scientific.py to scientific.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/typesetting/protocol.py to protocol.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/typesetting/rules.py to rules.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/typesetting/__init__.py to __init__.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/typesetting/numbers.py to numbers.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/id_generator.py to id_generator.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/__init__.py to __init__.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/numpy_operators.py to numpy_operators.pyc
+byte-compiling build/bdist.linux-x86_64/egg/upy2/core.py to core.pyc
+creating build/bdist.linux-x86_64/egg/EGG-INFO
+copying lib/upy2.egg-info/PKG-INFO -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying lib/upy2.egg-info/SOURCES.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying lib/upy2.egg-info/dependency_links.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying lib/upy2.egg-info/requires.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+copying lib/upy2.egg-info/top_level.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+zip_safe flag not set; analyzing archive contents...
+creating 'dist/upy2-2.0.1b2-py2.7.egg' and adding 'build/bdist.linux-x86_64/egg' to it
+removing 'build/bdist.linux-x86_64/egg' (and everything under it)
+Processing upy2-2.0.1b2-py2.7.egg
+Removing /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/upy2-2.0.1b2-py2.7.egg
+Copying upy2-2.0.1b2-py2.7.egg to /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages
+upy2 2.0.1b2 is already the active version in easy-install.pth
+
+Installed /home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/upy2-2.0.1b2-py2.7.egg
+Processing dependencies for upy2==2.0.1b2
+Searching for numpy
+Reading https://pypi.org/simple/numpy/
+Downloading https://files.pythonhosted.org/packages/2c/2f/7b4d0b639a42636362827e611cfeba67975ec875ae036dd846d459d52652/numpy-1.19.1.zip#sha256=b8456987b637232602ceb4d663cb34106f7eb780e247d51a260b84760fd8f491
+Best match: numpy 1.19.1
+Processing numpy-1.19.1.zip
+Writing /tmp/easy_install-xvrohP/numpy-1.19.1/setup.cfg
+Running numpy-1.19.1/setup.py -q bdist_egg --dist-dir /tmp/easy_install-xvrohP/numpy-1.19.1/egg-dist-tmp-HRG6Yi
+Traceback (most recent call last):
+  File "setup.py", line 77, in <module>
+    'Topic :: Scientific/Engineering :: Mathematics',
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/__init__.py", line 162, in setup
+    return distutils.core.setup(**attrs)
+  File "/usr/lib/python2.7/distutils/core.py", line 151, in setup
+    dist.run_commands()
+  File "/usr/lib/python2.7/distutils/dist.py", line 953, in run_commands
+    self.run_command(cmd)
+  File "/usr/lib/python2.7/distutils/dist.py", line 972, in run_command
+    cmd_obj.run()
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/install.py", line 67, in run
+    self.do_egg_install()
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/install.py", line 117, in do_egg_install
+    cmd.run(show_deprecation=False)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 424, in run
+    self.easy_install(spec, not self.no_deps)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 666, in easy_install
+    return self.install_item(None, spec, tmpdir, deps, True)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 713, in install_item
+    self.process_distribution(spec, dist, deps)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 758, in process_distribution
+    [requirement], self.local_index, self.easy_install
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/pkg_resources/__init__.py", line 782, in resolve
+    replace_conflicting=replace_conflicting
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/pkg_resources/__init__.py", line 1065, in best_match
+    return self.obtain(req, installer)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/pkg_resources/__init__.py", line 1077, in obtain
+    return installer(requirement)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 685, in easy_install
+    return self.install_item(spec, dist.location, tmpdir, deps)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 711, in install_item
+    dists = self.install_eggs(spec, download, tmpdir)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 896, in install_eggs
+    return self.build_and_install(setup_script, setup_base)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 1164, in build_and_install
+    self.run_setup(setup_script, setup_base, args)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/command/easy_install.py", line 1150, in run_setup
+    run_setup(setup_script, args)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 253, in run_setup
+    raise
+  File "/usr/lib/python2.7/contextlib.py", line 35, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 195, in setup_context
+    yield
+  File "/usr/lib/python2.7/contextlib.py", line 35, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 166, in save_modules
+    saved_exc.resume()
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 141, in resume
+    six.reraise(type, exc, self._tb)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 154, in save_modules
+    yield saved
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 195, in setup_context
+    yield
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 250, in run_setup
+    _execfile(setup_script, ns)
+  File "/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/lib/python2.7/site-packages/setuptools/sandbox.py", line 45, in _execfile
+    exec(code, globals, locals)
+  File "/tmp/easy_install-xvrohP/numpy-1.19.1/setup.py", line 30, in <module>
+    ``upy`` uses *algorithmic differentiation* (also known as *automatic
+RuntimeError: Python version >= 3.6 required.

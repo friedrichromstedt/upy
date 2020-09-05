@@ -63,7 +63,7 @@ setup(
     ],
     package_dir={'': 'lib'},
     install_requires=[
-        'numpy',
+        'numpy>=1.13.0',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

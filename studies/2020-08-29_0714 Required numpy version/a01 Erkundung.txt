@@ -39,3 +39,46 @@ Weitere Proben:
     -   ``$ pip install -U numpy``, installiert ``v1.19.1`` [b02].
     -   Ausgabe mit ``v1.19.1`` [b03].
     -   ``$ diff [b01] [b03]``: *Keinerlei Unterschiede*.
+
+
+.. rubric:: Samstag, d. 5. September 2020, 8:14 Uhr
+
+
+Arbeit mit dem Python2-venv :file:`/test/venv/python2/`.
+
+Installationsschritt ``$ python setup.py install`` schlaegt fehl: ``Python version >= 3.6 required``.  Wiederhole mit Log [c01], offenbar unterstuetzt numpy Python 2 nicht mehr.
+
+Installiere stattdessen *gleich* ``numpy-1.13.0`` [c02], erfolgreich.  ``upy2`` ist vorhanden (``>>> import upy2``, ``>>> print upy2.__version__`` liefert ``2.0.1b2``).
+
+*   Test Suite laeuft erfolgreich durch.
+
+*   :file:`/test/programs/Utest.py`: Gibt ``OK`` aus.
+
+*   :file:`/test/studies/arccosh.py`:
+
+    -   Ausgabe [c03].
+    -   Diff [b01] & [c03]: *Keinerlei Unterschiede*.
+
+``upy2`` (v2.0.1b2) ist damit unter Python 2 fuer ``numpy-1.13.0+`` *qualifiziert*.
+
+Habe noch geprueft welche Version von numpy fuer Python 2 verfuegbar ist (``$ pacman -Qi python2-numpy``): v1.16.6, vom 13. April 2020.
+
+Pruefe noch ``numpy-1.16.6`` per System Python 2:
+
+*   Es ist ``upy2-2.0.1b2`` installiert.
+
+*   Test Suite laeuft durch.
+
+*   :file:`/test/programs/Utest.py` gibt ``OK`` aus.
+
+*   :file:`/test/studies/arccosh.py`:
+
+    -   Ausgabe [c04].
+    -   Diff [b01] & [c04]: *Keine Unterschiede*.
+
+Somit ist ``upy2`` auch unter Python 2 mit ``numpy-1.16.6`` qualifiziert.
+
+
+Passe ``setup.py`` an: Verlange ``numpy>=1.13.0``.
+
+Fertig, ``upy2`` kann jetzt nach PyPI hochgeladen werden.

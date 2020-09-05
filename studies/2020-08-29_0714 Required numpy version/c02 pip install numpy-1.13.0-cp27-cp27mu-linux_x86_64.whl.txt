@@ -1,0 +1,9 @@
+Cwd: /home/friedrich/Pakete/2020/numpy
+Command: pip install numpy-1.13.0-cp27-cp27mu-linux_x86_64.whl
+
+DEPRECATION: Python 2.7 reached the end of its life on January 1st, 2020. Please upgrade your Python as Python 2.7 is no longer maintained. pip 21.0 will drop support for Python 2.7 in January 2021. More details about Python 2 support in pip, can be found at https://pip.pypa.io/en/latest/development/release-process/#python-2-support
+Processing ./numpy-1.13.0-cp27-cp27mu-linux_x86_64.whl
+Installing collected packages: numpy
+Successfully installed numpy-1.13.0
+WARNING: You are using pip version 20.1.1; however, version 20.2.2 is available.
+You should consider upgrading via the '/home/friedrich/_ Rucksack/Entwicklung/2010/upy.git/test/venv/python2/bin/python -m pip install --upgrade pip' command.
