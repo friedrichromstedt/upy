@@ -6,7 +6,7 @@ from upy2.typesetting import ScientificTypesetter
 #from upy2.averaging import *
 #from upy2.linear_regression import *
 
-__version__ = '2.0.1b2'
+__version__ = '2.0.1b3'
 
 
 # Create the module-scope ID generator ...
