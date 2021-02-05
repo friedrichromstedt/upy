@@ -49,41 +49,6 @@ class ScientificRule(object):
             self.padding
 
 
-#class ScientificElement:
-#    """ :class:`ScientificElement` will be used to populate
-#    object-dtype ndarrays corresponding to an ``undarray`` to be
-#    typeset. """
-#
-#    def __init__(self, 
-#            nominal, uncertainty,
-#            typesetter, rule,
-#    ):
-#        """ *nominal* and *uncertainty* are numbers; *typesetter* is
-#        the :class:`ScientificTypesetter` instance responsible for
-#        this ``ScientificElement`` and *rule* is the instance of
-#        :class:`ScientificRule` used for this element.
-#
-#        The *rule* will be shared by all :class:`ScientificElement`
-#        instances corresponding to elements of the same ``undarray``;
-#        the *typesetter* is the Typesetting Session Manager used. """
-#
-#        self.nominal = nominal
-#        self.uncertainty = uncertainty
-#        self.typesetter = typesetter
-#        self.rule = rule
-#
-#    def __repr__(self):
-#        """ Notice that both ``str(<object-dtype ndarray>)`` as well
-#        as ``repr(<object-dtype ndarray>)`` will use the ``__repr__``
-#        conversion of the ndarray's elements. """
-#
-#        result = self.typesetter.typeset_element(
-#            nominal=self.nominal, uncertainty=self.uncertainty,
-#            rule=self.rule,
-#        )
-#        return result
-
-
 class ScientificTypesetter(Typesetter):
     def __init__(self,
         stddevs,
@@ -301,45 +266,3 @@ class ScientificTypesetter(Typesetter):
                 separator=self.separator,
                 padding=self.padding,
                 unit=self.unit)
-
-#    def typeset(self, uarray):
-#        """ Typeset ``undarray`` instance *uarray* using the options
-#        handed over on initialisation time. """
-#
-#        scientific_elements = numpy.zeros(
-#                uarray.shape,
-#                dtype=object)
-#        scientific_rule = ScientificRule(
-#                separator=self.separator,
-#                padding=self.padding,
-#                unit=self.unit)
-#        iterator = numpy.nditer([uarray.nominal, uarray.stddev],
-#                flags=['multi_index'])
-#        for nominal, stddev in iterator:
-#            scientific_elements[iterator.multi_index] = \
-#                    ScientificElement(
-#                            nominal=nominal,
-#                            uncertainty=(self.stddevs * stddev),
-#                            typesetter=self,
-#                            rule=scientific_rule,
-#                    )
-#
-#        str(scientific_elements); return str(scientific_elements)
-#
-#        nominal = uarray.nominal.flatten()
-#        uncertainty = self.stddevs * uarray.stddev.flatten()
-#        N = len(nominal)
-#
-#        scientific_rule = ScientificRule()
-#
-#        scientific_elements = numpy.zeros(N, dtype=numpy.object)
-#        for index in xrange(0, N):
-#            scientific_elements[index] = ScientificElement(
-#                nominal=nominal[index],
-#                uncertainty=uncertainty[index],
-#                typesetter=self,
-#                rule=scientific_rule,
-#            )
-#
-#        ready = scientific_elements.reshape(uarray.shape)
-#        str(ready); return str(ready)

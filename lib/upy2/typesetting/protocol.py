@@ -4,7 +4,7 @@
 Session at :mod:`upy2.sessions`. """
 
 import numpy
-from upy2.sessions import define, Protocol
+import upy2.sessions
 
 
 class ElementTypesetter:
@@ -33,7 +33,7 @@ class ElementTypesetter:
                 element=self.element, rule=self.rule)
 
 
-class Typesetter(Protocol):
+class Typesetter(upy2.sessions.Protocol):
     def typeset_element(self, element, rule):
         """ This method should return a string corresponding to the
         scalar undarray *element*, ruled by *rule*.  """
@@ -62,17 +62,6 @@ class Typesetter(Protocol):
                             rule=rule,
                     )
 
-#        iterator = numpy.nditer([uarray.nominal],
-#                flags=['multi_index'])
-#        for nominal, stddev in iterator:
-#            element_typesetters[iterator.multi_index] = \
-#                    ElementTypesetter(
-#                            nominal=nominal,
-#                            stddev=stddev,
-#                            typesetter=self,
-#                            rule=rule,
-#                    )
-
         str(element_typesetters); return str(element_typesetters)
 
-define(Typesetter)
+upy2.sessions.define(Typesetter)
