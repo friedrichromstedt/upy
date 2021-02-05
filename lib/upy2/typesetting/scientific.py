@@ -49,39 +49,39 @@ class ScientificRule(object):
             self.padding
 
 
-class ScientificElement:
-    """ :class:`ScientificElement` will be used to populate
-    object-dtype ndarrays corresponding to an ``undarray`` to be
-    typeset. """
-
-    def __init__(self, 
-            nominal, uncertainty,
-            typesetter, rule,
-    ):
-        """ *nominal* and *uncertainty* are numbers; *typesetter* is
-        the :class:`ScientificTypesetter` instance responsible for
-        this ``ScientificElement`` and *rule* is the instance of
-        :class:`ScientificRule` used for this element.
-
-        The *rule* will be shared by all :class:`ScientificElement`
-        instances corresponding to elements of the same ``undarray``;
-        the *typesetter* is the Typesetting Session Manager used. """
-
-        self.nominal = nominal
-        self.uncertainty = uncertainty
-        self.typesetter = typesetter
-        self.rule = rule
-
-    def __repr__(self):
-        """ Notice that both ``str(<object-dtype ndarray>)`` as well
-        as ``repr(<object-dtype ndarray>)`` will use the ``__repr__``
-        conversion of the ndarray's elements. """
-
-        result = self.typesetter.typeset_element(
-            nominal=self.nominal, uncertainty=self.uncertainty,
-            rule=self.rule,
-        )
-        return result
+#class ScientificElement:
+#    """ :class:`ScientificElement` will be used to populate
+#    object-dtype ndarrays corresponding to an ``undarray`` to be
+#    typeset. """
+#
+#    def __init__(self, 
+#            nominal, uncertainty,
+#            typesetter, rule,
+#    ):
+#        """ *nominal* and *uncertainty* are numbers; *typesetter* is
+#        the :class:`ScientificTypesetter` instance responsible for
+#        this ``ScientificElement`` and *rule* is the instance of
+#        :class:`ScientificRule` used for this element.
+#
+#        The *rule* will be shared by all :class:`ScientificElement`
+#        instances corresponding to elements of the same ``undarray``;
+#        the *typesetter* is the Typesetting Session Manager used. """
+#
+#        self.nominal = nominal
+#        self.uncertainty = uncertainty
+#        self.typesetter = typesetter
+#        self.rule = rule
+#
+#    def __repr__(self):
+#        """ Notice that both ``str(<object-dtype ndarray>)`` as well
+#        as ``repr(<object-dtype ndarray>)`` will use the ``__repr__``
+#        conversion of the ndarray's elements. """
+#
+#        result = self.typesetter.typeset_element(
+#            nominal=self.nominal, uncertainty=self.uncertainty,
+#            rule=self.rule,
+#        )
+#        return result
 
 
 class ScientificTypesetter(Typesetter):
@@ -132,13 +132,17 @@ class ScientificTypesetter(Typesetter):
         self.padding = padding
         self.unit = unit
     
-    def typeset_element(self, nominal, uncertainty, rule):
+    def typeset_element(self, element, rule):
         """ Typesetting results::
 
         -   (1.2345 +- 0.0067) 10^-5
         -   (1.234567...5678 +- 0) 10^-1
         -   (0 +- 1.2) 10^2
         -   (0 +- 0) 10^0
+
+        based on the *nominal value* and the *stddev* of *element*.
+        The *uncertainty* is a multiple of the *stddev* as defined by
+        the *stddevs* given at initialisation time.
 
         When both the nominal value and the uncertainty are != 0, the
         exponent is extracted from the nominal value, and the
@@ -158,6 +162,9 @@ class ScientificTypesetter(Typesetter):
         zeros "0" are printed for both of them, and the exponent is
         set to 0 as well.
         """
+
+        nominal = element.nominal
+        uncertainty = element.stddev * self.stddevs
 
         pos_leftmost_digit_nominal = \
             get_position_of_leftmost_digit(nominal)
@@ -289,30 +296,36 @@ class ScientificTypesetter(Typesetter):
                 exponent=typeset_exponent,
             )
 
-    def typeset(self, uarray):
-        """ Typeset ``undarray`` instance *uarray* using the options
-        handed over on initialisation time. """
-
-        scientific_elements = numpy.zeros(
-                uarray.shape,
-                dtype=object)
-        scientific_rule = ScientificRule(
+    def deduce_rule(self):
+        return ScientificRule(
                 separator=self.separator,
                 padding=self.padding,
                 unit=self.unit)
-        iterator = numpy.nditer([uarray.nominal, uarray.stddev],
-                flags=['multi_index'])
-        for nominal, stddev in iterator:
-            scientific_elements[iterator.multi_index] = \
-                    ScientificElement(
-                            nominal=nominal,
-                            uncertainty=(self.stddevs * stddev),
-                            typesetter=self,
-                            rule=scientific_rule,
-                    )
 
-        str(scientific_elements); return str(scientific_elements)
-
+#    def typeset(self, uarray):
+#        """ Typeset ``undarray`` instance *uarray* using the options
+#        handed over on initialisation time. """
+#
+#        scientific_elements = numpy.zeros(
+#                uarray.shape,
+#                dtype=object)
+#        scientific_rule = ScientificRule(
+#                separator=self.separator,
+#                padding=self.padding,
+#                unit=self.unit)
+#        iterator = numpy.nditer([uarray.nominal, uarray.stddev],
+#                flags=['multi_index'])
+#        for nominal, stddev in iterator:
+#            scientific_elements[iterator.multi_index] = \
+#                    ScientificElement(
+#                            nominal=nominal,
+#                            uncertainty=(self.stddevs * stddev),
+#                            typesetter=self,
+#                            rule=scientific_rule,
+#                    )
+#
+#        str(scientific_elements); return str(scientific_elements)
+#
 #        nominal = uarray.nominal.flatten()
 #        uncertainty = self.stddevs * uarray.stddev.flatten()
 #        N = len(nominal)

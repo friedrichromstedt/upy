@@ -4,11 +4,11 @@ import unittest
 import numpy
 from upy2.typesetting.numbers import get_position_of_leftmost_digit
 from upy2.typesetting.numbers import NumberTypesetter
+from upy2.typesetting.protocol import ElementTypesetter
 from upy2.typesetting.rules import \
     LeftRule, RightRule, CentreRule, TypesetNumberRule
-from upy2.typesetting.scientific import ScientificRule
 from upy2.typesetting.scientific import \
-    ScientificElement, ScientificTypesetter
+    ScientificRule, ScientificTypesetter
 from upy2 import u, U, undarray
 
 
@@ -344,11 +344,12 @@ class Test_TypesettersScientific(unittest.TestCase):
         )
         rule = ScientificRule(separator=' +- ', padding=' ')
 
-        el1 = ScientificElement(10, 1, sts, rule)
-        el2 = ScientificElement(100, 1, sts, rule)
-        el3 = ScientificElement(100, 10, sts, rule)
-        el4 = ScientificElement(10, 100, sts, rule)
-        el5 = ScientificElement(10, 1000, sts, rule)
+        with U(2):
+            el1 = ElementTypesetter(10 +- u(1), sts, rule)
+            el2 = ElementTypesetter(100 +- u(1), sts, rule)
+            el3 = ElementTypesetter(100 +- u(10), sts, rule)
+            el4 = ElementTypesetter(10 +- u(100), sts, rule)
+            el5 = ElementTypesetter(10 +- u(1000), sts, rule)
 
         str(el1); str(el2); str(el3); str(el4); str(el5)
 
