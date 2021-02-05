@@ -19,11 +19,11 @@ class IDGenerator:
         """ Returns unique IDs in shape *shape*. """
         
         # For an empty iterable *shape* like [] and (), ``numpy.prod``
-        # returns 1.0 with dtype numpy.float by default; thus we need
-        # to override the result dtype.  This does not affect the
+        # returns 1.0 with dtype float by default; thus we need to
+        # override the result dtype.  This does not affect the
         # standard case of non-empty iterables as *shape* like [1, 2]
         # or (42, 100).
-        N = numpy.prod(shape, dtype=numpy.int)
+        N = numpy.prod(shape, dtype=int)
 
         # Make sure that never two same IDs are returned by acquiring
         # ``self.lock`` until the transaction is complete:

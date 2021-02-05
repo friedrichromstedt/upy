@@ -27,3 +27,23 @@ class RightRule(WidthRule):
 class CentreRule(WidthRule):
     def format(self, string):
         return string.center(self.width)
+
+
+class TypesetNumberRule(object):
+    """ This rule can be applied to instances of
+    :class:`upy2.typsetting.numbers.TypesetNumber`. """
+
+    def __init__(self):
+        self.left_rule = RightRule()
+        self.point_rule = CentreRule()
+        self.right_rule = LeftRule()
+
+    def apply(self, typeset_number):
+        """ *typeset_number* is an instance of
+        :class:`upy2.typesetting.numbers.TypesetNumber`. """
+
+        left = self.left_rule.apply(typeset_number.left)
+        point = self.point_rule.apply(typeset_number.point)
+        right = self.right_rule.apply(typeset_number.right)
+
+        return left + point + right

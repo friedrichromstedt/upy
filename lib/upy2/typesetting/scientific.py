@@ -7,28 +7,31 @@ import numpy
 from upy2.typesetting.numbers import \
     get_position_of_leftmost_digit, \
     NumberTypesetter
-from upy2.typesetting.rules import LeftRule, RightRule, CentreRule
+from upy2.typesetting.rules import \
+    LeftRule, RightRule, CentreRule, TypesetNumberRule
 from upy2.typesetting.protocol import Typesetter
 
 
-class TypesetNumberRule(object):
-    def __init__(self):
-        self.left_rule = RightRule()
-        self.point_rule = CentreRule()
-        self.right_rule = LeftRule()
-
-    def apply(self, typeset_number):
-        left = self.left_rule.apply(typeset_number.left)
-        point = self.point_rule.apply(typeset_number.point)
-        right = self.right_rule.apply(typeset_number.right)
-
-        return left + point + right
-
 class ScientificRule(object):
-    def __init__(self):
+    def __init__(self, separator, padding, unit=None):
+        """ *separator* is the string separating the nominal value and
+        the uncertainty.  *padding* is appended to the complete
+        results, following the exponent.
+
+        When *unit* is given, it will be separated from the exponent
+        by a space. """
+
         self.nominal_rule = TypesetNumberRule()
         self.uncertainty_rule = TypesetNumberRule()
         self.exponent_rule = RightRule()
+
+        self.separator = separator
+        self.padding = padding
+
+        if unit is None:
+            self.unitsuffix = ''
+        else:
+            self.unitsuffix = ' {}'.format(unit)
 
     def apply(self, nominal, uncertainty, exponent):
         """ Applies the ``ScientificRule`` to the components of an
@@ -38,11 +41,12 @@ class ScientificRule(object):
 
         return '(' + \
             self.nominal_rule.apply(nominal) + \
-            ' +- ' + \
+            self.separator + \
             self.uncertainty_rule.apply(uncertainty) + \
             ') 10^' + \
             self.exponent_rule.apply(exponent) + \
-            ' '
+            self.unitsuffix + \
+            self.padding
 
 
 class ScientificElement:
@@ -87,7 +91,12 @@ class ScientificTypesetter(Typesetter):
         typeset_possign_value=None,
         typeset_possign_exponent=None,
         infinite_precision=None,
+        separator=None, padding=None, unit=None,
     ):
+        """ *separator* defaults to ``' +- '``; *padding* defaults to
+        ``' '``.  These defaults are sensible when typesetting for the
+        terminal.  Adjust them as needed.  *unit* is an optional
+        string. """
         Typesetter.__init__(self)
 
         if typeset_possign_value is None:
@@ -101,6 +110,10 @@ class ScientificTypesetter(Typesetter):
             # >>> len(str(math.pi).split('.')[1])
             # 11
             # ( same holds for numpy.pi )
+        if separator is None:
+            separator = ' +- '
+        if padding is None:
+            padding = ' '
 
         self.nominal_typesetter = NumberTypesetter(
             typeset_positive_sign=typeset_possign_value)
@@ -114,6 +127,10 @@ class ScientificTypesetter(Typesetter):
         self.relative_precision = precision
         self.infinite_precision = infinite_precision
         self.stddevs = stddevs
+
+        self.separator = separator
+        self.padding = padding
+        self.unit = unit
     
     def typeset_element(self, nominal, uncertainty, rule):
         """ Typesetting results::
@@ -278,8 +295,11 @@ class ScientificTypesetter(Typesetter):
 
         scientific_elements = numpy.zeros(
                 uarray.shape,
-                dtype=numpy.object)
-        scientific_rule = ScientificRule()
+                dtype=object)
+        scientific_rule = ScientificRule(
+                separator=self.separator,
+                padding=self.padding,
+                unit=self.unit)
         iterator = numpy.nditer([uarray.nominal, uarray.stddev],
                 flags=['multi_index'])
         for nominal, stddev in iterator:

@@ -25,17 +25,17 @@ class Test_Dependency(unittest.TestCase):
     def test_construction(self):
         # Test construction from *names* and *derivatives*:
         dep = Dependency(names=[1, 2], derivatives=[3, 4])
-        self.assertEqual(dep.derivatives.dtype, numpy.int)
-        self.assertEqual(dep.dtype, numpy.int)
+        self.assertEqual(dep.derivatives.dtype, int)
+        self.assertEqual(dep.dtype, int)
 
         dep = Dependency(names=[1, 2], derivatives=[3.0, 4.0])
-        self.assertEqual(dep.derivatives.dtype, numpy.float)
-        self.assertEqual(dep.dtype, numpy.float)
+        self.assertEqual(dep.derivatives.dtype, float)
+        self.assertEqual(dep.dtype, float)
 
         dep = Dependency(names=[1, 2], derivatives=[3, 4],
-                dtype=numpy.float)
-        self.assertEqual(dep.derivatives.dtype, numpy.float)
-        self.assertEqual(dep.dtype, numpy.float)
+                dtype=float)
+        self.assertEqual(dep.derivatives.dtype, float)
+        self.assertEqual(dep.dtype, float)
 
         with self.assertRaisesRegex(ValueError,
                 '^Shape mismatch in initialising a Dependency: '
@@ -54,14 +54,14 @@ class Test_Dependency(unittest.TestCase):
         # Test construction from *shape*:
         dep = Dependency(shape=(2, 2))
         self.assertAllEqual(dep.names, [[0, 0], [0, 0]])
-        self.assertEqual(dep.names.dtype, numpy.int)
+        self.assertEqual(dep.names.dtype, int)
         self.assertAllEqual(dep.derivatives, [[0, 0], [0, 0]])
-        self.assertEqual(dep.derivatives.dtype, numpy.float)
-        self.assertEqual(dep.dtype, numpy.float)
+        self.assertEqual(dep.derivatives.dtype, float)
+        self.assertEqual(dep.dtype, float)
 
-        dep = Dependency(shape=(2, 2), dtype=numpy.complex)
-        self.assertEqual(dep.derivatives.dtype, numpy.complex)
-        self.assertEqual(dep.dtype, numpy.complex)
+        dep = Dependency(shape=(2, 2), dtype=complex)
+        self.assertEqual(dep.derivatives.dtype, complex)
+        self.assertEqual(dep.dtype, complex)
 
     def test_emptiness(self):
         dep = Dependency(names=[0, 0], derivatives=[0, 0])
@@ -466,7 +466,7 @@ class Test_Dependency(unittest.TestCase):
 
     def test_string_conversion(self):
         dep1 = Dependency(names=1, derivatives=42)
-        dtype1 = numpy.dtype(numpy.int)
+        dtype1 = numpy.dtype(int)
         self.assertEqual(str(dep1),
                 "<()-shaped {}-typed Dependency>".format(dtype1))
             # The actual width of the default numpy int dtype might
@@ -474,6 +474,6 @@ class Test_Dependency(unittest.TestCase):
             # equal to ``numpy.int64``.
 
         dep2 = Dependency(names=[1.0, 2.0], derivatives=[42.0, 100.0])
-        dtype2 = numpy.dtype(numpy.float)
+        dtype2 = numpy.dtype(float)
         self.assertEqual(repr(dep2),
                 "<(2,)-shaped {}-typed Dependency>".format(dtype2))

@@ -32,8 +32,8 @@ class Test_Core(unittest.TestCase):
 
     def test_uzeros(self):
         ua = upy2.uzeros((10, 10))
-        self.assertEqual(ua.dtype, numpy.float)
-        self.assertEqual(ua.nominal.dtype, numpy.float)
+        self.assertEqual(ua.dtype, float)
+        self.assertEqual(ua.nominal.dtype, float)
         self.assertEqual(len(ua.dependencies), 0)
         self.assertEqual(ua.nominal.shape, (10, 10))
 
@@ -179,30 +179,30 @@ class Test_undarray(unittest.TestCase):
 
         ua = undarray(nominal=[10, 11])
         self.assertAllEqual(ua.nominal, [10, 11])
-        self.assertEqual(ua.nominal.dtype, numpy.int)
-        self.assertEqual(ua.dtype, numpy.int)
+        self.assertEqual(ua.nominal.dtype, int)
+        self.assertEqual(ua.dtype, int)
 
-        ua = undarray(nominal=[10, 11], dtype=numpy.float)
+        ua = undarray(nominal=[10, 11], dtype=float)
         self.assertAllEqual(ua.nominal, [10.0, 11.0])
-        self.assertEqual(ua.nominal.dtype, numpy.float)
-        self.assertEqual(ua.dtype, numpy.float)
+        self.assertEqual(ua.nominal.dtype, float)
+        self.assertEqual(ua.dtype, float)
 
-        ua = undarray(nominal=[10.5, 11.4], dtype=numpy.int)
+        ua = undarray(nominal=[10.5, 11.4], dtype=int)
         self.assertAllEqual(ua.nominal, [10, 11])
-        self.assertEqual(ua.nominal.dtype, numpy.int)
-        self.assertEqual(ua.dtype, numpy.int)
+        self.assertEqual(ua.nominal.dtype, int)
+        self.assertEqual(ua.dtype, int)
 
         # Test *shape* argument:
 
         ua = undarray(shape=(2, 2))
         self.assertAllEqual(ua.nominal, [[0, 0], [0, 0]])
-        self.assertEqual(ua.nominal.dtype, numpy.float)
-        self.assertEqual(ua.dtype, numpy.float)
+        self.assertEqual(ua.nominal.dtype, float)
+        self.assertEqual(ua.dtype, float)
 
-        ua = undarray(shape=(2, 2), dtype=numpy.int)
+        ua = undarray(shape=(2, 2), dtype=int)
         self.assertAllEqual(ua.nominal, [[0, 0], [0, 0]])
-        self.assertEqual(ua.nominal.dtype, numpy.int)
-        self.assertEqual(ua.dtype, numpy.int)
+        self.assertEqual(ua.nominal.dtype, int)
+        self.assertEqual(ua.dtype, int)
 
         ua = undarray(nominal=[20, 30], shape=(2, 2))
             # *nominal* overrides *shape*.
@@ -220,11 +220,11 @@ class Test_undarray(unittest.TestCase):
             ua = undarray(nominal=[10, 11], stddev=[0.1, 0.1])
 
         ua = undarray(nominal=[10, 11], stddev=[0.1, 0.1],
-                dtype=numpy.float)
+                dtype=float)
         self.assertAllEqual(ua.stddev, [0.1, 0.1])
 
         ua = undarray(nominal=[42, 43], stddev=[1.1, 1.9],
-                dtype=numpy.int)
+                dtype=int)
         self.assertAllEqual(ua.stddev, [1, 1])
 
         # Test *shape* and *stddev* argument:
@@ -236,7 +236,7 @@ class Test_undarray(unittest.TestCase):
     def test_append(self):
         ua = undarray(nominal=[-10, 10])
 
-        dependency = Dependency(shape=(2,), dtype=numpy.int)
+        dependency = Dependency(shape=(2,), dtype=int)
         ua.append(dependency)
 
         dependency = Dependency(shape=(2,))
@@ -245,7 +245,7 @@ class Test_undarray(unittest.TestCase):
             # int64-dtyped undarray
             ua.append(dependency)
 
-        dependency = Dependency(shape=(2, 2), dtype=numpy.int)
+        dependency = Dependency(shape=(2, 2), dtype=int)
         with self.assertRaises(ValueError):
             # Cannot append a Dependency of shape (2, 2) to a
             # (2,)-shaped undarray
@@ -289,8 +289,8 @@ class Test_undarray(unittest.TestCase):
         ub = ua.scaled(2)
         uc = ua.scaled(0.5)
 
-        self.assertEqual(ub.dtype, numpy.int)
-        self.assertEqual(uc.dtype, numpy.float)
+        self.assertEqual(ub.dtype, int)
+        self.assertEqual(uc.dtype, float)
 
         self.assertAllEqual(ub.nominal, [200, 202])
         self.assertAllEqual(ub.stddev, [2, 4])
@@ -326,18 +326,18 @@ class Test_undarray(unittest.TestCase):
         # Test dtype compatibility test and conversion:
 
         utarget = undarray(shape=(2, 2))
-        usource = undarray(shape=(2, 2), dtype=numpy.int,
+        usource = undarray(shape=(2, 2), dtype=int,
                 stddev=[[1, 2], [3, 4]])
         utarget.copy_dependencies(usource)
-        self.assertEqual(utarget.dependencies[0].dtype, numpy.float)
+        self.assertEqual(utarget.dependencies[0].dtype, float)
 
-        utarget = undarray(shape=(2, 2), dtype=numpy.int)
+        utarget = undarray(shape=(2, 2), dtype=int)
         usource = undarray(shape=(2, 2))
         with self.assertRaisesRegex(ValueError,
                 "Cannot incorporate the dependencies of an {0}-dtype "
                 "undarray into an {1}-dtype undarray"\
-                        .format(numpy.dtype(numpy.float),
-                            numpy.dtype(numpy.int))):
+                        .format(numpy.dtype(float),
+                            numpy.dtype(int))):
             utarget.copy_dependencies(usource)
 
         # Test Exception raising with too large source undarray:
@@ -381,7 +381,7 @@ class Test_undarray(unittest.TestCase):
     def test_variance_and_stddev(self):
         ua = undarray(nominal=[40], stddev=[2])
         ub = undarray(nominal=[1 + 1j], stddev=[1j])
-        uc = undarray(shape=(2, 2), dtype=numpy.complex)
+        uc = undarray(shape=(2, 2), dtype=complex)
 
         self.assertAllEqual(ua.variance, [4])
         with self.assertRaisesRegex(ValueError,
@@ -584,8 +584,8 @@ class Test_undarray(unittest.TestCase):
                 stddev=[[1], [2]])
 
         self.assertEqual(repr(ua), "<()-shaped {}-typed undarray>".
-                format(numpy.dtype(numpy.int)))
+                format(numpy.dtype(int)))
         self.assertEqual(repr(ub), "<(1,)-shaped {}-typed undarray>".
-                format(numpy.dtype(numpy.float)))
+                format(numpy.dtype(float)))
         self.assertEqual(repr(uc), "<(2, 1)-shaped {}-typed undarray>".
-                format(numpy.dtype(numpy.int)))
+                format(numpy.dtype(int)))

@@ -46,7 +46,7 @@ class Dependency(object):
         *shape* will be used to provide an empty Dependency of the
         given *dtype* (with all names set to zero and with zero
         derivatives).  In this case, the *names* will have dtype
-        ``numpy.int``.
+        ``int``.
 
         In all other cases, the Dependency cannot be initialised
         and ``ValueError`` will be raised. """
@@ -62,10 +62,10 @@ class Dependency(object):
                             self.names.shape, self.derivatives.shape))
 
         elif shape is not None:
-            self.names = numpy.zeros(shape, dtype=numpy.int)
+            self.names = numpy.zeros(shape, dtype=int)
             self.derivatives = numpy.zeros(shape, dtype=dtype)
                 # leaving *dtype* ``None`` leads to a derivatives
-                # ndarray with "standard" dtype (``numpy.float``).
+                # ndarray with "standard" dtype (``float``).
 
         else:
             raise ValueError("Dependency: Unable to initialise from "

@@ -4,9 +4,9 @@ import unittest
 import numpy
 from upy2.typesetting.numbers import get_position_of_leftmost_digit
 from upy2.typesetting.numbers import NumberTypesetter
-from upy2.typesetting.rules import LeftRule, RightRule, CentreRule
-from upy2.typesetting.scientific import \
-    TypesetNumberRule, ScientificRule
+from upy2.typesetting.rules import \
+    LeftRule, RightRule, CentreRule, TypesetNumberRule
+from upy2.typesetting.scientific import ScientificRule
 from upy2.typesetting.scientific import \
     ScientificElement, ScientificTypesetter
 from upy2 import u, U, undarray
@@ -248,10 +248,6 @@ class Test_TypesettersRules(unittest.TestCase):
         self.assertEqual(str1b, ' 123 ')
         self.assertEqual(str3, ' 1234')
 
-
-class Test_TypesettersScientific(unittest.TestCase):
-    """ TestCase for :mod:`upy2.typesetters.scientific`. """
-
     def test1_TypesetNumberRule(self):
         ts = NumberTypesetter()  # nonceiling, w/o possign
         rule = TypesetNumberRule()
@@ -309,8 +305,12 @@ class Test_TypesettersScientific(unittest.TestCase):
         ruled4 = rule.apply(n1)
         self.assertEqual(ruled4, ' 1  ')
 
+
+class Test_TypesettersScientific(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetters.scientific`. """
+
     def test_ScientificRule(self):
-        rule = ScientificRule()
+        rule = ScientificRule(separator=' +- ', padding=' ')
         ts = NumberTypesetter()
 
         nom1, unc1, exp1 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), '1'
@@ -342,7 +342,7 @@ class Test_TypesettersScientific(unittest.TestCase):
             stddevs=2,
             precision=2,
         )
-        rule = ScientificRule()
+        rule = ScientificRule(separator=' +- ', padding=' ')
 
         el1 = ScientificElement(10, 1, sts, rule)
         el2 = ScientificElement(100, 1, sts, rule)
@@ -375,7 +375,7 @@ class Test_TypesettersScientific(unittest.TestCase):
                     '[[ 1  2]\n'
                     ' [42 10]]')
             ub = undarray(
-                    nominal=b.astype(numpy.float),
+                    nominal=b.astype(float),
                         # .astype preserves the strides.
                     stddev=stddev,
             )
