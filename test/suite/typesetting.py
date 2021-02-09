@@ -434,11 +434,11 @@ class Test_TypesettingScientific(unittest.TestCase):
             ub3 = 0 +- u(numpy.pi * 10)
 
             self.assertEqual(str(ub1),
-                    '(0 +- 3.2) 10^0 ')
+                    '(0.0 +- 3.2) 10^0 ')
             self.assertEqual(str(ub2),
-                    '(0 +- 3.2) 10^-1 ')
+                    '(0.0 +- 3.2) 10^-1 ')
             self.assertEqual(str(ub3),
-                    '(0 +- 3.2) 10^1 ')
+                    '(0.0 +- 3.2) 10^1 ')
 
             # Test overall zero:
             uc1 = u(0)
@@ -568,6 +568,9 @@ class Test_TypesettingEngineering(unittest.TestCase):
         with EngineeringTypesetter(stddevs=2, precision=2, unit='N',
                 useprefixes=True), U(2):
             self.assertEqual(str(0.100 +- u(0)), '(100.000000000 +- 0) mN ')
+            self.assertEqual(str(0 +- u(0.5)), '(00 +- 500) mN ')
+            self.assertEqual(str(0 +- u(0.05)), '(0 +- 50) mN ')
+            self.assertEqual(str(0 +- u(0.005)), '(0.0 +- 5.0) mN ')
             self.assertEqual(str(0 +- u(0)), '(0 +- 0) N ')
 
 

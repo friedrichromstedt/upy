@@ -170,7 +170,7 @@ class EngineeringTypesetter(Typesetter):
                     (self.relative_precision - 1)
 
             typeset_nominal = self.nominal_typesetter.typesetfp(
-                    number=0, precision=0)
+                    number=0, precision=mantissa_precision)
             typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                     mantissa_uncertainty, mantissa_precision)
             typeset_exponent = self.exponent_typesetter.typesetint(

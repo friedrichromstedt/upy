@@ -75,7 +75,7 @@ class FpTypesetter(Typesetter):
 
             precision = pos_leftmost_digit_uncertainty + \
                     (self.relative_precision - 1)
-            
+
             typeset_nominal = self.nominal_typesetter.typesetfp(
                     nominal, precision)
             typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
