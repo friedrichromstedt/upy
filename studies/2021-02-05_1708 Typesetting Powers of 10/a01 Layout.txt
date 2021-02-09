@@ -1,0 +1,36 @@
+.. vim: syntax=rst
+
+.. rubric:: Friday, 5 February 2021, 5:10 PM
+
+Current layout::
+
+    '( 1.00  +-   0.10 ) 10^ 1 '
+    '( 1.000 +-   0.010) 10^-1 '
+    '( 1.00  +-   0.10 ) 10^12 '
+    '( 1     +-  10    ) 10^ 1 '
+    '(00     +- 100    ) 10^ 1 '
+
+Alternative layout::
+
+    '( 1.00  +-   0.10 )  10^1 '
+    '( 1.000 +-   0.010) 10^-1 '
+    '( 1.00  +-   0.10 ) 10^12 '
+    '( 1     +-  10    )  10^1 '
+    '(00     +- 100    )  10^1 '
+
+I clearly prefer the former.
+
+This means we have to implement something similar also in the
+``EngineeringRule``, where things get more complicated because of the
+possibility of *units with prefixes*.
+
+I'd say:
+
+1.  Clear columns for (a) the power of 10, (b) the unit, possibly with
+    prefix.
+
+2.  Reserve space for the power of 10 (``10^`` + *exponent*) *only*
+    when at least *one* elements needs it.
+
+3.  *Inside* of the power of 10, right-justify the exponent in its own
+    column.

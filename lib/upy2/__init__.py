@@ -3,6 +3,7 @@
 from upy2.id_generator import IDGenerator
 from upy2.core import *
 from upy2.typesetting import ScientificTypesetter
+from upy2.typesetting import EngineeringTypesetter
 #from upy2.averaging import *
 #from upy2.linear_regression import *
 

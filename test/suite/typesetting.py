@@ -9,6 +9,8 @@ from upy2.typesetting.rules import \
     LeftRule, RightRule, CentreRule, TypesetNumberRule
 from upy2.typesetting.scientific import \
     ScientificRule, ScientificTypesetter
+from upy2.typesetting.engineering import \
+    EngineeringRule, EngineeringTypesetter
 from upy2 import u, U, undarray
 
 
@@ -336,6 +338,22 @@ class Test_TypesettersScientific(unittest.TestCase):
         self.assertEqual(s3, '( 1.00  +-   0.10 ) 10^12 ')
         self.assertEqual(s4, '( 1     +-  10    ) 10^ 1 ')
         self.assertEqual(s5, '(00     +- 100    ) 10^ 1 ')
+
+    def test2_ScientificRule(self):
+        rule = ScientificRule(separator=' +- ', padding='', unit='N')
+        ts = NumberTypesetter()
+
+        nom1, unc1, exp1 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), '1'
+        nom2, unc2, exp2 = ts.typesetfp(1.000, 3), ts.typesetfp(0.010, 3), '-1'
+
+        rule.apply(nom1, unc1, exp1)
+        rule.apply(nom2, unc2, exp2)
+
+        s1 = rule.apply(nom1, unc1, exp1)
+        s2 = rule.apply(nom2, unc2, exp2)
+
+        self.assertEqual(s1, '(1.00  +- 0.10 ) 10^ 1 N')
+        self.assertEqual(s2, '(1.000 +- 0.010) 10^-1 N')
     
     def test_ScientificTypesetter(self):
         sts = ScientificTypesetter(
@@ -425,6 +443,120 @@ class Test_TypesettersScientific(unittest.TestCase):
 
             self.assertEqual(str(uc1),
                     '(0 +- 0) 10^0 ')
+
+    def test2_ScientificTypesetter(self):
+        sts = ScientificTypesetter(
+                stddevs=2, precision=2,
+                padding='_', unit='N')
+
+        with U(2), sts:
+            self.assertEqual(str(42 +- u(0.5)),
+                    '(4.200 +- 0.050) 10^1 N_')
+
+    def test3_ScientificTypesetter(self):
+        sts = ScientificTypesetter(stddevs=2, precision=2,
+                typeset_possign_value=True,
+                typeset_possign_exponent=True)
+
+        with U(2), sts:
+            self.assertEqual(str(42 +- u(0.5)), '(+4.200 +- 0.050) 10^+1 ')
+
+
+class Test_TypesettersEngineering(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetters.engineering. """
+
+    def test_EngineeringRule(self):
+        ts = NumberTypesetter()
+
+        nom1, unc1, exp1, u1 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), '1', None
+        nom2, unc2, exp2, u2 = ts.typesetfp(1.000, 3), ts.typesetfp(0.010, 3), None, 'm'
+        nom3, unc3, exp3, u3 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2), None, 'mm'
+        nom4, unc4, exp4, u4 = ts.typesetfp(1, 0), ts.typesetfp(10, 0), '3', 'm'
+        nom5, unc5, exp5, u5 = ts.typesetfp(1, -1), ts.typesetfp(100, -1), '-3', None
+
+        ruleA = EngineeringRule(separator=' +- ', padding=' ')
+        ruleA.apply(nom1, unc1, exp1, u1)
+        ruleA.apply(nom2, unc2, exp2, u2)
+
+        self.assertEqual(ruleA.apply(nom1, unc1, exp1, u1), '(1.00  +- 0.10 ) 10^1   ')
+        self.assertEqual(ruleA.apply(nom2, unc2, exp2, u2), '(1.000 +- 0.010)      m ')
+
+        ruleB = EngineeringRule(separator=' +- ', padding='_')
+        ruleB.apply(nom2, unc2, exp2, u2)
+        ruleB.apply(nom3, unc3, exp3, u3)
+
+        self.assertEqual(ruleB.apply(nom2, unc2, exp2, u2), '(1.000 +- 0.010)  m_')
+        self.assertEqual(ruleB.apply(nom3, unc3, exp3, u3), '(1.00  +- 0.10 ) mm_')
+
+        ruleC = EngineeringRule(separator=' +- ', padding='')
+        ruleC.apply(nom3, unc3, exp3, u3)
+        ruleC.apply(nom4, unc4, exp4, u4)
+
+        self.assertEqual(ruleC.apply(nom3, unc3, exp3, u3), '(1.00 +-  0.10)      mm')
+        self.assertEqual(ruleC.apply(nom4, unc4, exp4, u4), '(1    +- 10   ) 10^3  m')
+
+        ruleD = EngineeringRule(separator=' +- ', padding='')
+        ruleD.apply(nom1, unc1, exp1, u1)
+        ruleD.apply(nom5, unc5, exp5, u5)
+
+        self.assertEqual(ruleD.apply(nom1, unc1, exp1, u1), '( 1.00 +-   0.10) 10^ 1')
+        self.assertEqual(ruleD.apply(nom5, unc5, exp5, u5), '(00    +- 100   ) 10^-3')
+
+    def test1_EngineeringTypesetter(self):
+        """ Test the EngineeringTypesetter, first with plain numbers,
+        and then with *useprefixes* and a *unit*. """
+
+        # Numbers with a finite binary representation: powers of 2.
+        #
+        # 16, 8, 4, 2, 1, 0.5, 0.25, 0.125, 0.0625
+        # However it still happens that the error isn't binary-rational and is rounded up.
+
+        with EngineeringTypesetter(stddevs=2, precision=2, padding=''), U(2):
+            self.assertEqual(str((1 +- u(0.25)) * 1e27), '(1.00 +- 0.25) 10^27')
+            self.assertEqual(str((4 +- u(0.25)) * 1e24), '(4.00 +- 0.25) 10^24')
+            self.assertEqual(str((0.0625 +- u(16)) * 1e24), '(0000 +- 16000) 10^21')
+                # 1e21 (62.5 +- 16000) = 1e21 (0000 +- 16000)
+            self.assertEqual(str((0.0625 +- u(1)) * 1e21), '(100 +- 1100) 10^18')
+                # 1e18 (62.5 +- 1000) = 1e18 (100 +- 1000)
+            self.assertEqual(str((0.0625 +- u(4)) * 1e18), '(100 +- 4100) 10^15')
+            self.assertEqual(str((1 +- u(4)) * 1e12), '(1.0 +- 4.0) 10^12')
+            self.assertEqual(str((0.25 +- u(4)) * 1e12), '(300 +- 4100) 10^9')
+            self.assertEqual(str((2 +- u(0.5)) * 1e6), '(2.00 +- 0.50) 10^6')
+            self.assertEqual(str((0.125 +- u(0.0625)) * 1e6), '(125 +- 63) 10^3')
+            self.assertEqual(str((0.125 +- u(2)) * 1e3), '(100 +- 2000) 10^0')
+            self.assertEqual(str((0.0625 +- u(0.5)) * 1e0), '(60 +- 500) 10^-3')
+            self.assertEqual(str((1 +- u(1)) * 1e-6), '(1.0 +- 1.0) 10^-6')
+            self.assertEqual(str((4 +- u(0.25)) * 1e-9), '(4.00 +- 0.25) 10^-9')
+            self.assertEqual(str((2 +- u(8)) * 1e-12), '(2.0 +- 8.0) 10^-12')
+            self.assertEqual(str((16 +- u(0.25)) * 1e-15), '(16.00 +- 0.25) 10^-15')
+            self.assertEqual(str((0.0625 +- u(0.25)) * 1e-15), '(60 +- 260) 10^-18')
+            self.assertEqual(str((0.0625 +- u(0.125)) * 1e-18), '(60 +- 130) 10^-21')
+            self.assertEqual(str((0.0625 +- u(8)) * 1e-21), '(100 +- 8000) 10^-24')
+            self.assertEqual(str((1 +- u(0.25)) * 1e-27), '(1.00 +- 0.25) 10^-27')
+
+        with EngineeringTypesetter(stddevs=2, precision=2,
+                unit='m', useprefixes=True, padding='',), U(2):
+            self.assertEqual(str((1 +- u(0.25)) * 1e27), '(1.00 +- 0.25) 10^27 m')
+            self.assertEqual(str((4 +- u(0.25)) * 1e24), '(4.00 +- 0.25) Ym')
+            self.assertEqual(str((0.0625 +- u(16)) * 1e24), '(0000 +- 16000) Zm')
+                # 1e21 (62.5 +- 16000) = 1e21 (0000 +- 16000)
+            self.assertEqual(str((0.0625 +- u(1)) * 1e21), '(100 +- 1100) Em')
+                # 1e18 (62.5 +- 1000) = 1e18 (100 +- 1000)
+            self.assertEqual(str((0.0625 +- u(4)) * 1e18), '(100 +- 4100) Pm')
+            self.assertEqual(str((1 +- u(4)) * 1e12), '(1.0 +- 4.0) Tm')
+            self.assertEqual(str((0.25 +- u(4)) * 1e12), '(300 +- 4100) Gm')
+            self.assertEqual(str((2 +- u(0.5)) * 1e6), '(2.00 +- 0.50) Mm')
+            self.assertEqual(str((0.125 +- u(0.0625)) * 1e6), '(125 +- 63) km')
+            self.assertEqual(str((0.125 +- u(2)) * 1e3), '(100 +- 2000) m')
+            self.assertEqual(str((0.0625 +- u(0.5)) * 1e0), '(60 +- 500) mm')
+            self.assertEqual(str((1 +- u(1)) * 1e-6), '(1.0 +- 1.0) um')
+            self.assertEqual(str((4 +- u(0.25)) * 1e-9), '(4.00 +- 0.25) nm')
+            self.assertEqual(str((2 +- u(8)) * 1e-12), '(2.0 +- 8.0) pm')
+            self.assertEqual(str((16 +- u(0.25)) * 1e-15), '(16.00 +- 0.25) fm')
+            self.assertEqual(str((0.0625 +- u(0.25)) * 1e-15), '(60 +- 260) am')
+            self.assertEqual(str((0.0625 +- u(0.125)) * 1e-18), '(60 +- 130) zm')
+            self.assertEqual(str((0.0625 +- u(8)) * 1e-21), '(100 +- 8000) ym')
+            self.assertEqual(str((1 +- u(0.25)) * 1e-27), '(1.00 +- 0.25) 10^-27 m')
 
 
 if __name__ == '__main__':
