@@ -11,11 +11,13 @@ from upy2.typesetting.scientific import \
     ScientificRule, ScientificTypesetter
 from upy2.typesetting.engineering import \
     EngineeringRule, EngineeringTypesetter
+from upy2.typesetting.fp import \
+    FpRule
 from upy2 import u, U, undarray
 
 
-class Test_TypesettersNumbers(unittest.TestCase):
-    """ Test suite for :mod:`upy2.typesetters.numbers`. """
+class Test_TypesettingNumbers(unittest.TestCase):
+    """ Test suite for :mod:`upy2.typesetting.numbers`. """
 
     def test_get_position_of_leftmost_digit(self):
         """ Tests
@@ -212,8 +214,8 @@ class Test_TypesettersNumbers(unittest.TestCase):
         self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
 
 
-class Test_TypesettersRules(unittest.TestCase):
-    """ TestCase for :mod:`upy2.typesetters.rules`. """
+class Test_TypesettingRules(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetting.rules`. """
 
     def test_LeftRule(self):
         rule = LeftRule()
@@ -308,8 +310,8 @@ class Test_TypesettersRules(unittest.TestCase):
         self.assertEqual(ruled4, ' 1  ')
 
 
-class Test_TypesettersScientific(unittest.TestCase):
-    """ TestCase for :mod:`upy2.typesetters.scientific`. """
+class Test_TypesettingScientific(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetting.scientific`. """
 
     def test_ScientificRule(self):
         rule = ScientificRule(separator=' +- ', padding=' ')
@@ -462,8 +464,8 @@ class Test_TypesettersScientific(unittest.TestCase):
             self.assertEqual(str(42 +- u(0.5)), '(+4.200 +- 0.050) 10^+1 ')
 
 
-class Test_TypesettersEngineering(unittest.TestCase):
-    """ TestCase for :mod:`upy2.typesetters.engineering. """
+class Test_TypesettingEngineering(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetting.engineering. """
 
     def test_EngineeringRule(self):
         ts = NumberTypesetter()
@@ -557,6 +559,13 @@ class Test_TypesettersEngineering(unittest.TestCase):
             self.assertEqual(str((0.0625 +- u(0.125)) * 1e-18), '(60 +- 130) zm')
             self.assertEqual(str((0.0625 +- u(8)) * 1e-21), '(100 +- 8000) ym')
             self.assertEqual(str((1 +- u(0.25)) * 1e-27), '(1.00 +- 0.25) 10^-27 m')
+
+
+
+class Test_TypesettingFp(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetting.fp`. """
+
+    pass
 
 
 if __name__ == '__main__':
