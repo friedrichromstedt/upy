@@ -50,7 +50,7 @@ analysis. """
 
 setup(
     name='upy2',
-    version='2.0.1b6',
+    version='2.1.0',
     description='A package for uncertainty propagation',
     long_description=long_description,
     long_description_content_type='text/x-rst',
