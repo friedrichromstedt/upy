@@ -27,3 +27,92 @@ class FpRule(object):
                 self.separator + \
                 self.uncertainty_rule.apply(uncertainty) + \
                 ')' + self.unitsuffix + self.padding
+
+
+class FpTypesetter(Typesetter):
+    def __init__(self,
+            stddevs, precision,
+            typeset_possign_value=None,
+            infinite_precision=None,
+            separator=None, padding=None, unit=None,
+    ):
+        Typesetter.__init__(self)
+
+        if typeset_possign_value is None:
+            typeset_possign_value = False
+        if infinite_precision is None:
+            infinite_precision = 11
+        if separator is None:
+            separator = ' +- '
+        if padding is None:
+            padding = ' '
+
+        self.nominal_typesetter = NumberTypesetter(
+                typeset_positive_sign=typeset_possign_value)
+        self.uncertainty_typesetter = NumberTypesetter(
+                ceil=True)
+
+        self.relative_precision = precision
+        self.infinite_precision = infinite_precision
+        self.stddevs = stddevs
+
+        self.separator = separator
+        self.padding = padding
+        self.unit = unit
+
+    def typeset_element(self, element, rule):
+        nominal = element.nominal
+        uncertainty = element.stddev * self.stddevs
+
+        pos_leftmost_digit_nominal = \
+                get_position_of_leftmost_digit(nominal)
+        pos_leftmost_digit_uncertainty = \
+                get_position_of_leftmost_digit(uncertainty)
+
+        if pos_leftmost_digit_uncertainty is not None:
+            # Take the precision from the uncertainty and print both
+            # figures using it.
+
+            precision = pos_leftmost_digit_uncertainty + \
+                    (self.relative_precision - 1)
+            
+            typeset_nominal = self.nominal_typesetter.typesetfp(
+                    nominal, precision)
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
+                    uncertainty, precision)
+
+        elif pos_leftmost_digit_nominal is not None:
+            # There is no counting digit in the *uncertainty*, but
+            # there is in *nominal*.
+            #
+            # Print the nominal value with "infinite" precision,
+            # anchored at the leftmost digit in *nominal*, and print
+            # just ``0`` for the uncertainty.
+
+            precision = pos_leftmost_digit_nominal + \
+                    self.infinite_precision
+
+            typeset_nominal = self.nominal_typesetter.typesetfp(
+                    nominal, precision)
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
+                    number=0, precision=0)
+
+        elif pos_leftmost_digit_nominal is None:
+            # None of both numbers exhibits counting digits.
+
+            typeset_nominal = self.nominal_typesetter.typesetfp(
+                    number=0, precision=0)
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
+                    number=0, precision=0)
+
+        return rule.apply(
+                nominal=typeset_nominal,
+                uncertainty=typeset_uncertainty,
+        )
+
+    def deduce_rule(self):
+        return FpRule(
+                separator=self.separator,
+                padding=self.padding,
+                unit=self.unit,
+        )

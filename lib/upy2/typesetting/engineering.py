@@ -184,7 +184,7 @@ class EngineeringTypesetter(Typesetter):
 
             typeset_nominal = self.nominal_typesetter.typesetfp(
                     number=0, precision=0)
-            typset_uncertainty = self.uncertainty_typesetter.typesetfp(
+            typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                     number=0, precision=0)
             typeset_exponent = self.exponent_typesetter.typesetint(
                     number=0, precision=0)
