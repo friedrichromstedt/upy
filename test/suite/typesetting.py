@@ -11,8 +11,8 @@ from upy2.typesetting.scientific import \
     ScientificRule, ScientificTypesetter
 from upy2.typesetting.engineering import \
     EngineeringRule, EngineeringTypesetter
-from upy2.typesetting.fp import \
-    FpRule, FpTypesetter
+from upy2.typesetting.fixedpoint import \
+    FixedpointRule, FixedpointTypesetter
 from upy2 import u, U, undarray
 
 
@@ -575,30 +575,30 @@ class Test_TypesettingEngineering(unittest.TestCase):
 
 
 
-class Test_TypesettingFp(unittest.TestCase):
-    """ TestCase for :mod:`upy2.typesetting.fp`. """
+class Test_TypesettingFixedpoint(unittest.TestCase):
+    """ TestCase for :mod:`upy2.typesetting.fixedpoint`. """
 
-    def test_FpRule(self):
+    def test_FixedpointRule(self):
         ts = NumberTypesetter()
         nom1, unc1 = ts.typesetfp(1.00, 2), ts.typesetfp(0.10, 2)
         nom2, unc2 = ts.typesetfp(100, 0), ts.typesetfp(1, 0)
 
-        ruleA = FpRule(separator=' +- ', padding=' ')
+        ruleA = FixedpointRule(separator=' +- ', padding=' ')
         ruleA.apply(nom1, unc1)
         ruleA.apply(nom2, unc2)
 
         self.assertEqual(ruleA.apply(nom1, unc1), '(  1.00 +- 0.10) ')
         self.assertEqual(ruleA.apply(nom2, unc2), '(100    +- 1   ) ')
 
-        ruleB = FpRule(separator=' +- ', padding='_', unit='N')
+        ruleB = FixedpointRule(separator=' +- ', padding='_', unit='N')
         ruleB.apply(nom1, unc1)
         ruleB.apply(nom2, unc2)
 
         self.assertEqual(ruleB.apply(nom1, unc1), '(  1.00 +- 0.10) N_')
         self.assertEqual(ruleB.apply(nom2, unc2), '(100    +- 1   ) N_')
 
-    def test_FpTypesetter(self):
-        with FpTypesetter(stddevs=2, precision=2), U(2):
+    def test_FixedpointTypesetter(self):
+        with FixedpointTypesetter(stddevs=2, precision=2), U(2):
             self.assertEqual(str(42 +- u(1)), '(42.0 +- 1.0) ')
             self.assertEqual(str(1 +- u(42)), '(1 +- 42) ')
             self.assertEqual(str(1 +- u(100)), '(00 +- 100) ')
@@ -607,14 +607,10 @@ class Test_TypesettingFp(unittest.TestCase):
             self.assertEqual(str(0 +- u(0.5)), '(0.00 +- 0.50) ')
             self.assertEqual(str(0 +- u(0)), '(0 +- 0) ')
 
-        with FpTypesetter(stddevs=2, precision=2,
+        with FixedpointTypesetter(stddevs=2, precision=2,
                 typeset_possign_value=True), U(2):
             self.assertEqual(str(4 +- u(0.5)), '(+4.00 +- 0.50) ')
 
-        with FpTypesetter(stddevs=2, precision=2, separator='+-',
+        with FixedpointTypesetter(stddevs=2, precision=2, separator='+-',
                 unit='N', padding=''), U(2):
             self.assertEqual(str(4 +- u(0.5)), '(4.00+-0.50) N')
-
-
-if __name__ == '__main__':
-    unittest.main()

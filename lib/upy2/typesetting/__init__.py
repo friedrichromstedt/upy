@@ -1,2 +1,3 @@
 from upy2.typesetting.scientific import ScientificTypesetter
 from upy2.typesetting.engineering import EngineeringTypesetter
+from upy2.typesetting.fixedpoint import FixedpointTypesetter

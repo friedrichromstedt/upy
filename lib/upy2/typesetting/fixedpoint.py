@@ -6,7 +6,7 @@ from upy2.typesetting.rules import TypesetNumberRule
 from upy2.typesetting.protocol import Typesetter
 
 
-class FpRule(object):
+class FixedpointRule(object):
     """ Fixed-point rule. """
 
     def __init__(self, separator, padding, unit=None):
@@ -29,7 +29,7 @@ class FpRule(object):
                 ')' + self.unitsuffix + self.padding
 
 
-class FpTypesetter(Typesetter):
+class FixedpointTypesetter(Typesetter):
     def __init__(self,
             stddevs, precision,
             typeset_possign_value=None,
@@ -111,7 +111,7 @@ class FpTypesetter(Typesetter):
         )
 
     def deduce_rule(self):
-        return FpRule(
+        return FixedpointRule(
                 separator=self.separator,
                 padding=self.padding,
                 unit=self.unit,
