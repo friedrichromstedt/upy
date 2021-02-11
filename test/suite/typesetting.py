@@ -627,6 +627,11 @@ class Test_TypesettingFixedpoint(unittest.TestCase):
                 typeset_possign_value=True), U(2):
             self.assertEqual(str(4 +- u(0.5)), '(+4.00 +- 0.50) ')
 
-        with FixedpointTypesetter(stddevs=2, precision=2, separator='+-',
-                unit='N', padding=''), U(2):
-            self.assertEqual(str(4 +- u(0.5)), '(4.00+-0.50) N')
+    def test_convention(self):
+        with FixedpointTypesetter(stddevs=2, precision=2, unit='N'), \
+                U(2), Convention(separator='+-', padding='__'):
+            self.assertEqual(str(4 +- u(0.5)), '(4.00+-0.50) N__')
+
+        with FixedpointTypesetter(stddevs=2, precision=2), U(2), \
+                Convention(plusminus='+/-'):
+            self.assertEqual(str(4 +- u(0.5)), '(4.00 +/- 0.50) ')

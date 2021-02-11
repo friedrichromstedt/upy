@@ -3,7 +3,8 @@
 from upy2.typesetting.numbers import \
         get_position_of_leftmost_digit, NumberTypesetter
 from upy2.typesetting.rules import TypesetNumberRule
-from upy2.typesetting.protocol import Typesetter
+from upy2.typesetting.protocol import Typesetter, Convention
+import upy2.sessions
 
 
 class FixedpointRule(object):
@@ -29,12 +30,14 @@ class FixedpointRule(object):
                 ')' + self.unitsuffix + self.padding
 
 
+convention_session = upy2.sessions.byprotocol(Convention)
+
 class FixedpointTypesetter(Typesetter):
     def __init__(self,
             stddevs, precision,
             typeset_possign_value=None,
             infinite_precision=None,
-            separator=None, padding=None, unit=None,
+            unit=None,
     ):
         Typesetter.__init__(self)
 
@@ -42,10 +45,6 @@ class FixedpointTypesetter(Typesetter):
             typeset_possign_value = False
         if infinite_precision is None:
             infinite_precision = 11
-        if separator is None:
-            separator = ' +- '
-        if padding is None:
-            padding = ' '
 
         self.nominal_typesetter = NumberTypesetter(
                 typeset_positive_sign=typeset_possign_value)
@@ -56,8 +55,6 @@ class FixedpointTypesetter(Typesetter):
         self.infinite_precision = infinite_precision
         self.stddevs = stddevs
 
-        self.separator = separator
-        self.padding = padding
         self.unit = unit
 
     def typeset_element(self, element, rule):
@@ -111,8 +108,9 @@ class FixedpointTypesetter(Typesetter):
         )
 
     def deduce_rule(self):
+        manager = convention_session.current()
         return FixedpointRule(
-                separator=self.separator,
-                padding=self.padding,
+                separator=manager.get_separator(),
+                padding=manager.get_padding(),
                 unit=self.unit,
         )
