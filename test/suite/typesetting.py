@@ -4,7 +4,7 @@ import unittest
 import numpy
 from upy2.typesetting.numbers import get_position_of_leftmost_digit
 from upy2.typesetting.numbers import NumberTypesetter
-from upy2.typesetting.protocol import ElementTypesetter
+from upy2.typesetting.protocol import ElementTypesetter, Convention
 from upy2.typesetting.rules import \
     LeftRule, RightRule, CentreRule, TypesetNumberRule
 from upy2.typesetting.scientific import \
@@ -212,6 +212,12 @@ class Test_TypesettingNumbers(unittest.TestCase):
         self.assertEqual(str(ts.typesetint(-18.37, -1)), '-20')
         self.assertEqual(str(ts.typesetint(-18.37, -2)), '-100')
         self.assertEqual(str(ts.typesetint(-90, -2)), '-100')
+
+    def test_convention(self):
+        ts = NumberTypesetter()
+
+        with Convention(negative='_'):
+            self.assertEqual(str(ts.typesetfp(-1, 0)), '_1')
 
 
 class Test_TypesettingRules(unittest.TestCase):
@@ -462,6 +468,13 @@ class Test_TypesettingScientific(unittest.TestCase):
 
         with U(2), sts:
             self.assertEqual(str(42 +- u(0.5)), '(+4.200 +- 0.050) 10^+1 ')
+
+    def test4_Convention(self):
+        sts = ScientificTypesetter(stddevs=2, precision=2)
+        with U(2), sts, Convention(separator=' _ '):
+            self.assertEqual(str(42 +- u(0.5)), '(4.200 _ 0.050) 10^1 ')
+        with U(2), sts, Convention(plusminus='__'):
+            self.assertEqual(str(42 +- u(0.5)), '(4.200 __ 0.050) 10^1 ')
 
 
 class Test_TypesettingEngineering(unittest.TestCase):
