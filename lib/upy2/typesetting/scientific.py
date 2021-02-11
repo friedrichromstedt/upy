@@ -9,7 +9,8 @@ from upy2.typesetting.numbers import \
     NumberTypesetter
 from upy2.typesetting.rules import \
     LeftRule, RightRule, CentreRule, TypesetNumberRule
-from upy2.typesetting.protocol import Typesetter
+from upy2.typesetting.protocol import Typesetter, Convention
+import upy2.sessions
 
 
 class ScientificRule(object):
@@ -49,6 +50,8 @@ class ScientificRule(object):
             self.padding
 
 
+convention_session = upy2.sessions.byprotocol(Convention)
+
 class ScientificTypesetter(Typesetter):
     def __init__(self,
         stddevs,
@@ -75,8 +78,7 @@ class ScientificTypesetter(Typesetter):
             # >>> len(str(math.pi).split('.')[1])
             # 11
             # ( same holds for numpy.pi )
-        if separator is None:
-            separator = ' +- '
+        self.sparator = separator
         if padding is None:
             padding = ' '
 
@@ -262,7 +264,12 @@ class ScientificTypesetter(Typesetter):
             )
 
     def deduce_rule(self):
+        if self.separator is not None:
+            separator = self.separator
+        else:
+            separator = convention_session.current().get_separator()
+
         return ScientificRule(
-                separator=self.separator,
+                separator=separator,
                 padding=self.padding,
                 unit=self.unit)

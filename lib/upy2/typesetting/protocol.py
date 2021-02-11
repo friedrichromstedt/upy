@@ -65,3 +65,27 @@ class Typesetter(upy2.sessions.Protocol):
         str(element_typesetters); return str(element_typesetters)
 
 upy2.sessions.define(Typesetter)
+
+
+class Convention(upy2.sessions.Protocol):
+    def __init__(self, plusminus=None, negative=None, separator=None):
+        if separator is not None:
+            self.separator = separator
+        elif plusminus is not None:
+            self.separator = u' {} '.format(plusminus)
+        else:
+            self.separator = ' +- '
+
+        if negative is not None:
+            self.negative = negative
+        else:
+            self.negative = '-'
+
+    def get_separator(self):
+        return self.separator
+
+    def get_negative(self):
+        return self.negative
+
+upy2.sessions.define(Convention)
+Convention().default()

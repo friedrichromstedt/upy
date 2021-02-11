@@ -6,6 +6,8 @@
 """ Number analysis module. """
 
 import math
+import upy2.sessions
+import upy2.typesetting.protocol
 
 
 def get_position_of_leftmost_digit(number):
@@ -94,6 +96,9 @@ class TypesetNumber:
 # result class for integer numbers.
 
 
+convention_session = upy2.sessions.byprotocol(
+        upy2.typesetting.protocol.Convention)
+
 class NumberTypesetter:
     def __init__(self, typeset_positive_sign=None, ceil=None):
         """ Plusses before positive numbers will only be printed when
@@ -129,7 +134,7 @@ class NumberTypesetter:
 
         if number < 0:
             absolute = -number
-            sign = '-'
+            sign = convention_session.current().get_negative()
         else:
             absolute = number
             if self.typeset_positive_sign:
@@ -229,7 +234,7 @@ class NumberTypesetter:
 
         if number < 0:
             absolute = -number
-            sign = '-'
+            sign = convention_session.current().get_negative()
         else:
             absolute = number
             if self.typeset_positive_sign:
