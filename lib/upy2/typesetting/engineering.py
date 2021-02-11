@@ -3,7 +3,8 @@
 from upy2.typesetting.numbers import \
         get_position_of_leftmost_digit, NumberTypesetter
 from upy2.typesetting.rules import LeftRule, RightRule, TypesetNumberRule
-from upy2.typesetting.protocol import Typesetter
+from upy2.typesetting.protocol import Typesetter, Convention
+import upy2.sessions
 
 
 class EngineeringRule(object):
@@ -45,13 +46,14 @@ class EngineeringRule(object):
                 self.padding
 
 
+convention_session = upy2.sessions.byprotocol(Convention)
+
 class EngineeringTypesetter(Typesetter):
     def __init__(self,
             stddevs, precision,
             typeset_possign_value=None,
             typeset_possign_exponent=None,
             infinite_precision=None,
-            separator=None, padding=None,
             unit=None, useprefixes=None,
     ):
         """ When provided with a *unit*, the ``EngineeringTypesetter``
@@ -68,10 +70,6 @@ class EngineeringTypesetter(Typesetter):
             typeset_possign_exponent = False
         if infinite_precision is None:
             infinite_precision = 11
-        if separator is None:
-            separator = ' +- '
-        if padding is None:
-            padding = ' '
         if useprefixes is None:
             useprefixes = False
 
@@ -85,8 +83,6 @@ class EngineeringTypesetter(Typesetter):
         self.infinite_precision = infinite_precision
         self.stddevs = stddevs
 
-        self.separator = separator
-        self.padding = padding
         self.unit = unit
         self.useprefixes = useprefixes
 
@@ -251,7 +247,8 @@ class EngineeringTypesetter(Typesetter):
             )
 
     def deduce_rule(self):
+        manager = convention_session.current()
         return EngineeringRule(
-                separator=self.separator,
-                padding=self.padding,
+                separator=manager.get_separator(),
+                padding=manager.get_padding(),
         )

@@ -524,7 +524,8 @@ class Test_TypesettingEngineering(unittest.TestCase):
         # 16, 8, 4, 2, 1, 0.5, 0.25, 0.125, 0.0625
         # However it still happens that the error isn't binary-rational and is rounded up.
 
-        with EngineeringTypesetter(stddevs=2, precision=2, padding=''), U(2):
+        with EngineeringTypesetter(stddevs=2, precision=2), \
+                Convention(padding=''), U(2):
             self.assertEqual(str((1 +- u(0.25)) * 1e27), '(1.00 +- 0.25) 10^27')
             self.assertEqual(str((4 +- u(0.25)) * 1e24), '(4.00 +- 0.25) 10^24')
             self.assertEqual(str((0.0625 +- u(16)) * 1e24), '(0000 +- 16000) 10^21')
@@ -548,7 +549,7 @@ class Test_TypesettingEngineering(unittest.TestCase):
             self.assertEqual(str((1 +- u(0.25)) * 1e-27), '(1.00 +- 0.25) 10^-27')
 
         with EngineeringTypesetter(stddevs=2, precision=2,
-                unit='m', useprefixes=True, padding='',), U(2):
+                unit='m', useprefixes=True), Convention(padding=''), U(2):
             self.assertEqual(str((1 +- u(0.25)) * 1e27), '(1.00 +- 0.25) 10^27 m')
             self.assertEqual(str((4 +- u(0.25)) * 1e24), '(4.00 +- 0.25) Ym')
             self.assertEqual(str((0.0625 +- u(16)) * 1e24), '(0000 +- 16000) Zm')
@@ -584,6 +585,10 @@ class Test_TypesettingEngineering(unittest.TestCase):
             self.assertEqual(str(0 +- u(0.005)), '(0.0 +- 5.0) mN ')
             self.assertEqual(str(0 +- u(0)), '(0 +- 0) N ')
 
+    def test_Convention(self):
+        with EngineeringTypesetter(stddevs=2, precision=2), U(2), \
+                Convention(plusminus='+/-', padding='_', negative='_'):
+            self.assertEqual(str(-42 +- u(0.5)), '(_42.00 +/- 0.50) 10^0_')
 
 
 class Test_TypesettingFixedpoint(unittest.TestCase):

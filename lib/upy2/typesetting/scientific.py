@@ -256,7 +256,8 @@ class ScientificTypesetter(Typesetter):
             )
 
     def deduce_rule(self):
+        manager = convention_session.current()
         return ScientificRule(
-                separator=convention_session.current().get_separator(),
-                padding=convention_session.current().get_padding(),
+                separator=manager.get_separator(),
+                padding=manager.get_padding(),
                 unit=self.unit)
