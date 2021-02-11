@@ -59,12 +59,9 @@ class ScientificTypesetter(Typesetter):
         typeset_possign_value=None,
         typeset_possign_exponent=None,
         infinite_precision=None,
-        separator=None, padding=None, unit=None,
+        unit=None,
     ):
-        """ *separator* defaults to ``' +- '``; *padding* defaults to
-        ``' '``.  These defaults are sensible when typesetting for the
-        terminal.  Adjust them as needed.  *unit* is an optional
-        string. """
+        """ *unit* is an optional string. """
         Typesetter.__init__(self)
 
         if typeset_possign_value is None:
@@ -78,9 +75,6 @@ class ScientificTypesetter(Typesetter):
             # >>> len(str(math.pi).split('.')[1])
             # 11
             # ( same holds for numpy.pi )
-        self.sparator = separator
-        if padding is None:
-            padding = ' '
 
         self.nominal_typesetter = NumberTypesetter(
             typeset_positive_sign=typeset_possign_value)
@@ -95,8 +89,6 @@ class ScientificTypesetter(Typesetter):
         self.infinite_precision = infinite_precision
         self.stddevs = stddevs
 
-        self.separator = separator
-        self.padding = padding
         self.unit = unit
     
     def typeset_element(self, element, rule):
@@ -264,12 +256,7 @@ class ScientificTypesetter(Typesetter):
             )
 
     def deduce_rule(self):
-        if self.separator is not None:
-            separator = self.separator
-        else:
-            separator = convention_session.current().get_separator()
-
         return ScientificRule(
-                separator=separator,
-                padding=self.padding,
+                separator=convention_session.current().get_separator(),
+                padding=convention_session.current().get_padding(),
                 unit=self.unit)

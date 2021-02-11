@@ -68,7 +68,7 @@ upy2.sessions.define(Typesetter)
 
 
 class Convention(upy2.sessions.Protocol):
-    def __init__(self, plusminus=None, negative=None, separator=None):
+    def __init__(self, plusminus=None, negative=None, separator=None, padding=None):
         if separator is not None:
             self.separator = separator
         elif plusminus is not None:
@@ -76,16 +76,22 @@ class Convention(upy2.sessions.Protocol):
         else:
             self.separator = ' +- '
 
-        if negative is not None:
-            self.negative = negative
-        else:
-            self.negative = '-'
+        if negative is None:
+            negative = '-'
+        if padding is None:
+            padding = ' '
+
+        self.negative = negative
+        self.padding = padding
 
     def get_separator(self):
         return self.separator
 
     def get_negative(self):
         return self.negative
+
+    def get_padding(self):
+        return self.padding
 
 upy2.sessions.define(Convention)
 Convention().default()

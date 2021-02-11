@@ -453,13 +453,11 @@ class Test_TypesettingScientific(unittest.TestCase):
                     '(0 +- 0) 10^0 ')
 
     def test2_ScientificTypesetter(self):
-        sts = ScientificTypesetter(
-                stddevs=2, precision=2,
-                padding='_', unit='N')
+        sts = ScientificTypesetter(stddevs=2, precision=2, unit='N')
 
         with U(2), sts:
             self.assertEqual(str(42 +- u(0.5)),
-                    '(4.200 +- 0.050) 10^1 N_')
+                    '(4.200 +- 0.050) 10^1 N ')
 
     def test3_ScientificTypesetter(self):
         sts = ScientificTypesetter(stddevs=2, precision=2,
@@ -469,12 +467,12 @@ class Test_TypesettingScientific(unittest.TestCase):
         with U(2), sts:
             self.assertEqual(str(42 +- u(0.5)), '(+4.200 +- 0.050) 10^+1 ')
 
-    def test4_Convention(self):
+    def test_Convention(self):
         sts = ScientificTypesetter(stddevs=2, precision=2)
         with U(2), sts, Convention(separator=' _ '):
             self.assertEqual(str(42 +- u(0.5)), '(4.200 _ 0.050) 10^1 ')
-        with U(2), sts, Convention(plusminus='__'):
-            self.assertEqual(str(42 +- u(0.5)), '(4.200 __ 0.050) 10^1 ')
+        with U(2), sts, Convention(plusminus='__', padding='_'):
+            self.assertEqual(str(42 +- u(0.5)), '(4.200 __ 0.050) 10^1_')
 
 
 class Test_TypesettingEngineering(unittest.TestCase):
