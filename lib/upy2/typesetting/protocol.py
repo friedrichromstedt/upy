@@ -46,10 +46,9 @@ class Typesetter(upy2.sessions.Protocol):
 
         raise NotImplementedError('Virtual method called')
 
-    def typeset(self, uarray):
+    def element_typesetters(self, uarray):
         """ Creates an object-dtype ndarray holding
-        ElementTypesetters, one for each element of *uarray*, and
-        typesets this object-dtype ndarray by string conversion. """
+        ElementTypesetters, one for each element of *uarray*."""
 
         element_typesetters = numpy.zeros(uarray.shape, dtype=object)
         rule = self.deduce_rule()
@@ -61,6 +60,13 @@ class Typesetter(upy2.sessions.Protocol):
                             typesetter=self,
                             rule=rule,
                     )
+        return element_typesetters
+
+    def typeset(self, uarray):
+        """ Typeseys *uarray* by passing the results of
+        ``self.element_typesetters(uarray)`` twice through ``str``. """
+
+        element_typesetters = self.element_typesetters(uarray)
 
         str(element_typesetters); return str(element_typesetters)
 
@@ -68,7 +74,11 @@ upy2.sessions.define(Typesetter)
 
 
 class Convention(upy2.sessions.Protocol):
-    def __init__(self, plusminus=None, negative=None, separator=None, padding=None):
+    def __init__(self,
+            plusminus=None, separator=None,
+            negative=None,
+            infinity=None,
+            padding=None):
         if separator is not None:
             self.separator = separator
         elif plusminus is not None:
@@ -80,8 +90,11 @@ class Convention(upy2.sessions.Protocol):
             negative = '-'
         if padding is None:
             padding = ' '
+        if infinity is None:
+            infinity = 'oo'
 
         self.negative = negative
+        self.infinity = infinity
         self.padding = padding
 
     def get_separator(self):
@@ -89,6 +102,9 @@ class Convention(upy2.sessions.Protocol):
 
     def get_negative(self):
         return self.negative
+
+    def get_infinity(self):
+        return self.infinity
 
     def get_padding(self):
         return self.padding

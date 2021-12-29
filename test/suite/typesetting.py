@@ -3,7 +3,7 @@
 import unittest
 import numpy
 from upy2.typesetting.numbers import get_position_of_leftmost_digit
-from upy2.typesetting.numbers import NumberTypesetter
+from upy2.typesetting.numbers import NumberTypesetter, TypesetNumber
 from upy2.typesetting.protocol import ElementTypesetter, Convention
 from upy2.typesetting.rules import \
     LeftRule, RightRule, CentreRule, TypesetNumberRule
@@ -13,6 +13,10 @@ from upy2.typesetting.engineering import \
     EngineeringRule, EngineeringTypesetter
 from upy2.typesetting.fixedpoint import \
     FixedpointRule, FixedpointTypesetter
+from upy2.typesetting.scientific_relu import \
+    ScientificRelativeURule, ScientificRelativeUTypesetter
+from upy2.typesetting.scientific_rel import \
+    RelativeScientificRule, RelativeScientificTypesetter
 from upy2 import u, U, undarray
 
 
@@ -635,3 +639,66 @@ class Test_TypesettingFixedpoint(unittest.TestCase):
         with FixedpointTypesetter(stddevs=2, precision=2), U(2), \
                 Convention(plusminus='+/-'):
             self.assertEqual(str(4 +- u(0.5)), '(4.00 +/- 0.50) ')
+
+
+class Test_TypesettingScientificRelativeU(unittest.TestCase):
+
+    def test_ScientificRelativeURule(self):
+        rule = ScientificRelativeURule(separator=' +- ', infinity='oo')
+        man1, exp1 = TypesetNumber(left='4', point='.', right='2'), '-2'
+        man2, exp2 = TypesetNumber(left='100', point='', right=''), '1'
+
+        rule.apply(man1, exp1)
+        rule.apply(man2, exp2)
+        rule.apply_infinity()
+
+        self.assertEqual(rule.apply(man1, exp1), '1 +-   4.2 10^-2')
+        self.assertEqual(rule.apply(man2, exp2), '1 +- 100   10^ 1')
+        self.assertEqual(rule.apply_infinity(),  '1 +-  oo        ')
+
+    def test_ScientificRelativeUTypesetter(self):
+        ts = ScientificRelativeUTypesetter(stddevs=2, precision=2)
+        with U(2):
+            ar = numpy.asarray([1.0, 10.0, 5.0, 0.0]) +- \
+                             u([0.1, 0.1, 5.0, 1.0])
+
+        result = ts.element_typesetters(ar); str(result)
+        self.assertEqual(str(result[0]), "1 +-  1.0 10^-1")
+        self.assertEqual(str(result[1]), "1 +-  1.0 10^-2")
+        self.assertEqual(str(result[2]), "1 +-  1.0 10^ 0")
+        self.assertEqual(str(result[3]), "1 +- oo        ")
+
+    def test_RelativeScientificTypesetter(self):
+        uts1 = ScientificRelativeUTypesetter(stddevs=2, precision=2)
+        ts1 = RelativeScientificTypesetter(precision=2, utypesetter=uts1)
+
+        with U(2):
+            ar = numpy.asarray([1.0, 10.0, 0.5, 0.0]) +- \
+                             u([0.1, 0.1, 0.5, 1.0])
+
+        with Convention(padding=''):
+            result = ts1.element_typesetters(ar); str(result)
+        self.assertEqual(str(result[0]), "1.0 10^ 0 (1 +-  1.0 10^-1)")
+        self.assertEqual(str(result[1]), "1.0 10^ 1 (1 +-  1.0 10^-2)")
+        self.assertEqual(str(result[2]), "5.0 10^-1 (1 +-  1.0 10^ 0)")
+        self.assertEqual(str(result[3]), "0   10^ 0 (1 +- oo        )")
+
+        with Convention(padding='', infinity='inf'), ts1:
+            self.assertEqual(str(ar[3]), "0 10^0 (1 +- inf)")
+
+
+        uts2 = ScientificRelativeUTypesetter(stddevs=2, precision=2,
+                typeset_possign_exponent=True)
+        ts2 = RelativeScientificTypesetter(precision=2, utypesetter=uts2,
+                typeset_possign_value=True, typeset_possign_exponent=True)
+
+        with U(2):
+            ar = numpy.asarray([1.0, -10.0, 0.5, 0.0]) +- \
+                             u([0.1, 0.1, 0.5, 1.0])
+
+        with Convention(padding=''):
+            result = ts2.element_typesetters(ar); str(result)
+        self.assertEqual(str(result[0]), "+1.0 10^+0 (1 +-  1.0 10^-1)")
+        self.assertEqual(str(result[1]), "-1.0 10^+1 (1 +-  1.0 10^-2)")
+        self.assertEqual(str(result[2]), "+5.0 10^-1 (1 +-  1.0 10^+0)")
+        self.assertEqual(str(result[3]), "+0   10^+0 (1 +- oo        )")
