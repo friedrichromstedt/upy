@@ -642,6 +642,10 @@ class Test_TypesettingFixedpoint(unittest.TestCase):
 
 
 class Test_TypesettingScientificRelativeU(unittest.TestCase):
+    """ Tests relative uncertainty tyesetting using scientific notation for
+    the relative uncertainty: The typesetting of the uncertainty alone and
+    all "full" relative typesetters, using the scientific relative
+    uncertainty typesetter. """
 
     def test_ScientificRelativeURule(self):
         rule = ScientificRelativeURule(separator=' +- ', infinity='oo')
