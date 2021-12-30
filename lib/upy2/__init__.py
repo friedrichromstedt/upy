@@ -5,6 +5,9 @@ from upy2.core import *  # The core module provides *__all__*.
 from upy2.typesetting.scientific import ScientificTypesetter
 from upy2.typesetting.engineering import EngineeringTypesetter
 from upy2.typesetting.fixedpoint import FixedpointTypesetter
+from upy2.typesetting.scientific_relu import ScientificRelativeUTypesetter
+from upy2.typesetting.fixedpoint_relu import FixedpointRelativeUTypesetter
+from upy2.typesetting.scientific_rel import RelativeScientificTypesetter
 from upy2.typesetting.protocol import Convention
 #from upy2.averaging import *
 #from upy2.linear_regression import *
