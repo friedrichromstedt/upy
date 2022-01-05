@@ -784,6 +784,21 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
         self.assertEqual(str(result[2]), "+500   10^-3 (1 +-  1.0 10^ 0)")
         self.assertEqual(str(result[3]), "  +0   10^+0 (1 +- oo        )")
 
+        ts3 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
+                unit='N', useprefixes=True)
+
+        with U(2):
+            ar = numpy.asarray([1.0, 1000.0, -0.5, 0.0, 1.0]) +- \
+                             u([0.1,    0.1,  0.5, 1.0, 0.0])
+
+        with Convention(padding=''):
+            result = ts3.element_typesetters(ar); str(result)
+        self.assertEqual(str(result[0]), "   1.0 (1 +-  1.0 10^-1)  N")
+        self.assertEqual(str(result[1]), "   1.0 (1 +-  1.0 10^-4) kN")
+        self.assertEqual(str(result[2]), "-500   (1 +-  1.0 10^ 0) mN")
+        self.assertEqual(str(result[3]), "   0   (1 +- oo        )  N")
+        self.assertEqual(str(result[4]), "   1.0 (1 +-  0   10^ 0)  N")
+
 
 class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
     def test_FixedpointRelativeURule(self):

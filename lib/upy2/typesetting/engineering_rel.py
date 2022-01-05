@@ -146,7 +146,8 @@ class RelativeEngineeringTypesetter(Typesetter):
             return rule.apply(
                     nominal=typeset_mantissa,
                     uncertainty=typeset_uncertainty,
-                    unit='{prefix}{base}'.format(prefix, self.unit),
+                    unit='{prefix}{base}'.format(
+                        prefix=prefix, base=self.unit),
             )
         elif self.unit is not None:
             # Append the unit as-is.
