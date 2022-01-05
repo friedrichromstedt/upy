@@ -991,3 +991,64 @@ class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
         self.assertEqual(str(result[2]), "-500   10^-3 (1 +-  1.0  )")
         self.assertEqual(str(result[3]), "   0   10^ 0 (1 +- oo    )")
         self.assertEqual(str(result[4]), "   1.0 10^ 0 (1 +-  0    )")
+
+
+class Test_Convention(unittest.TestCase):
+    def test_inherit(self):
+        ts = ScientificTypesetter(stddevs=2, precision=2)
+        uts = FixedpointRelativeUTypesetter(stddevs=2, precision=2)
+        c = Convention(
+                plusminus='+/-',
+                negative="--",
+                infinity='inf',
+                padding=' (...)')
+        # Cover all but *infinity*:
+        with c, ts, U(2):
+            self.assertEqual(
+                    str(-1 +- u(0.1)),
+                    "(--1.00 +/- 0.10) 10^0 (...)")
+
+            # Test substitution of defaults:
+            with Convention():
+                self.assertEqual(
+                        str(-1 +- u(0.1)),
+                        "(-1.00 +- 0.10) 10^0 ")
+
+            # Test complete inheritance:
+            with Convention(inherit=c):
+                self.assertEqual(
+                        str(-1 +- u(0.1)),
+                        "(--1.00 +/- 0.10) 10^0 (...)")
+
+            # Test partial intheritance:
+            with Convention(separator=" pm ", inherit=c):
+                self.assertEqual(
+                        str(-1 +- u(0.1)),
+                        "(--1.00 pm 0.10) 10^0 (...)")
+            with Convention(plusminus='pm', inherit=c):
+                self.assertEqual(
+                        str(-1 +- u(0.1)),
+                        "(--1.00 pm 0.10) 10^0 (...)")
+        # Cover *infinity*:
+        with c, uts, U(2):
+            self.assertEqual(
+                    str(0 +- u(0.1)),
+                    "1 +/- inf")
+
+            # Test substitution of defaults:
+            with Convention():
+                self.assertEqual(
+                        str(0 +- u(0.1)),
+                        "1 +- oo")
+
+            # Test complete inheritance:
+            with Convention(inherit=c):
+                self.assertEqual(
+                        str(0 +- u(0.1)),
+                        "1 +/- inf")
+
+            # Test partial intheritance:
+            with Convention(infinity='infty', inherit=c):
+                self.assertEqual(
+                        str(0 +- u(0.1)),
+                        "1 +/- infty")

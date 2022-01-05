@@ -78,24 +78,37 @@ class Convention(upy2.sessions.Protocol):
             plusminus=None, separator=None,
             negative=None,
             infinity=None,
-            padding=None):
+            padding=None,
+            inherit=None):
         if separator is not None:
             self.separator = separator
         elif plusminus is not None:
             self.separator = u' {} '.format(plusminus)
+        elif inherit is not None:
+            self.separator = inherit.separator
         else:
             self.separator = ' +- '
 
-        if negative is None:
-            negative = '-'
-        if padding is None:
-            padding = ' '
-        if infinity is None:
-            infinity = 'oo'
+        if negative is not None:
+            self.negative = negative
+        elif inherit is not None:
+            self.negative = inherit.negative
+        else:
+            self.negative = '-'
 
-        self.negative = negative
-        self.infinity = infinity
-        self.padding = padding
+        if padding is not None:
+            self.padding = padding
+        elif inherit is not None:
+            self.padding = inherit.padding
+        else:
+            self.padding = ' '
+
+        if infinity is not None:
+            self.infinity = infinity
+        elif inherit is not None:
+            self.infinity = inherit.infinity
+        else:
+            self.infinity = 'oo'
 
     def get_separator(self):
         return self.separator
