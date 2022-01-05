@@ -686,6 +686,9 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
             self.assertEqual(
                     str(1e23 +- u(1e22)),
                     "1 +- 1.0 10^-1")
+            self.assertEqual(
+                    str(1 +- u(0.10001)),
+                    "1 +- 1.1 10^-1")
 
     @unittest.expectedFailure
     def test_ScientificRelativeUTypesetter_largevalue(self):
@@ -926,6 +929,11 @@ class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
         self.assertEqual(str(result[2]), "1 +-  1.0  ")
         self.assertEqual(str(result[3]), "1 +- oo    ")
         self.assertEqual(str(result[4]), "1 +-  0    ")
+
+        with U(2), ts:
+            self.assertEqual(
+                    str(1 +- u(0.100001)),
+                    "1 +- 0.11")
 
     def test_RelativeScientificTypesetter(self):
         """ Tests :class:`FixedpointRelativeUTypesetter` with
