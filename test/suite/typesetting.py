@@ -771,18 +771,18 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
         self.assertEqual(str(result[4]), "   1.0 10^ 0 (1 +-  0   10^ 0)")
 
         ts2 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
-                typeset_possign_value=True)
+                typeset_possign_value=True, typeset_possign_exponent=True)
 
         with U(2):
-            ar = numpy.asarray([1.0, -10.0, 0.5, 0.0]) +- \
-                             u([0.1,   0.1, 0.5, 1.0])
+            ar = numpy.asarray([1.0, -10000.0, 0.5, 0.0]) +- \
+                             u([0.1,      0.1, 0.5, 1.0])
 
         with Convention(padding=''):
             result = ts2.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "  +1.0 10^ 0 (1 +-  1.0 10^-1)")
-        self.assertEqual(str(result[1]), " -10   10^ 0 (1 +-  1.0 10^-2)")
+        self.assertEqual(str(result[0]), "  +1.0 10^+0 (1 +-  1.0 10^-1)")
+        self.assertEqual(str(result[1]), " -10   10^+3 (1 +-  1.0 10^-5)")
         self.assertEqual(str(result[2]), "+500   10^-3 (1 +-  1.0 10^ 0)")
-        self.assertEqual(str(result[3]), "  +0   10^ 0 (1 +- oo        )")
+        self.assertEqual(str(result[3]), "  +0   10^+0 (1 +- oo        )")
 
 
 class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
