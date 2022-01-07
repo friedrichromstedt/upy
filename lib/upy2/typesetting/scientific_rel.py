@@ -30,7 +30,7 @@ class RelativeScientificRule:
         mantissa = self.mantissa_rule.apply(nominal_mantissa)
         exponent = self.exponent_rule.apply(nominal_exponent)
 
-        return '{mantissa} 10^{exponent} ({uncertainty}){unit}{padding}'.\
+        return '{mantissa} ({uncertainty}) 10^{exponent}{unit}{padding}'.\
                 format(
                     mantissa=mantissa, exponent=exponent,
                     uncertainty=uncertainty, unit=self.unitsuffix,

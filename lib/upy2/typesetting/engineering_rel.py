@@ -38,7 +38,7 @@ class RelativeEngineeringRule:
 
         typeset_nominal = self.nominal_rule.apply(nominal)
 
-        return '{nominal}{power} ({uncertainty}){unit}{padding}'.format(
+        return '{nominal} ({uncertainty}){power}{unit}{padding}'.format(
                 nominal=typeset_nominal,
                 power=typeset_power,
                 uncertainty=uncertainty,
