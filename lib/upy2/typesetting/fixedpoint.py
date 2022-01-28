@@ -94,7 +94,7 @@ class FixedpointTypesetter(Typesetter):
             typeset_uncertainty = self.uncertainty_typesetter.typesetfp(
                     number=0, precision=0)
 
-        elif pos_leftmost_digit_nominal is None:
+        else:
             # None of both numbers exhibits counting digits.
 
             typeset_nominal = self.nominal_typesetter.typesetfp(
