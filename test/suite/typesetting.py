@@ -959,7 +959,9 @@ class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
         :class:`RelativeFixedpointTypesetter`. """
 
         uts = FixedpointRelativeUTypesetter(stddevs=2, precision=2)
-        ts = RelativeFixedpointTypesetter(precision=2, utypesetter=uts)
+        ts = RelativeFixedpointTypesetter(
+                precision=2, infinite_precision=4,
+                utypesetter=uts)
 
         with U(2):
             ar = numpy.asarray([1.0, 10.0, -0.5, 0.0, 1.0]) +- \
@@ -967,11 +969,11 @@ class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
 
         with Convention(padding=''):
             result = ts.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), " 1.0  (1 +-  0.10 )")
-        self.assertEqual(str(result[1]), "10    (1 +-  0.010)")
-        self.assertEqual(str(result[2]), "-0.50 (1 +-  1.0  )")
-        self.assertEqual(str(result[3]), " 0    (1 +- oo    )")
-        self.assertEqual(str(result[4]), " 1.0  (1 +-  0    )")
+        self.assertEqual(str(result[0]), " 1.00   (1 +-  0.10 )")
+        self.assertEqual(str(result[1]), "10.00   (1 +-  0.010)")
+        self.assertEqual(str(result[2]), "-0.50   (1 +-  1.0  )")
+        self.assertEqual(str(result[3]), " 0.0    (1 +- oo    )")
+        self.assertEqual(str(result[4]), " 1.0000 (1 +-  0    )")
 
     def test_RelativeEngineeringTypesetter(self):
         """ Tests :class:`FixedpointRelativeUTypesetter` with
