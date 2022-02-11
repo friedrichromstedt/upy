@@ -23,10 +23,9 @@ class RelativeScientificRule:
             self.unitsuffix = ' {}'.format(unit)
 
     def apply(self,
-            nominal_mantissa, nominal_exponent,
-            uncertainty):
-        """ *nominal_mantissa* is a ``TypesetNumber``, *exponent* and
-        *uncertainty* are strings. """
+            nominal_mantissa, uncertainty, nominal_exponent):
+        """ *nominal_mantissa* is a ``TypesetNumber``, *uncertainty* and
+        *nominal_exponent* are strings. """
         mantissa = self.mantissa_rule.apply(nominal_mantissa)
         exponent = self.exponent_rule.apply(nominal_exponent)
 
@@ -44,52 +43,85 @@ class RelativeScientificTypesetter(Typesetter):
     def __init__(self,
             precision, utypesetter,
             typeset_possign_value=None, typeset_possign_exponent=None,
+            infinite_precision=None,
             unit=None,
     ):
         Typesetter.__init__(self)
+
+        if infinite_precision is None:
+            infinite_precision = 11
 
         self.mantissa_typesetter = NumberTypesetter(
                 typeset_positive_sign=typeset_possign_value)
         self.exponent_typesetter = NumberTypesetter(
                 typeset_positive_sign=typeset_possign_exponent)
 
-        self.mantissa_precision = precision
+        self.relative_precision = precision
+        self.infinite_precision = infinite_precision
 
         self.utypesetter = utypesetter
         self.unit = unit
 
     def typeset_element(self, element, rule):
         nominal = element.nominal
+        uncertainty = element.stddev * self.utypesetter.stddevs
 
-        uncertainty = self.utypesetter.typeset_element(
+        typeset_uncertainty = self.utypesetter.typeset_element(
                 element, rule=rule.uncertainty_rule)
 
-        pos_leftmost_digit = \
+        pos_leftmost_digit_nominal = \
                 get_position_of_leftmost_digit(nominal)
+        pos_leftmost_digit_uncertainty = \
+                get_position_of_leftmost_digit(uncertainty)
 
-        if pos_leftmost_digit is not None:
-            exponent = -pos_leftmost_digit
-            mantissa = nominal * 10 ** (-exponent)
+        if pos_leftmost_digit_nominal is not None \
+        and pos_leftmost_digit_uncertainty is not None:
+            exponent = -pos_leftmost_digit_nominal
+            mantissa = nominal * 10 ** pos_leftmost_digit_nominal
+
+            mantissa_precision = (pos_leftmost_digit_uncertainty -
+                    pos_leftmost_digit_nominal + self.relative_precision -
+                    1)
 
             typeset_mantissa = self.mantissa_typesetter.typesetfp(
-                    mantissa, precision=(self.mantissa_precision - 1))
+                    mantissa, mantissa_precision)
             typeset_exponent = self.exponent_typesetter.typesetint(
                     exponent, precision=0)
 
-            return rule.apply(
-                    nominal_mantissa=typeset_mantissa,
-                    nominal_exponent=typeset_exponent,
-                    uncertainty=uncertainty)
+        elif pos_leftmost_digit_nominal is not None \
+        and pos_leftmost_digit_uncertainty is None:
+            exponent = -pos_leftmost_digit_nominal
+            mantissa = nominal * 10 ** pos_leftmost_digit_nominal
 
-        else:
+            mantissa_precision = self.infinite_precision
+
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
+                    mantissa, mantissa_precision)
+            typeset_exponent = self.exponent_typesetter.typesetint(
+                    exponent, precision=0)
+
+        elif pos_leftmost_digit_nominal is None \
+        and pos_leftmost_digit_uncertainty is not None:
+            exponent = -pos_leftmost_digit_uncertainty
+
+            mantissa_precision = (self.relative_precision - 1)
+
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
+                    number=0, precision=mantissa_precision)
+            typeset_exponent = self.exponent_typesetter.typesetint(
+                    exponent, precision=0)
+
+        elif pos_leftmost_digit_nominal is None \
+        and pos_leftmost_digit_uncertainty is None:
             typeset_mantissa = self.mantissa_typesetter.typesetfp(
                     number=0, precision=0)
             typeset_exponent = self.exponent_typesetter.typesetint(
                     number=0, precision=0)
-            return rule.apply(
-                    nominal_mantissa=typeset_mantissa,
-                    nominal_exponent=typeset_exponent,
-                    uncertainty=uncertainty)
+
+        return rule.apply(
+                nominal_mantissa=typeset_mantissa,
+                nominal_exponent=typeset_exponent,
+                uncertainty=typeset_uncertainty)
 
     def deduce_rule(self):
         manager = convention_session.current()
