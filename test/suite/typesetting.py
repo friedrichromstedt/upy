@@ -821,16 +821,17 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
         ts1 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts)
 
         with U(2):
-            ar = numpy.asarray([1.0, 1000.0, -0.5, 0.0, 1.0]) +- \
-                             u([0.1,    0.1,  0.5, 1.0, 0.0])
+            ar = numpy.asarray([1.0, 1000.0, -0.5, 0.0, 1.0, 0]) +- \
+                             u([0.1,    0.1,  0.5, 1.0, 0.0, 0])
 
         with Convention(padding=''):
             result = ts1.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "   1.0 (1 +-  1.0 10^-1) 10^ 0")
-        self.assertEqual(str(result[1]), "   1.0 (1 +-  1.0 10^-4) 10^ 3")
-        self.assertEqual(str(result[2]), "-500   (1 +-  1.0 10^ 0) 10^-3")
-        self.assertEqual(str(result[3]), "   0   (1 +- oo        ) 10^ 0")
-        self.assertEqual(str(result[4]), "   1.0 (1 +-  0   10^ 0) 10^ 0")
+        self.assertEqual(str(result[0]), "   1.00          (1 +-  1.0 10^-1) 10^ 0")
+        self.assertEqual(str(result[1]), "   1.00000       (1 +-  1.0 10^-4) 10^ 3")
+        self.assertEqual(str(result[2]), "-500             (1 +-  1.0 10^ 0) 10^-3")
+        self.assertEqual(str(result[3]), "   0.0           (1 +- oo        ) 10^ 0")
+        self.assertEqual(str(result[4]), "   1.00000000000 (1 +-  0   10^ 0) 10^ 0")
+        self.assertEqual(str(result[5]), "   0             (1 +- oo        ) 10^ 0")
 
 
         ts2 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
@@ -842,10 +843,10 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
 
         with Convention(padding=''):
             result = ts2.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "  +1.0 (1 +-  1.0 10^-1) 10^+0")
-        self.assertEqual(str(result[1]), " -10   (1 +-  1.0 10^-5) 10^+3")
-        self.assertEqual(str(result[2]), "+500   (1 +-  1.0 10^ 0) 10^-3")
-        self.assertEqual(str(result[3]), "  +0   (1 +- oo        ) 10^+0")
+        self.assertEqual(str(result[0]), "  +1.00    (1 +-  1.0 10^-1) 10^+0")
+        self.assertEqual(str(result[1]), " -10.00000 (1 +-  1.0 10^-5) 10^+3")
+        self.assertEqual(str(result[2]), "+500       (1 +-  1.0 10^ 0) 10^-3")
+        self.assertEqual(str(result[3]), "  +0.0     (1 +- oo        ) 10^+0")
 
 
         ts3 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
@@ -857,11 +858,11 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
 
         with Convention(padding=''):
             result = ts3.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "   1.0 (1 +-  1.0 10^-1)  N")
-        self.assertEqual(str(result[1]), "   1.0 (1 +-  1.0 10^-4) kN")
-        self.assertEqual(str(result[2]), "-500   (1 +-  1.0 10^ 0) mN")
-        self.assertEqual(str(result[3]), "   0   (1 +- oo        )  N")
-        self.assertEqual(str(result[4]), "   1.0 (1 +-  0   10^ 0)  N")
+        self.assertEqual(str(result[0]), "   1.00          (1 +-  1.0 10^-1)  N")
+        self.assertEqual(str(result[1]), "   1.00000       (1 +-  1.0 10^-4) kN")
+        self.assertEqual(str(result[2]), "-500             (1 +-  1.0 10^ 0) mN")
+        self.assertEqual(str(result[3]), "   0.0           (1 +- oo        )  N")
+        self.assertEqual(str(result[4]), "   1.00000000000 (1 +-  0   10^ 0)  N")
 
         with U(2), Convention(padding=''), ts3:
             self.assertEqual(
@@ -869,16 +870,16 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
                     "100 (1 +- 1.0 10^-1) N")
             self.assertEqual(
                     str(1e12 +- u(1e11)),
-                    "1.0 (1 +- 1.0 10^-1) TN")
+                    "1.00 (1 +- 1.0 10^-1) TN")
             self.assertEqual(
                     str(1e30 +- u(2e29)),
-                    "1.0 (1 +- 2.0 10^-1) 10^30 N")
+                    "1.00 (1 +- 2.0 10^-1) 10^30 N")
                     # about why to use ``2e29`` instead of ``1e29`` see
                     # :meth:`test_ScientificRelativeUTypesetter_largevalue`
                     # above.
             self.assertEqual(
                     str(1e-30 +- u(1e-31)),
-                    "1.0 (1 +- 1.0 10^-1) 10^-30 N")
+                    "1.00 (1 +- 1.0 10^-1) 10^-30 N")
 
 
         ts4 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
@@ -886,15 +887,15 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
 
         with U(2):
             ar = numpy.asarray([1.0, 1000.0, -0.5, 0.0, 1.0]) +- \
-                             u([0.1,    0.1,  0.5, 1.0, 0.0])
+                             u([0.1,    0.1,  0.5, 10.0, 0.0])
 
         with Convention(padding=''):
             result = ts4.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "   1.0 (1 +-  1.0 10^-1) 10^ 0 N")
-        self.assertEqual(str(result[1]), "   1.0 (1 +-  1.0 10^-4) 10^ 3 N")
-        self.assertEqual(str(result[2]), "-500   (1 +-  1.0 10^ 0) 10^-3 N")
-        self.assertEqual(str(result[3]), "   0   (1 +- oo        ) 10^ 0 N")
-        self.assertEqual(str(result[4]), "   1.0 (1 +-  0   10^ 0) 10^ 0 N")
+        self.assertEqual(str(result[0]), "   1.00          (1 +-  1.0 10^-1) 10^ 0 N")
+        self.assertEqual(str(result[1]), "   1.00000       (1 +-  1.0 10^-4) 10^ 3 N")
+        self.assertEqual(str(result[2]), "-500             (1 +-  1.0 10^ 0) 10^-3 N")
+        self.assertEqual(str(result[3]), "   0             (1 +- oo        ) 10^ 0 N")
+        self.assertEqual(str(result[4]), "   1.00000000000 (1 +-  0   10^ 0) 10^ 0 N")
 
 
         ts5 = RelativeEngineeringTypesetter(precision=2, utypesetter=uts,
@@ -903,7 +904,7 @@ class Test_TypesettingScientificRelativeU(unittest.TestCase):
         with U(2), Convention(padding=''), ts5:
             self.assertEqual(
                 str(1.0 +- u(0.1)),
-                "1.0 (1 +- 1.0 10^-1) 10^0")
+                "1.00 (1 +- 1.0 10^-1) 10^0")
 
 
 class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
@@ -991,11 +992,11 @@ class Test_TypesettingFixedpointRelativeU(unittest.TestCase):
 
         with Convention(padding=''):
             result = ts.element_typesetters(ar); str(result)
-        self.assertEqual(str(result[0]), "   1.0 (1 +-  0.10 ) 10^ 0")
-        self.assertEqual(str(result[1]), "  10   (1 +-  0.010) 10^ 0")
-        self.assertEqual(str(result[2]), "-500   (1 +-  1.0  ) 10^-3")
-        self.assertEqual(str(result[3]), "   0   (1 +- oo    ) 10^ 0")
-        self.assertEqual(str(result[4]), "   1.0 (1 +-  0    ) 10^ 0")
+        self.assertEqual(str(result[0]), "   1.00          (1 +-  0.10 ) 10^ 0")
+        self.assertEqual(str(result[1]), "  10.00          (1 +-  0.010) 10^ 0")
+        self.assertEqual(str(result[2]), "-500             (1 +-  1.0  ) 10^-3")
+        self.assertEqual(str(result[3]), "   0.0           (1 +- oo    ) 10^ 0")
+        self.assertEqual(str(result[4]), "   1.00000000000 (1 +-  0    ) 10^ 0")
 
 
 class Test_Convention(unittest.TestCase):

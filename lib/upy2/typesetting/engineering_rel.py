@@ -53,6 +53,7 @@ class RelativeEngineeringTypesetter(Typesetter):
     def __init__(self,
             precision, utypesetter,
             typeset_possign_value=None, typeset_possign_exponent=None,
+            infinite_precision=None,
             unit=None, useprefixes=None,
     ):
         Typesetter.__init__(self)
@@ -62,47 +63,75 @@ class RelativeEngineeringTypesetter(Typesetter):
             typeset_possign_value = False
         if typeset_possign_exponent is None:
             typeset_possign_exponent = False
+        if infinite_precision is None:
+            infinite_precision = 11
         if useprefixes is None:
             useprefixes = False
 
-        self.nominal_typesetter = NumberTypesetter(
+        self.mantissa_typesetter = NumberTypesetter(
                 typeset_positive_sign=typeset_possign_value)
         self.exponent_typesetter = NumberTypesetter(
                 typeset_positive_sign=typeset_possign_exponent)
 
         self.relative_precision = precision
+        self.infinite_precision = infinite_precision
         self.unit = unit
         self.useprefixes = useprefixes
 
     def typeset_element(self, element, rule):
         nominal = element.nominal
+        uncertainty = element.stddev * self.utypesetter.stddevs
 
         typeset_uncertainty = self.utypesetter.typeset_element(
                 element, rule=rule.uncertainty_rule)
 
-        pos_leftmost_digit = \
+        pos_leftmost_digit_nominal = \
                 get_position_of_leftmost_digit(nominal)
+        pos_leftmost_digit_uncertainty = \
+                get_position_of_leftmost_digit(uncertainty)
 
         # Compare also to :class:`EngineeringTypesetter`.
 
-        if pos_leftmost_digit is not None:
-            exponent = 3 * (-pos_leftmost_digit // 3)
+        if pos_leftmost_digit_nominal is not None \
+        and pos_leftmost_digit_uncertainty is not None:
+            exponent = 3 * (-pos_leftmost_digit_nominal // 3)
             mantissa = nominal * 10 ** (-exponent)
+
             precision = \
-                    (pos_leftmost_digit + exponent) + \
+                    (pos_leftmost_digit_uncertainty + exponent) + \
                     (self.relative_precision - 1)
 
-            typeset_mantissa = self.nominal_typesetter.typesetfp(
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
                     mantissa, precision)
-            typeset_exponent = self.exponent_typesetter.typesetint(
-                    exponent, precision=0)
 
-        else:
+        elif pos_leftmost_digit_nominal is not None \
+        and pos_leftmost_digit_uncertainty is None:
+            exponent = 3 * (-pos_leftmost_digit_nominal // 3)
+            mantissa = nominal * 10 ** (-exponent)
+
+            precision = \
+                    (pos_leftmost_digit_nominal + exponent) + \
+                    self.infinite_precision
+
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
+                    mantissa, precision)
+
+        elif pos_leftmost_digit_nominal is None \
+        and pos_leftmost_digit_uncertainty is not None:
+            exponent = 3 * (-pos_leftmost_digit_uncertainty // 3)
+
+            precision = \
+                    (pos_leftmost_digit_uncertainty + exponent) + \
+                    (self.relative_precision - 1)
+
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
+                    number=0, precision=precision)
+
+        elif pos_leftmost_digit_nominal is None \
+        and pos_leftmost_digit_uncertainty is None:
             exponent = 0
 
-            typeset_mantissa = self.nominal_typesetter.typesetfp(
-                    number=0, precision=0)
-            typeset_exponent = self.exponent_typesetter.typesetint(
+            typeset_mantissa = self.mantissa_typesetter.typesetfp(
                     number=0, precision=0)
 
         if self.unit is not None and self.useprefixes and \
@@ -151,6 +180,8 @@ class RelativeEngineeringTypesetter(Typesetter):
             )
         elif self.unit is not None:
             # Append the unit as-is.
+            typeset_exponent = self.exponent_typesetter.typesetint(
+                    exponent, precision=0)
             return rule.apply(
                     nominal=typeset_mantissa,
                     uncertainty=typeset_uncertainty,
@@ -159,6 +190,8 @@ class RelativeEngineeringTypesetter(Typesetter):
             )
         else:
             # Do not append a unit.
+            typeset_exponent = self.exponent_typesetter.typesetint(
+                    exponent, precision=0)
             return rule.apply(
                     nominal=typeset_mantissa,
                     uncertainty=typeset_uncertainty,
