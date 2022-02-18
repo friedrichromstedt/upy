@@ -49,11 +49,13 @@ class FixedpointRelativeUTypesetter(Typesetter):
         uncertainty = self.stddevs * element.stddev
 
         if nominal != 0:
+            # The nominal value is nonzero.
             relative_uncertainty = uncertainty / abs(nominal)
             pos_leftmost_digit = \
                     get_position_of_leftmost_digit(relative_uncertainty)
 
             if pos_leftmost_digit is not None:
+                # The relative uncertainty is nonzero.
                 precision = pos_leftmost_digit + (self.precision - 1)
                 typeset_uncertainty = \
                         self.uncertainty_typesetter.typesetfp(
@@ -61,13 +63,22 @@ class FixedpointRelativeUTypesetter(Typesetter):
                 return rule.apply(typeset_uncertainty)
 
             else:
+                # The relative uncertainty is zero.
                 typeset_uncertainty = \
                         self.uncertainty_typesetter.typesetfp(
                                 number=0, precision=0)
                 return rule.apply(typeset_uncertainty)
 
-        else:
+        elif uncertainty != 0:
+            # The nominal value is zero, and the uncertainty is not.
             return rule.apply_infinity()
+
+        else:
+            # Both nominal value as well as uncertainty are zero.
+            typeset_uncertainty = \
+                    self.uncertainty_typesetter.typesetfp(
+                            number=0, precision=0)
+            return rule.apply(typeset_uncertainty)
 
     def deduce_rule(self):
         manager = convention_session.current()
