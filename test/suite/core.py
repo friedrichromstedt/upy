@@ -88,7 +88,7 @@ class Test_Core(unittest.TestCase):
         U_session = upy2.sessions.byprotocol(U)
 
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test :meth:`{default, undefault}`:
@@ -96,7 +96,7 @@ class Test_Core(unittest.TestCase):
         self.assertIs(U_session.current(), x)
         U_session.undefault(x)
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test :meth:`{register, unregister}`:
@@ -104,7 +104,7 @@ class Test_Core(unittest.TestCase):
         self.assertIs(U_session.current(), x)
         U_session.unregister(x)
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test combination of :meth:`{register, unregister}` and
@@ -117,36 +117,36 @@ class Test_Core(unittest.TestCase):
         self.assertIs(U_session.current(), y)
         y.unregister()
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test order check in :meth:`undefault`:
         U_session.default(x)
         U_session.default(y)
         with self.assertRaisesRegex(ValueError,
-                '^Un-defaulting a session manager which is not '
-                'the current default item$'):
+                r'^Un-defaulting a session manager which is not '
+                r'the current default item$'):
             U_session.undefault(x)
         self.assertIs(U_session.current(), y)
         U_session.undefault(y)
         self.assertIs(U_session.current(), x)
         U_session.undefault(x)
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
         # Test order check in :meth:`unregister`:
         U_session.register(x)
         with y:
             with self.assertRaisesRegex(ValueError,
-                    '^The session manager to be unregistered is not '
-                    'the topmost entry on the stack$'):
+                    r'^The session manager to be unregistered is not '
+                    r'the topmost entry on the stack$'):
                 U_session.unregister(x)
             self.assertIs(U_session.current(), y)
         self.assertIs(U_session.current(), x)
         U_session.unregister(x)
         with self.assertRaisesRegex(LookupError,
-                '^No applicable session manager found$'):
+                r'^No applicable session manager found$'):
             mgr = U_session.current()
 
     def test_string_conversion(self):
@@ -334,8 +334,8 @@ class Test_undarray(unittest.TestCase):
         utarget = undarray(shape=(2, 2), dtype=int)
         usource = undarray(shape=(2, 2))
         with self.assertRaisesRegex(ValueError,
-                "Cannot incorporate the dependencies of an {0}-dtype "
-                "undarray into an {1}-dtype undarray"\
+                r"Cannot incorporate the dependencies of an {0}-dtype "
+                r"undarray into an {1}-dtype undarray"\
                         .format(numpy.dtype(float),
                             numpy.dtype(int))):
             utarget.copy_dependencies(usource)
@@ -351,8 +351,8 @@ class Test_undarray(unittest.TestCase):
                 nominal=numpy.zeros((2, 2)),
                 stddev=[[1.0, 2.0], [3.0, 4.0]])
         with self.assertRaisesRegex(ValueError,
-                "^non-broadcastable output operand with shape \(2,\) "
-                "doesn't match the broadcast shape \(2,2\)$"):
+                r"^non-broadcastable output operand with shape \(2,\) "
+                r"doesn't match the broadcast shape \(2,2\)$"):
             utarget.copy_dependencies(usource)
 
     def test_complex(self):
@@ -385,22 +385,22 @@ class Test_undarray(unittest.TestCase):
 
         self.assertAllEqual(ua.variance, [4])
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate the variance of a non-real '
-                'undarray$'):
+                r'^Refusing to calculate the variance of a non-real '
+                r'undarray$'):
             ub.variance
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate the variance of a non-real '
-                'undarray$'):
+                r'^Refusing to calculate the variance of a non-real '
+                r'undarray$'):
             uc.variance
 
         self.assertAllEqual(ua.stddev, [2])
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate the variance of a non-real '
-                'undarray$'):
+                r'^Refusing to calculate the variance of a non-real '
+                r'undarray$'):
             ub.stddev
         with self.assertRaisesRegex(ValueError,
-                '^Refusing to calculate the variance of a non-real '
-                'undarray$'):
+                r'^Refusing to calculate the variance of a non-real '
+                r'undarray$'):
             uc.stddev
 
     def test_binary_operators(self):

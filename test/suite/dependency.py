@@ -38,13 +38,13 @@ class Test_Dependency(unittest.TestCase):
         self.assertEqual(dep.dtype, float)
 
         with self.assertRaisesRegex(ValueError,
-                '^Shape mismatch in initialising a Dependency: '
-                'names.shape = \(1,\), derivatives.shape = \(2,\)$'):
+                r'^Shape mismatch in initialising a Dependency: '
+                r'names.shape = \(1,\), derivatives.shape = \(2,\)$'):
             dep = Dependency(names=[1], derivatives=[10, -10])
 
         with self.assertRaisesRegex(ValueError,
-                '^Dependency: Unable to initialise from the arguments '
-                'provided$'):
+                r'^Dependency: Unable to initialise from the arguments '
+                r'provided$'):
             dep = Dependency()
         with self.assertRaises(ValueError):
             dep = Dependency(names=[42])
@@ -75,8 +75,8 @@ class Test_Dependency(unittest.TestCase):
     def test_variance(self):
         dep = Dependency(names=1, derivatives=(1 + 1j))
         with self.assertRaisesRegex(ValueError,
-                "^Refusing to calculate the variance of a non-real "
-                "Dependency$"):
+                r"^Refusing to calculate the variance of a non-real "
+                r"Dependency$"):
             dep.variance
 
         dep1 = Dependency(names=1, derivatives=1.0)
@@ -254,7 +254,7 @@ class Test_Dependency(unittest.TestCase):
         self.assertAllEqual(product.derivatives, [[40, 55], [60, 77]])
 
         with self.assertRaisesRegex(TypeError,
-                "^unsupported operand type\(s\) for \*: "
+                r"^unsupported operand type\(s\) for \*: "
                 "'int' and 'Dependency'$"):
             product = numpy.asarray([4, 5]) * dep
 
@@ -265,8 +265,8 @@ class Test_Dependency(unittest.TestCase):
             #    Dependency(names=2, derivatives=55)]
 
         with self.assertRaisesRegex(TypeError,
-                "^unsupported operand type\(s\) for \*: "
-                "'int' and 'Dependency'$"):
+                r"^unsupported operand type\(s\) for \*: "
+                r"'int' and 'Dependency'$"):
             product = numpy.asarray(3) * dep
 
             # With :meth:`Dependency.__rmul__` defined this would
@@ -276,8 +276,8 @@ class Test_Dependency(unittest.TestCase):
             #    Dependency(names=2, derivatives=33)]
 
         with self.assertRaisesRegex(TypeError,
-                "^unsupported operand type\(s\) for \*: "
-                "'int' and 'Dependency'$"):
+                r"^unsupported operand type\(s\) for \*: "
+                r"'int' and 'Dependency'$"):
             product = numpy.asarray([[11, 22], [33, 44]]) * dep
 
             # With :meth:`Dependency.__rmul__` defined this would
@@ -289,8 +289,8 @@ class Test_Dependency(unittest.TestCase):
             #     Dependency(names=2, derivatives=484)]]
 
         with self.assertRaisesRegex(TypeError,
-                "^unsupported operand type\(s\) for \*: "
-                "'int' and 'Dependency'$"):
+                r"^unsupported operand type\(s\) for \*: "
+                r"'int' and 'Dependency'$"):
             product = 3 * dep
 
             # With :meth:`Dependency.__rmul__` defined, this would
@@ -299,8 +299,8 @@ class Test_Dependency(unittest.TestCase):
             #   Depdendency(names=[1, 2], derivatives=[30, 33])
 
         with self.assertRaisesRegex(TypeError,
-                "^can't multiply sequence by non-int of type "
-                "'Dependency'$"):
+                r"^can't multiply sequence by non-int of type "
+                r"'Dependency'$"):
             product = [1, 2, 3] * dep
 
             # Also with :meth:`Dependency.__rmul__` defined, this
@@ -361,7 +361,7 @@ class Test_Dependency(unittest.TestCase):
 
         dep = Dependency(names=42, derivatives=12)
         with self.assertRaisesRegex(IndexError,
-                '^tuple index out of range$'):
+                r'^tuple index out of range$'):
             len(dep)
 
     def test_compress(self):
