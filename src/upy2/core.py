@@ -112,6 +112,15 @@ def u(uncertainty):
 #
 
 
+def withoptout(fn):
+    def augmented(self, other, *args, **kwargs):
+        if hasattr(other, '__array_ufunc__') and \
+                other.__array_ufunc__ is None:
+            return NotImplemented
+        return fn(self, other, *args, **kwargs)
+    return augmented
+
+
 class undarray(object):
     """Implements uncertain ndarrays.  The name is derived from
     :class:`numpy.ndarray`. """
@@ -306,49 +315,145 @@ class undarray(object):
             # Obtaining the variance for non-real undarrays will fail.
 
     #
+    # numpy :meth:`__array_ufunc__` protocol ...
+    #
+
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        if method != '__call__':
+            return NotImplemented
+        if len(kwargs) > 0:
+            return NotImplemented
+
+        if len(inputs) == 1:
+            (A,) = inputs
+            # A is always *self*, i.e, a :class:`undarray` instance.
+        else:
+            (A, B) = inputs
+            if not (isinstance(A, numpy.ndarray) or
+                    isinstance(A, undarray)):
+                return NotImplemented
+            if not (isinstance(B, numpy.ndarray) or
+                    isinstance(B, undarray)):
+                return NotImplemented
+
+        if ufunc is numpy.positive:
+            return self
+        elif ufunc is numpy.negative:
+            return unegative(A)
+        elif ufunc is numpy.absolute:
+            return uabsolute(A)
+
+        elif ufunc is numpy.add:
+            return uadd(A, B)
+        elif ufunc is numpy.subtract:
+            return usubtract(A, B)
+        elif ufunc is numpy.multiply:
+            return umultiply(A, B)
+        elif ufunc is numpy.divide:
+            return udivide(A, B)
+        elif ufunc is numpy.power:
+            return upower(A, B)
+        
+        elif ufunc is numpy.sqrt:
+            return usqrt(A)
+        elif ufunc is numpy.square:
+            return usquare(A)
+
+        elif ufunc is numpy.sin:
+            return usin(A)
+        elif ufunc is numpy.cos:
+            return ucos(A)
+        elif ufunc is numpy.tan:
+            return utan(A)
+
+        elif ufunc is numpy.arcsin:
+            return uarcsin(A)
+        elif ufunc is numpy.arccos:
+            return uarccos(A)
+        elif ufunc is numpy.uarctan:
+            return uarctan(A)
+
+        elif ufunc is numpy.sinh:
+            return usinh(A)
+        elif ufunc is numpy.cosh:
+            return ucosh(A)
+        elif ufunc is numpy.tanh:
+            return utanh(A)
+
+        elif ufunc is numpy.arcsinh:
+            return uarcsinh(A)
+        elif ufunc is numpy.arccosh:
+            return uarccosh(A)
+        elif ufunc is numpy.arctanh:
+            return uarctanh(A)
+
+        elif ufunc is numpy.exp:
+            return uexp(A)
+        elif ufunc is numpy.exp2:
+            return uexp2(A)
+
+        elif ufunc is numpy.log:
+            return ulog(A)
+        elif ufunc is numpy.log2:
+            return ulog2(A)
+        elif ufunc is numpy.log10:
+            return ulog10(A)
+
+    #
     # Binary arithmetics ...
     #
 
+    @withoptout
     def __add__(self, other):
-        return uadd(self, other)
+        return numpy.add(self, other)
 
+    @withoptout
     def __sub__(self, other):
-        return usubtract(self, other)
+        return numpy.subtract(self, other)
 
+    @withoptout
     def __mul__(self, other):
-        return umultiply(self, other)
+        return numpy.multiply(self, other)
 
+    @withoptout
     def __div__(self, other):
-        return udivide(self, other)
+        return numpy.divide(self, other)
 
+    @withoptout
     def __truediv__(self, other):
-        return udivide(self, other)
+        return numpy.divide(self, other)
 
+    @withoptout
     def __pow__(self, other):
-        return upower(self, other)
+        return numpy.power(self, other)
 
     #
     # Reflected binary arithmetics ...
     #
 
+    @withoptout
     def __radd__(self, other):
-        return uadd(other, self)
+        return numpy.add(other, self)
 
+    @withoptout
     def __rsub__(self, other):
-        return usubtract(other, self)
+        return numpy.subtract(other, self)
 
+    @withoptout
     def __rmul__(self, other):
-        return umultiply(other, self)
+        return numpy.multiply(other, self)
 
+    @withoptout
     def __rdiv__(self, other):
-        return udivide(other, self)
+        return numpy.divide(other, self)
 
+    @withoptout
     def __rtruediv__(self, other):
-        return udivide(other, self)
+        return numpy.divide(other, self)
 
+    @withoptout
     def __rpow__(self, other):
-        # Return: other ** self
-        return upower(other, self)
+        return numpy.power(other, self)
 
     #
     # Augmented arithmetics will be emulated ...
@@ -359,46 +464,46 @@ class undarray(object):
     #
 
     def __pos__(self):
-        return self
+        return numpy.positive(self)
 
     def __neg__(self):
-        return unegative(self)
+        return numpy.negative(self)
 
     def __abs__(self):
-        return uabsolute(self)
+        return numpy.absolute(self)
 
     def positive(self):
-        return upositive(self)
+        return numpy.positive(self)
 
     def negative(self):
-        return unegative(self)
+        return numpy.negative(self)
 
     def absolute(self):
-        return uabsolute(self)
+        return numpy.absolute(self)
 
     def sqrt(self):
-        return usqrt(self)
+        return numpy.sqrt(self)
 
     def square(self):
-        return self ** 2
+        return numpy.square(self)
 
     def sin(self):
-        return usin(self)
+        return numpy.sin(self)
 
     def cos(self):
-        return ucos(self)
+        return numpy.cos(self)
 
     def tan(self):
-        return utan(self)
+        return numpy.tan(self)
 
     def arcsin(self):
-        return uarcsin(self)
+        return numpy.arcsin(self)
 
     def arccos(self):
-        return uarccos(self)
+        return numpy.arccos(self)
 
     def arctan(self):
-        return uarctan(self)
+        return numpy.arctan(self)
 
     # I am intentionally *not* defining :meth:`arctan2`.  It would
     # work in ``numpy.arctan2(ua, <...>)`` with an uncertain quantity
@@ -407,37 +512,37 @@ class undarray(object):
     # ua)`` with an ndarray ``b``.  Use ``upy2.uarctan2`` directly.
 
     def sinh(self):
-        return usinh(self)
+        return numpy.sinh(self)
 
     def cosh(self):
-        return ucosh(self)
+        return numpy.cosh(self)
 
     def tanh(self):
-        return utanh(self)
+        return numpy.tanh(self)
 
     def arcsinh(self):
-        return uarcsinh(self)
+        return numpy.arcsinh(self)
 
     def arccosh(self):
-        return uarccosh(self)
+        return numpy.arccosh(self)
 
     def arctanh(self):
-        return uarctanh(self)
+        return numpy.arctanh(self)
 
     def exp(self):
-        return uexp(self)
+        return numpy.exp(self)
 
     def exp2(self):
-        return uexp2(self)
+        return numpy.exp2(self)
 
     def log(self):
-        return ulog(self)
+        return numpy.log(self)
 
     def log2(self):
-        return ulog2(self)
+        return numpy.log2(self)
 
     def log10(self):
-        return ulog10(self)
+        return numpy.log10(self)
     
     #
     # Casts to int, float etc. aren't supported.

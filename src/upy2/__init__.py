@@ -20,8 +20,3 @@ __version__ = '2.3.3'
 # Create the module-scope ID generator ...
 
 guid_generator = IDGenerator()  # Globally Unique IDs
-
-# Install the upy operators ...
-
-import upy2.numpy_operators
-upy2.numpy_operators.install_numpy_operators()
