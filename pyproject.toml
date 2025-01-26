@@ -24,3 +24,6 @@ authors = [
 license = "MIT"
 
 dependencies = ["numpy"]
+
+[project.urls]
+Repository = "https://github.com/friedrichromstedt/upy/"
