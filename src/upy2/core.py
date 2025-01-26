@@ -329,12 +329,6 @@ class undarray(object):
             # A is always *self*, i.e, a :class:`undarray` instance.
         else:
             (A, B) = inputs
-            if not (isinstance(A, numpy.ndarray) or
-                    isinstance(A, undarray)):
-                return NotImplemented
-            if not (isinstance(B, numpy.ndarray) or
-                    isinstance(B, undarray)):
-                return NotImplemented
 
         if ufunc is numpy.positive:
             return self
@@ -370,7 +364,7 @@ class undarray(object):
             return uarcsin(A)
         elif ufunc is numpy.arccos:
             return uarccos(A)
-        elif ufunc is numpy.uarctan:
+        elif ufunc is numpy.arctan:
             return uarctan(A)
 
         elif ufunc is numpy.sinh:
