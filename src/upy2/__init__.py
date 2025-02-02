@@ -14,7 +14,7 @@ from upy2.typesetting.protocol import Convention
 #from upy2.averaging import *
 #from upy2.linear_regression import *
 
-__version__ = '2.3.3'
+__version__ = '2.3.4'
 
 
 # Create the module-scope ID generator ...

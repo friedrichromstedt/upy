@@ -4,9 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "upy2"
-description = "Uncertainties Propagation"
+description = """\
+    Uncertainty propagation of intercorrelated multidimensional \
+    quantities"""
 readme = "README.rst"
-version = "2.3.3"
+version = "2.3.4"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
