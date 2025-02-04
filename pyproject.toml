@@ -8,7 +8,7 @@ description = """\
     Uncertainty propagation of intercorrelated multidimensional \
     quantities"""
 readme = "README.rst"
-version = "2.3.4"
+version = "2.3.4rc1"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
