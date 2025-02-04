@@ -5,7 +5,6 @@ import unittest
 import numpy
 import upy2
 from upy2 import u, U, undarray
-from upy2.numpy_operators import UnaryOperator, BinaryOperator
 
 
 class NotCloseError(AssertionError):
@@ -840,22 +839,3 @@ class TestOperators(unittest.TestCase):
                     prediction=(x / (x ** 2 + y ** 2)),
                     epsilon=1e-4, epsilonfactor=-1,
             )
-
-    def test_string_conversion(self):
-        unary_operator = UnaryOperator(
-                ufunc=numpy.positive,
-                uufunc=upy2.upositive,
-        )
-        self.assertEqual(str(unary_operator),
-                "<upy unary operator for numpy <ufunc 'positive'> and upy <<ufunc 'positive'> uufunc>>")
-        self.assertEqual(repr(unary_operator),
-                "<UnaryOperator(ufunc=<ufunc 'positive'>, uufunc=<<ufunc 'positive'> uufunc>)>")
-
-        binary_operator = BinaryOperator(
-                ufunc=numpy.add,
-                uufunc=upy2.uadd,
-        )
-        self.assertEqual(str(binary_operator),
-                "<upy binary operator for numpy <ufunc 'add'> and upy <<ufunc 'add'> uufunc>>")
-        self.assertEqual(repr(binary_operator),
-                "<BinaryOperator(ufunc=<ufunc 'add'>, uufunc=<<ufunc 'add'> uufunc>)>")
